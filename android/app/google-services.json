@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "344626967402",
+    "project_id": "dressify-47e6a",
+    "storage_bucket": "dressify-47e6a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344626967402:android:d6e61558598a4ef134eb13",
+        "android_client_info": {
+          "package_name": "com.example.dressify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBpyJLHlZDf6g8jRSogIg15LEMe0v3fq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344626967402:android:58f32a25a8236e0334eb13",
+        "android_client_info": {
+          "package_name": "com.example.dressify_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBpyJLHlZDf6g8jRSogIg15LEMe0v3fq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
