@@ -1,0 +1,2 @@
+/Users/stefaniapiciorea/Documents/Github/SWE-Project/android/app/.cxx/Debug/6v6u2f5r/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/stefaniapiciorea/Documents/Github/SWE-Project/android/app/.cxx/Debug/6v6u2f5r/armeabi-v7a/CMakeFiles/rebuild_cache.dir
