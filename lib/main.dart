@@ -2,9 +2,16 @@
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dressify_app/screens/landing_screen.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import "services.dart";
 // Import the pages you want to see in the app here. home will throw an error if the page is not imported here.
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
