@@ -17,8 +17,8 @@ class ClosetItemsScreen extends StatelessWidget {
   const ClosetItemsScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width; // Please use these variables when setting padding, margins and container sizes to make the app responsive
+    final screenHeight = MediaQuery.of(context).size.height; // Please use these variables when setting padding, margins and container sizes to make the app responsive
     
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
