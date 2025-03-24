@@ -1,4 +1,5 @@
 
+import 'package:dressify_app/screens/add_item_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dressify_app/screens/landing_screen.dart'; 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const AddItemScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
     );
   }
 }
