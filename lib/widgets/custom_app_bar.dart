@@ -8,7 +8,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: Image.asset("lib/assets/icons/header_logo_type.png"),
-      backgroundColor: kappBarColor,
+      backgroundColor: kBackgroundColor,
       leading: Image.asset('lib/assets/icons/menu.png'),
       actions: [
         IconButton(
@@ -18,6 +18,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: Image.asset('lib/assets/icons/account.png'),
         ),
       ],
+       bottom: PreferredSize(
+      preferredSize: const Size.fromHeight(1.0), // height of the line
+      child: Container(
+        color: Colors.black, // adjust color & opacity
+        height: 1.0,
+        width: double.infinity,
+      ),
+    ),
     );
   }
 
