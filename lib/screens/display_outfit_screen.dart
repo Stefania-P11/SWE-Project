@@ -11,131 +11,93 @@ import 'package:google_fonts/google_fonts.dart';
 // WE SAVE IT TO FAVORITES. IN WHICH CASE-- WHEN THE HEART IS TAPPED, WE CAN BRING A PUP UP FIELD
 // THAT ASKS FOR A NAME.
 
-class OutfitSuggestion extends StatelessWidget {
+class OutfitSuggestion extends StatefulWidget {
   const OutfitSuggestion({super.key});
+
+  @override
+  State<OutfitSuggestion> createState() => _OutfitSuggestionState();
+}
+
+class _OutfitSuggestionState extends State<OutfitSuggestion> {
+  bool isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    bool isFavorite = false;
-
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: CustomAppBar(),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
 
-
-          // Outfit & Action Buttons Stack
+          // Scrollable Outfit Image Section
           SizedBox(
+            height: screenHeight * 0.72, // scroll area height
             width: screenWidth,
-            height: screenHeight * 0.72,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Outfit Item Images
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.8,
-                  ),
-                  child: // Outfit Items Overlapping Using Positioned
-Stack(
-  children: [
-    // Top item (center top)
-    Positioned(
-      top: screenHeight * 0.025,
-      left: screenWidth * 0.0,
-      child: outfitItem("Top", screenWidth),
-    ),
-
-    // Bottom item (center-right, overlapping top slightly)
-    Positioned(
-      top: screenHeight * 0.22,
-      right: screenWidth * 0.0,
-      child: outfitItem("Bottom", screenWidth),
-    ),
-
-    // Shoes item (bottom-left, overlapping bottom slightly)
-    Positioned(
-      top: screenHeight * 0.42,
-      left: screenWidth * 0.0,
-      child: outfitItem("Shoes", screenWidth),
-    ),
-  ],
-)
-
-                ),
-
-                // Floating Favorite Button
-                Positioned(
-                  top: screenHeight * 0.67,
-                  left: screenWidth * 0.3,
-                  child: StatefulBuilder(
-                    builder: (context, setState) {
-                      return IconButton(
-                        iconSize: screenWidth * 0.1,
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.black,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isFavorite = !isFavorite;
-                          });
-                        },
-                      );
-                    },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: SizedBox(
+                  height: screenHeight * 0.8, 
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: screenHeight * 0.03,
+                        left: screenWidth * 0.0,
+                        child: outfitItem("Top", screenWidth),
+                      ),
+                      Positioned(
+                        top: screenHeight * 0.25,
+                        right: screenWidth * 0.0,
+                        child: outfitItem("Bottom", screenWidth),
+                      ),
+                      Positioned(
+                        top: screenHeight * 0.45,
+                        left: screenWidth * 0.0,
+                        child: outfitItem("Shoes", screenWidth),
+                      ),
+                    ],
                   ),
                 ),
-
-                // Floating Regenerate Button
-                Positioned(
-                  top: screenHeight * 0.67,
-                  right: screenWidth * 0.3,
-                  child: IconButton(
-                    iconSize: screenWidth * 0.1,
-                    icon: const Icon(Icons.autorenew),
-                    onPressed: () {
-                      // TODO: Add regenerate logic here
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Label field (currently commented out)
-          /*
-          Padding(
-            padding: EdgeInsets.all(screenWidth * 0.025),
-            child: Container(
-              width: screenWidth * 0.7,
-              height: screenHeight * 0.055,
-              padding: EdgeInsets.all(screenWidth * 0.015),
-              decoration: ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFF595856),
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              child: Text(
-                'Name your outfit',
-                style: kHintText,
               ),
             ),
           ),
-          */
+          
+          SizedBox(height: screenHeight * 0.03),
+          
+          // Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                iconSize: screenWidth * 0.1,
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isFavorite = !isFavorite;
+                  });
+
+                  // TODO: Add favorite logic here
+                },
+              ),
+              IconButton(
+                iconSize: screenWidth * 0.1,
+                icon: const Icon(Icons.autorenew),
+                onPressed: () {
+                  // TODO: Add regenerate logic here
+                },
+              ),
+            ],
+          ),
         ],
       ),
-      bottomNavigationBar: CustomNavBar(),
     );
   }
 }
