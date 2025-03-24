@@ -61,10 +61,10 @@ TextStyle kBodyMedium = GoogleFonts.lato(
   ),
 );
 
-TextStyle kButtons(double screenWidth) => GoogleFonts.lato(
+TextStyle kButtons = GoogleFonts.lato(
       textStyle: TextStyle(
         color: Colors.white,
-        fontSize: screenWidth * 0.04,
+        fontSize: 18,
         fontFamily: 'Lato',
         fontWeight: FontWeight.w400,
       ),
@@ -79,4 +79,9 @@ TextStyle kButtons2(double screenWidth) => GoogleFonts.lato(
       ),
     );
 
-
+TextStyle kHintText = TextStyle(
+  color: Color(0xFFCBCBCB),
+  fontSize: 18,
+  fontFamily: 'Lato',
+  fontWeight: FontWeight.w400,
+);

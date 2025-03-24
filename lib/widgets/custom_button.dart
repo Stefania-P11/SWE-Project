@@ -32,7 +32,7 @@ class CustomButton extends StatelessWidget {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: kButtons(screenWidth),
+              style: kButtons,
             ),
           ),
         ),
