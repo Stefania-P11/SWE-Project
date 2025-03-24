@@ -1,4 +1,5 @@
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
 import 'package:flutter/material.dart';
@@ -16,19 +17,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
       
       //App Bar
-      appBar: AppBar(
-        title: Image.asset("lib/assets/icons/header_logo_type.png"),
-        backgroundColor: kappBarColor,
-        leading: Image.asset('lib/assets/icons/menu.png'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              //TODO: Implement navigation
-            },
-            icon: Image.asset('lib/assets/icons/account.png'),
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(),
 
       // Body
       body: Container(
