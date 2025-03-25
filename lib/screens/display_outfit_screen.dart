@@ -11,14 +11,14 @@ import 'package:google_fonts/google_fonts.dart';
 // WE SAVE IT TO FAVORITES. IN WHICH CASE-- WHEN THE HEART IS TAPPED, WE CAN BRING A PUP UP FIELD
 // THAT ASKS FOR A NAME.
 
-class OutfitSuggestion extends StatefulWidget {
-  const OutfitSuggestion({super.key});
+class OutfitSuggestionScreen extends StatefulWidget {
+  const OutfitSuggestionScreen({super.key});
 
   @override
-  State<OutfitSuggestion> createState() => _OutfitSuggestionState();
+  State<OutfitSuggestionScreen> createState() => _OutfitSuggestionScreenState();
 }
 
-class _OutfitSuggestionState extends State<OutfitSuggestion> {
+class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false;
 
   @override
@@ -28,7 +28,7 @@ class _OutfitSuggestionState extends State<OutfitSuggestion> {
 
     return Scaffold(
       backgroundColor: kBackgroundColor,
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(showBackButton: true,), // Replaces the hamburger menu icon with a back arrow to allow the user to go back
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
