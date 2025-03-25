@@ -16,9 +16,9 @@ class CustomButton3 extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
 
     // Responsive dimensions based on screen width/height
-    final double buttonWidth = screenSize.width * 0.45;  // 45% of screen width
-    final double buttonHeight = screenSize.height * 0.06; // 6% of screen height
-    final double borderRadius = screenSize.width * 0.025; 
+    final double buttonWidth = screenSize.width * 0.4;  // 45% of screen width
+    final double buttonHeight = screenSize.height * 0.055; // 6% of screen height
+    final double borderRadius = 45; 
     
     return ElevatedButton(
       onPressed: onPressed,

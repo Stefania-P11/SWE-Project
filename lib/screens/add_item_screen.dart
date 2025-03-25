@@ -15,6 +15,7 @@ import 'package:dressify_app/constants.dart'; // this allows us to use the const
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // this allows us to use the custom app bar defined in lib/widgets/custom_app_bar.dart
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // this allows us to use the custom bottom navigation bar defined in lib/widgets/custom_bottom_navbar.dart
 import 'package:dressify_app/widgets/custom_button.dart';
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,7 +41,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(showBackButton: true,),
       body: Column(
         children: [
           Expanded(
@@ -51,21 +52,23 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: screenHeight * 0.02),
-                    Text("Adding New Item", style: kH2),
+                    Text("Adding New Item", style: kH2,),
                     SizedBox(height: screenHeight * 0.02),
                     GestureDetector(
                       onTap: () {
                         // Placeholder for image upload functionality
                       },
-                      child: Container(
-                        width: double.infinity,
-                        height: screenHeight * 0.25,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.black45),
+                      child: Center(
+                        child: Container(
+                          width: screenWidth * 0.8,
+                          height: screenHeight * 0.35,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.black45),
+                          ),
+                          child: const Center(child: Icon(Icons.camera_alt, size: 50, color: Colors.black45)),
                         ),
-                        child: const Center(child: Icon(Icons.camera_alt, size: 50, color: Colors.black45)),
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.01),
@@ -119,33 +122,33 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       )).toList(),
                     ),
                     SizedBox(height: screenHeight * 0.03),
+                    Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CustomButton3(
+                label: "SAVE",
+                onPressed: () {}, // Keep logic for enabling/disabling here
+              ),
+              CustomButton3(
+                label: "CANCEL",
+                onPressed: () {
+                  setState(() {
+                    _nameController.clear();
+                    selectedCategory = 'Tops';
+                    selectedTemperatures = ['Hot'];
+                  });
+                },
+              ),
+            ],
+          ),
+            SizedBox(height: screenHeight * 0.02),
                   ],
+                  
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                CustomButton(
-                  text: "SAVE",
-                  onPressed: () {}, // Keep logic for enabling/disabling here
-                ),
-                CustomButton(
-                  text: "CANCEL",
-                  onPressed: () {
-                    setState(() {
-                      _nameController.clear();
-                      selectedCategory = 'Tops';
-                      selectedTemperatures = ['Hot'];
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
+          
         ],
       ),
       bottomNavigationBar: const CustomNavBar(),

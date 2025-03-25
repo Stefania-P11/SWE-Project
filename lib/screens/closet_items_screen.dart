@@ -7,8 +7,10 @@
 //3) Bottom Navigation Bar -- which I have already added in.
 
 import 'package:dressify_app/constants.dart'; // this allows us to use the constants defined in lib/constants.dart
+import 'package:dressify_app/screens/add_item_screen.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // this allows us to use the custom app bar defined in lib/widgets/custom_app_bar.dart
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // this allows us to use the custom bottom navigation bar defined in lib/widgets/custom_bottom_navbar.dart
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -41,6 +43,24 @@ class ClosetItemsScreen extends StatelessWidget {
       // Row containing 4 filter buttons ( do not worry about the functionality but you cand have all filters appear as buttons with white background and black text,
       // and the selected filter will have a black background and white text -- we can default to All being selected). So just make the buttons change appearance when tapped for now)
       
+      body: Center(
+        child: CustomButton3(
+          onPressed: () {
+            // Add functionality here
+             Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const AddItemScreen(),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+          },
+         label : 'Add New Item',
+        ),
+      ),
 
       bottomNavigationBar: const CustomNavBar() // this is defined in lib/widgets/custom_bottom_navbar.dart
     );
