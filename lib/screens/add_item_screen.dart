@@ -171,8 +171,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 onPressed: () {
                   setState(() {
                     _nameController.clear();
-                    selectedCategory = 'Tops';
-                    selectedTemperatures = ['Hot'];
+                    selectedCategory = ''; // Unselect category
+                    selectedTemperatures.clear(); // Clear all selected temperatures
                   });
                 },
               ),
