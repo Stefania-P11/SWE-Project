@@ -15,7 +15,6 @@ class CustomButton3 extends StatelessWidget {
     this.isActive = true,
   });
 
-  
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +26,7 @@ class CustomButton3 extends StatelessWidget {
     final double borderRadius = 45; 
     
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: isActive ? onPressed : null, // Disable button when inactive
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),

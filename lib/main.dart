@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const OutfitSuggestion(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const AddItemScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
     );
   }
 }

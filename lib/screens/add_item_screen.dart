@@ -29,9 +29,9 @@ class AddItemScreen extends StatefulWidget {
 
 class _AddItemScreenState extends State<AddItemScreen> {
   final TextEditingController _nameController = TextEditingController();
-  String selectedCategory = 'Tops';
+  String selectedCategory = '';
   List<String> categories = ['Tops', 'Bottoms', 'Shoes'];
-  List<String> selectedTemperatures = ['Hot'];
+  List<String> selectedTemperatures = [];
   List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
 
   @override
@@ -85,16 +85,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     Text("Category", style: kH2),
                     Wrap(
                       spacing: 6,
-                      children: categories.map((category) => ChoiceChip(
-                        label: Text(category),
-                        selected: selectedCategory == category,
-                        onSelected: (selected) {
-                          setState(() => selectedCategory = category);
-                        },
-                        selectedColor: Colors.black,
-                        backgroundColor: Colors.white,
-                        labelStyle: TextStyle(
-                          color: selectedCategory == category ? Colors.white : Colors.black,
+                      children: categories.map((category) => IntrinsicWidth(
+                        child: ChoiceChip(
+                          label: Center(
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500, // Keep consistent weight
+                                color: selectedCategory == category ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ),
+                          selected: selectedCategory == category,
+                          onSelected: (selected) {
+                            setState(() => selectedCategory = category);
+                          },
+                          selectedColor: Colors.black,
+                          backgroundColor: Colors.white,
+                          showCheckmark: false, // Prevents the checkmark from appearing
+                          visualDensity: VisualDensity.compact, // Ensures consistent height
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Consistent padding
                         ),
                       )).toList(),
                     ),
@@ -102,29 +112,39 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     Text("Temperature", style: kH2),
                     Wrap(
                       spacing: 6,
-                      children: temperatures.map((temp) => ChoiceChip(
-                        label: Text(temp),
-                        selected: selectedTemperatures.contains(temp),
-                        onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              selectedTemperatures.add(temp);
-                            } else {
-                              selectedTemperatures.remove(temp);
-                            }
-                          });
-                        },
-                        selectedColor: Colors.black,
-                        backgroundColor: Colors.white,
-                        labelStyle: TextStyle(
-                          color: selectedTemperatures.contains(temp) ? Colors.white : Colors.black,
+                      children: temperatures.map((temp) => IntrinsicWidth(
+                        child: ChoiceChip(
+                          label: Center(
+                            child: Text(
+                              temp,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500, // Keep consistent weight
+                                color: selectedTemperatures.contains(temp) ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ),
+                          selected: selectedTemperatures.contains(temp),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                selectedTemperatures.add(temp);
+                              } else {
+                                selectedTemperatures.remove(temp);
+                              }
+                            });
+                          },
+                          selectedColor: Colors.black,
+                          backgroundColor: Colors.white,
+                          showCheckmark: false, // Prevents the checkmark from appearing
+                          visualDensity: VisualDensity.compact, // Ensures consistent height
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Consistent padding
                         ),
                       )).toList(),
                     ),
                     SizedBox(height: screenHeight * 0.03),
                     Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
 
               CustomButton3(
                 // THIS WIDGET HAS AN ACTIVE AND INACTIVE STATE NOW
@@ -132,9 +152,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 // We start with the button as isActive: false.Once all conditions are met (all inputs are provided, you want to set isActive: true)
                 // This will only allow the user to save an item that has all the required attributes entered
                 // This widget is defined in lib/widgets/custom_button_3.dart
-                isActive: false,
+                isActive: selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when both are selected
                 label: "SAVE",
-                onPressed: () {}, // Keep logic for enabling/disabling here
+                onPressed: (selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty) 
+                  ? () {
+                      // Save functionality here
+                      print("Item Saved!");
+                    }
+                  : () {}, // If inactive, do nothing
+
+                //isActive: false,
+                //label: "SAVE",
+                //onPressed: () {}, // Keep logic for enabling/disabling here
               ),
               
               CustomButton3( 
