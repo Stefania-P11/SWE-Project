@@ -125,11 +125,21 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+
               CustomButton3(
+                // THIS WIDGET HAS AN ACTIVE AND INACTIVE STATE NOW
+                // Default is : isActive: false
+                // Once all conditions are met (all inputs are provided, you want to set isActive: true)
+                // This will only allow the user to save an item that has all the required attributes entered
+                // This widget is defined in lib/widgets/custom_button_3.dart
+                
                 label: "SAVE",
                 onPressed: () {}, // Keep logic for enabling/disabling here
               ),
-              CustomButton3(
+              
+              CustomButton3( 
+                // I am setting this as an active button by default because we can cancel at any point
+                isActive: true,
                 label: "CANCEL",
                 onPressed: () {
                   setState(() {

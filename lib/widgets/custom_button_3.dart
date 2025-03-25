@@ -1,15 +1,21 @@
+import 'package:dressify_app/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomButton3 extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
+  final bool isActive;
+
 
   const CustomButton3({
     super.key,
     required this.onPressed,
     required this.label,
+    this.isActive = false,
   });
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +32,13 @@ class CustomButton3 extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: isActive ? kButtonColor : Colors.white,
         minimumSize: Size(buttonWidth, buttonHeight),
       ),
       child: Text(
         label,
-        style: GoogleFonts.lato(
-          textStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontStyle: FontStyle.normal,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        style: kButtons.copyWith(fontWeight: FontWeight.w600, color: isActive ? Colors.white : Colors.black),
+        
       ),
     );
   }
