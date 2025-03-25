@@ -153,6 +153,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 // This will only allow the user to save an item that has all the required attributes entered
                 // This widget is defined in lib/widgets/custom_button_3.dart
                 isActive: selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when both are selected
+                
+                // TODO: Once we write the functionality that allows users to upload an image, we must also check that an image was successfully uploaded
+                //       as we cannot write to the DB unless we have all the required attributes: image url, label, category and weather suitability.
+                
                 label: "SAVE",
                 onPressed: (selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty) 
                   ? () {
