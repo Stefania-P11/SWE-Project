@@ -182,7 +182,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               ),
             ],
           ),
-            SizedBox(height: screenHeight * 0.02),
+            SizedBox(height: screenHeight * 0.1),
                   ],
                   
                 ),
@@ -192,7 +192,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           
         ],
       ),
-      bottomNavigationBar: const CustomNavBar(),
+      // bottomNavigationBar: const CustomNavBar(), HID THIS TO SAVE SCREEN SPACE
     );
   }
 }
