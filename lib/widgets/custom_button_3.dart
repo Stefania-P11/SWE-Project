@@ -12,7 +12,7 @@ class CustomButton3 extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.label,
-    this.isActive = false,
+    this.isActive = true,
   });
 
   
