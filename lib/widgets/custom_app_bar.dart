@@ -1,31 +1,50 @@
-import 'package:dressify_app/constants.dart';
+
+
+
+     
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
+import '../constants.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  
+  final bool showBackButton;
+
+  // If the user is on the OutfitSuggestedScreen, replace the menu icon with a back arrow
+  // to allow them to return to the home page
+  const CustomAppBar({super.key, this.showBackButton = false});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Image.asset("lib/assets/icons/header_logo_type.png"),
       backgroundColor: kBackgroundColor,
-      leading: Image.asset('lib/assets/icons/menu.png'),
+      title: Image.asset("lib/assets/icons/header_logo_type.png"),
+      leading: showBackButton
+          ? IconButton(
+              icon: const Icon(Icons.chevron_left, color: Colors.black, size: 40),
+              onPressed: () => Navigator.pop(context),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Image.asset('lib/assets/icons/menu.png'),
+            ),
       actions: [
         IconButton(
           onPressed: () {
-            // TODO: Implement navigation
+            // TODO: Handle profile navigation
           },
           icon: Image.asset('lib/assets/icons/account.png'),
         ),
       ],
-       bottom: PreferredSize(
-      preferredSize: const Size.fromHeight(1.0), // height of the line
-      child: Container(
-        color: Colors.black, // adjust color & opacity
-        height: 1.0,
-        width: double.infinity,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(
+          color: Colors.black,
+          height: 1.0,
+        ),
       ),
-    ),
     );
   }
 
