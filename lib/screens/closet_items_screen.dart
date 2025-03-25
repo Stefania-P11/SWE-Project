@@ -45,7 +45,28 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                 SizedBox(height: screenHeight * 0.02),
 
                 // Title
-                Text("Your Wardrobe", style: kH2),
+                //Text("Your Wardrobe", style: kH2),
+                // Title Row with Add Icon
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text("Your Wardrobe", style: kH2),
+    IconButton(
+      icon: const Icon(Icons.add, size: 28),
+      onPressed: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const AddItemScreen(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+    ),
+  ],
+),
 
                 SizedBox(height: screenHeight * 0.015),
 
@@ -119,28 +140,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
             ),
           ),
 
-          // Floating Add New Item Button
-          Positioned(
-            bottom: 80,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: CustomButton3(
-                label: "Add New Item",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const AddItemScreen(),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+          
         ],
       ),
 
