@@ -60,8 +60,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       },
                       child: Center(
                         child: Container(
-                          width: screenWidth * 0.8,
-                          height: screenHeight * 0.35,
+                          width: screenWidth * 0.75,
+                          height: screenHeight * 0.3,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -91,7 +91,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                             child: Text(
                               category,
                               style: TextStyle(
-                                fontWeight: FontWeight.w500, // Keep consistent weight
+                                fontWeight: FontWeight.w500, 
                                 color: selectedCategory == category ? Colors.white : Colors.black,
                               ),
                             ),
@@ -178,6 +178,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     selectedCategory = ''; // Unselect category
                     selectedTemperatures.clear(); // Clear all selected temperatures
                   });
+                  Navigator.pop(context);
                 },
               ),
             ],
