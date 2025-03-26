@@ -77,7 +77,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       controller: _nameController,
                       maxLength: 15,
                       decoration: const InputDecoration(
-                        hintText: "Name your item",
+                        hintText: "e.g. Old Navy Crewneck",
                         border: OutlineInputBorder(),
                       ),
                     ),
