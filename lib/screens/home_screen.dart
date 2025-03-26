@@ -138,18 +138,8 @@ class HomeScreen extends StatelessWidget {
                   CustomButton2(
                     text: 'CREATE OUTFIT',
                     onPressed: () {
-                       Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const AddItemScreen(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
                     
-                      // TODO: Implement button functionality
+                      // TODO: Implement button functionality after the create outfit page is complete
                     },
                   ),
                   CustomButton2(
