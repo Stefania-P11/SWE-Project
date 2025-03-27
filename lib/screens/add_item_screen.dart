@@ -34,6 +34,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
   List<String> selectedTemperatures = [];
   List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
   
+  @override // override to use setState()
+  void initState() {
+    super.initState();
+    _nameController.addListener(() {
+      setState(() {}); // rebuild when name input changes
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -152,7 +160,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 // We start with the button as isActive: false.Once all conditions are met (all inputs are provided, you want to set isActive: true)
                 // This will only allow the user to save an item that has all the required attributes entered
                 // This widget is defined in lib/widgets/custom_button_3.dart
-                isActive: selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when both are selected
+                isActive: _nameController.text.isNotEmpty && selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when all are selected
                 
                 // TODO: Once we write the functionality that allows users to upload an image, we must also check that an image was successfully uploaded
                 //       as we cannot write to the DB unless we have all the required attributes: image url, label, category and weather suitability.
