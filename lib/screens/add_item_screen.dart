@@ -60,8 +60,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       },
                       child: Center(
                         child: Container(
-                          width: screenWidth * 0.8,
-                          height: screenHeight * 0.35,
+                          width: screenWidth * 0.75,
+                          height: screenHeight * 0.3,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -77,7 +77,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       controller: _nameController,
                       maxLength: 15,
                       decoration: const InputDecoration(
-                        hintText: "Name your item",
+                        hintText: "e.g. Old Navy Crewneck",
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -91,7 +91,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                             child: Text(
                               category,
                               style: TextStyle(
-                                fontWeight: FontWeight.w500, // Keep consistent weight
+                                fontWeight: FontWeight.w500, 
                                 color: selectedCategory == category ? Colors.white : Colors.black,
                               ),
                             ),
@@ -152,7 +152,11 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 // We start with the button as isActive: false.Once all conditions are met (all inputs are provided, you want to set isActive: true)
                 // This will only allow the user to save an item that has all the required attributes entered
                 // This widget is defined in lib/widgets/custom_button_3.dart
-                isActive: selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty && _nameController.text.isNotEmpty, // Button only active when both are selected
+                isActive: selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when both are selected
+                
+                // TODO: Once we write the functionality that allows users to upload an image, we must also check that an image was successfully uploaded
+                //       as we cannot write to the DB unless we have all the required attributes: image url, label, category and weather suitability.
+                
                 label: "SAVE",
                 onPressed: (selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty) 
                   ? () {
@@ -174,11 +178,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     selectedCategory = ''; // Unselect category
                     selectedTemperatures.clear(); // Clear all selected temperatures
                   });
+                  Navigator.pop(context);
                 },
               ),
             ],
           ),
-            SizedBox(height: screenHeight * 0.02),
+            SizedBox(height: screenHeight * 0.1),
                   ],
                   
                 ),
@@ -188,7 +193,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           
         ],
       ),
-      bottomNavigationBar: const CustomNavBar(),
+      // bottomNavigationBar: const CustomNavBar(), HID THIS TO SAVE SCREEN SPACE
     );
   }
 }

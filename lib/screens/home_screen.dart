@@ -138,26 +138,20 @@ class HomeScreen extends StatelessWidget {
                   CustomButton2(
                     text: 'CREATE OUTFIT',
                     onPressed: () {
-                       Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const AddItemScreen(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
                     
-                      // TODO: Implement button functionality
+                      // TODO: Implement button functionality after the create outfit page is complete
                     },
                   ),
                   CustomButton2(
                     text: 'PLAY IT SAFE',
                     onPressed: () {
-                      // TODO: befire navigating we need to select an outfit from favorites, retrieve each item's ID
+                      // TODO: before navigating we need to select an outfit from favorites, retrieve each item's ID
                       // and pass them to the OutfitSuggestionScreen so the images can be displayed
                       // The OutfitSuggestionScreen will be modidfied to maybe take 3 parameters: topId, bottomID and shoeID
+
+                      // TODO: When we navigate to the display outfit screen by clicking this button-- we should not see the option to add an outfit to favorites
+                      // as the item is already pulled from the user's favorite outfits. We will need to modify the DisplayOutfitScreen to take a boolean argument
+                      // that will determine whether the favorite button is displayed or not.
                       Navigator.push(
                         context,
                         PageRouteBuilder(

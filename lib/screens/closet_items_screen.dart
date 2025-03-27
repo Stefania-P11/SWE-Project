@@ -14,55 +14,137 @@ import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
-class ClosetItemsScreen extends StatelessWidget {
+class ClosetItemsScreen extends StatefulWidget {
   const ClosetItemsScreen({super.key});
+
+  @override
+  State<ClosetItemsScreen> createState() => _ClosetItemsScreenState();
+}
+
+class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
+  String selectedFilter = 'All';
+  final filters = ['All', 'Tops', 'Bottoms', 'Shoes'];
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // Please use these variables when setting padding, margins and container sizes to make the app responsive
-    final screenHeight = MediaQuery.of(context).size.height; // Please use these variables when setting padding, margins and container sizes to make the app responsive
-    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
-      
-      //App Bar
       appBar: CustomAppBar(), // this app bar is defined in lib/widgets/custom_app_bar.dart
 
-      // Body -- HERE IS WHERE YOU WILL ADD THE 3 BODY ELEMENTS
+      // Body -- THE 3 BODY ELEMENTS
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: screenHeight * 0.02),
 
-      // This is what this should look like:
-      // "Your Wardrobe" -- use a defined constant for text style
-      // Container:
-      //  - Row 1: Container 1, Container 2
-      //  - Row 2: Container 3, Container 4
-      //  - Row 3: Container 5, Container 6
-      // NOTE: You should define a variable (e.g. numberOfItems) which will dictate how many containers will be created.
-      //       For now, you can set it to a fixed number and keep changing it to see how the layout changes.
-      //       Once we get the DB analytics and we know how many items we have in each category, that variable will then use that infomation to decide how many containers to build
-      // This is the end of the main container
-      // Row containing 4 filter buttons ( do not worry about the functionality but you cand have all filters appear as buttons with white background and black text,
-      // and the selected filter will have a black background and white text -- we can default to All being selected). So just make the buttons change appearance when tapped for now)
-      
-      body: Center(
-        child: CustomButton3(
-          onPressed: () {
-            // Add functionality here
-             Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const AddItemScreen(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
+                // Title
+                //Text("Your Wardrobe", style: kH2),
+                // Title Row with Add Icon
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text("Your Wardrobe", style: kH2),
+    IconButton(
+      icon: const Icon(Icons.add, size: 28),
+      onPressed: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const AddItemScreen(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+    ),
+  ],
+),
+
+                SizedBox(height: screenHeight * 0.015),
+
+                // Scrollable Grid
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: 6, // placeholder item count
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 3 / 4,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.image, size: 40, color: Colors.black26),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // Filter Buttons (always at bottom)
+                SizedBox(height: screenHeight * 0.015),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: filters.map((filter) {
+                    final isSelected = selectedFilter == filter;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedFilter = filter;
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.012,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.black : Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: Text(
+                              filter,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                        );
-          },
-         label : 'Add New Item',
-        ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+
+                SizedBox(height: screenHeight * 0.03),
+              ],
+            ),
+          ),
+
+          
+        ],
       ),
 
-      bottomNavigationBar: const CustomNavBar() // this is defined in lib/widgets/custom_bottom_navbar.dart
+      bottomNavigationBar: const CustomNavBar(),
     );
   }
 }
