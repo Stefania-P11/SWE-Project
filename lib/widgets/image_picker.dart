@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/services/image_service.dart';
@@ -23,6 +22,13 @@ class _ImagePickerContainerState extends State<ImagePickerContainer> {
   String? _imagePath; // Store selected image path
   final ImageService _imageService = ImageService(); // Create instance of ImageService
 
+  @override
+  void initState() {
+    super.initState();
+    // Load initial image path if available
+    _imagePath = widget.initialImagePath;
+  }
+
   // Method to update selected image
   Future<void> _pickImage(bool fromCamera) async {
     final image = fromCamera
@@ -33,6 +39,11 @@ class _ImagePickerContainerState extends State<ImagePickerContainer> {
       setState(() {
         _imagePath = image.path; // Update state with image path
       });
+
+      // Send the selected image path back to AddItemScreen
+      if (widget.onImageSelected != null) {
+        widget.onImageSelected!(_imagePath); // Callback to parent
+      }
     }
   }
 

@@ -187,7 +187,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
                           //       as we cannot write to the DB unless we have all the required attributes: image url, label, category and weather suitability.
 
                           onPressed: (selectedCategory.isNotEmpty &&
-                                  selectedTemperatures.isNotEmpty)
+                                  selectedTemperatures.isNotEmpty &&
+                                  _nameController.text.isNotEmpty &&
+                                  _imagePath != null)
                               ? () {
                                   // Save functionality here
                                   print("Item Saved!");
