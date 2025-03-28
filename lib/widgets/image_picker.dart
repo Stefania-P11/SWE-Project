@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/services/image_service.dart';
 import 'package:flutter/material.dart';

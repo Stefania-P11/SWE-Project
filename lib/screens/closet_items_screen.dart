@@ -3,9 +3,7 @@ import 'package:dressify_app/models/item.dart'; // Importing the Item model to d
 import 'package:dressify_app/screens/add_item_screen.dart'; // Importing AddItemScreen for adding new items
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Importing custom app bar widget
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // Importing custom bottom navigation bar
-import 'package:dressify_app/widgets/custom_button_3.dart'; // Importing custom button widget
 import 'package:flutter/material.dart'; // Importing Flutter Material Design
-import 'package:google_fonts/google_fonts.dart'; // Importing Google Fonts for styling
 
 /// ClosetItemsScreen displays the user's wardrobe with filter functionality
 /// Users can view their items, add new items, and filter items by category.

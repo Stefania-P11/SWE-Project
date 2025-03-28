@@ -1,11 +1,7 @@
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar widget
-import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // Import custom bottom navigation bar widget
-import 'package:dressify_app/widgets/custom_button_2.dart'; // Import custom button 2 (if needed for additional actions)
-import 'package:dressify_app/widgets/custom_button_3.dart'; // Import custom button 3 (if needed for actions)
 import 'package:dressify_app/widgets/item_container.dart'; // Import custom item container for outfit items
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts for text styling
 
 // NOTE: I DO NOT THINK WE NEED THE NAME YOUR OUTFIT FIELD HERE BECAUSE WE WILL ONLY NAME IT WHEN
 // WE SAVE IT TO FAVORITES. IN WHICH CASE-- WHEN THE HEART IS TAPPED, WE CAN BRING A POP-UP FIELD

@@ -1,13 +1,9 @@
 
-import 'package:dressify_app/screens/add_item_screen.dart';
-import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:dressify_app/screens/landing_screen.dart'; 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'firebase_options.dart';
-import 'package:dressify_app/screens/closet_items_screen.dart';
+
 
 // Import the pages you want to see in the app here. home will throw an error if the page is not imported here.
 

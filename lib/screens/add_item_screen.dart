@@ -1,11 +1,9 @@
 import 'package:dressify_app/constants.dart'; // Import constants for text styles and colors
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar
-import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // Import custom bottom navigation bar
-import 'package:dressify_app/widgets/custom_button.dart'; // Import reusable custom button
 import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button with active/inactive state
 import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 /// AddItemScreen - Allows the user to add a new clothing item to their closet.
 class AddItemScreen extends StatefulWidget {
