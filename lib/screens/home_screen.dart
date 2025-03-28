@@ -1,5 +1,6 @@
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/screens/add_item_screen.dart';
+import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
@@ -138,8 +139,12 @@ class HomeScreen extends StatelessWidget {
                   CustomButton2(
                     text: 'CREATE OUTFIT',
                     onPressed: () {
-                    
-                      // TODO: Implement button functionality after the create outfit page is complete
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateOutfitScreen(),
+                        ),
+                      );
                     },
                   ),
                   CustomButton2(

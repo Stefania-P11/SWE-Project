@@ -115,35 +115,37 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
               ),
             ),
 
-            SizedBox(height: screenHeight * 0.03),
-
-            // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  iconSize: screenWidth * 0.1,
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.black,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextField(
+                maxLength: 15,
+                decoration: const InputDecoration(
+                  hintText: "Add a name for your outfit",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(12.0), // Adjust radius here
+                    ),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
-
-                    // TODO: Add favorite logic here
-                  },
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(12.0),
+                    ),
+                    borderSide: BorderSide(
+                      color: Colors.black, // Border color when not focused
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(12.0),
+                    ),
+                    
+                  ),
                 ),
-                IconButton(
-                  iconSize: screenWidth * 0.1,
-                  icon: const Icon(Icons.autorenew),
-                  onPressed: () {
-                    // TODO: Add regenerate logic here
-                  },
-                ),
-              ],
+              ),
             ),
+
+            SizedBox(height: screenHeight * 0.03),
           ],
         ),
       ),
