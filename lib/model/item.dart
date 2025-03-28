@@ -9,6 +9,9 @@ class Item{
   late final String url;
   late final String weather;
   static List<Item> itemList = [];
+  static int topCount = 0;
+  static int bottomCount = 0;
+  static int shoeCount = 0;
   Item({required this.category, required this.color, required this.id, required this.label, required this.timesWorn, required this.url, required this.weather});
 
   factory Item.fromFirestore(DocumentSnapshot doc) {
@@ -39,5 +42,16 @@ class Item{
     FirebaseFirestore db = FirebaseFirestore.instance;  
     QuerySnapshot querySnapshot = await db.collection('users').doc(username).collection("Clothes").get();
     itemList = querySnapshot.docs.map((doc) => Item.fromFirestore(doc)).toList();
+  }
+  static Future<void> countItemsPerCategory() async{
+    for(Item x in itemList){
+      if(x.category == 'Top'){
+        Item.topCount++;
+      }else if(x.category == 'Bottom'){
+        Item.bottomCount++;
+      }else if(x.category == 'Shoes'){
+        Item.shoeCount++;
+      }
+    }
   }
 }
