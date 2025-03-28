@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Fetch item counts for different categories
     Map<String, int> itemCounts =
-        await itemService.fetchAndCountItems('dummy'); // Replace 'dummy' with actual username
+        await itemService.fetchAndCountItems(kUsername); 
 
     // Update state with the fetched item counts and stop loading indicator
     setState(() {

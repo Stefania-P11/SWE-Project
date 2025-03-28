@@ -40,7 +40,7 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
     // Fetch items using the service and filter by category
     final items = await _itemService.fetchItemsByCategory(
       widget.category,
-      'dummy', // Replace 'dummy' with the actual username you want to use
+      kUsername, 
     );
 
     setState(() {

@@ -38,7 +38,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
   /// Fetches items from Firebase Firestore and updates the item list
   Future<void> _loadItems() async {
     try {
-      await Item.fetchItems('dummy'); // Fetch items using a placeholder username (replace with real username later)
+      await Item.fetchItems(kUsername); // Fetch items using a placeholder username (replace with real username later)
       setState(() {
         _items = Item.itemList; // Populate the item list with fetched data
         _isLoading = false; // Hide loading indicator after fetching
