@@ -19,9 +19,9 @@ class Item{
     return Item(
       category : data['category'] ?? '',
       color : data['color'] ?? '',
-      id : (data['id'] ?? 0).toInteger(),
+      id : (data['id'] ?? 0),
       label : data['label'] ?? '',
-      timesWorn : (data['timesWorn'] ?? 0).toInteger(),
+      timesWorn : (data['timesWorn'] ?? 0),
       url : data['url'] ?? '',
       weather : data['weather'] ?? '',
     );

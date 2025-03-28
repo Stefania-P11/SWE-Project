@@ -7,6 +7,7 @@
 //3) Bottom Navigation Bar -- which I have already added in.
 
 import 'package:dressify_app/constants.dart'; // this allows us to use the constants defined in lib/constants.dart
+import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/screens/add_item_screen.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // this allows us to use the custom app bar defined in lib/widgets/custom_app_bar.dart
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // this allows us to use the custom bottom navigation bar defined in lib/widgets/custom_bottom_navbar.dart
@@ -23,8 +24,46 @@ class ClosetItemsScreen extends StatefulWidget {
 
 class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
   String selectedFilter = 'All';
-  final filters = ['All', 'Tops', 'Bottoms', 'Shoes'];
+  final filters = ['All', 'Top', 'Bottom', 'Shoes'];
+  
+  final Map<String, String> filterLabels = {
+  'All': 'All',
+  'Top': 'Tops',      // Firebase category "Top" -> Show "Tops"
+  'Bottom': 'Bottoms', // Firebase category "bottom" -> Show "Bottoms"
+  'Shoes': 'Shoes',
+};
+  List<Item> _items = [];
+  bool _isLoading = true;
 
+    @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    try {
+      await Item.fetchItems('dummy'); 
+      setState(() {
+        _items = Item.itemList;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading items: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Item> getFilteredItems() {
+    if (selectedFilter == 'All') {
+      return _items;
+    } else {
+      return _items.where((item) => item.category == selectedFilter).toList();
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -71,30 +110,49 @@ Row(
                 SizedBox(height: screenHeight * 0.015),
 
                 // Scrollable Grid
-                Expanded(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: 6, // placeholder item count
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 3 / 4,
-                    ),
-                    itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.black12),
+              Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _items.isEmpty
+                      ? const Center(child: Text('No items in your wardrobe.'))
+                      : GridView.builder(
+                          padding: const EdgeInsets.only(bottom: 80),
+                          itemCount: getFilteredItems().length,
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 3 / 4,
+                          ),
+                          itemBuilder: (context, index) {
+                            final item = getFilteredItems()[index];
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.black12),
+                              ),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        item.url,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(item.label, style: kH3),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        child: const Center(
-                          child: Icon(Icons.image, size: 40, color: Colors.black26),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+            ),
+          
+        
+      
 
                 // Filter Buttons (always at bottom)
                 SizedBox(height: screenHeight * 0.015),
@@ -121,7 +179,7 @@ Row(
                               border: Border.all(color: Colors.black),
                             ),
                             child: Text(
-                              filter,
+                              filterLabels[filter] ?? filter,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: isSelected ? Colors.white : Colors.black,
