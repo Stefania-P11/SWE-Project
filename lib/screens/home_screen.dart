@@ -9,6 +9,10 @@ import 'package:dressify_app/widgets/item_count_display_column.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:dressify_app/services/location.dart'; 
+import 'package:geocoding/geocoding.dart';
+
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -27,12 +31,48 @@ class _HomeScreenState extends State<HomeScreen> {
   int bottomCount = 0;
   int shoeCount = 0;
 
+  //location name
+  String locationName = 'Getting location name...';
+
   @override
   void initState() {
     super.initState();
     // Fetch item data and count when the screen initializes
     fetchData();
+    getUserLocation();
   }
+
+  Future<void> getUserLocation() async {
+    try {
+      Position position = await determinePosition();
+      List<Placemark> cordinate = await placemarkFromCoordinates(position.latitude,position.longitude,);
+
+      if (cordinate.isNotEmpty) {
+        Placemark address =  cordinate[0];
+
+        if (address.locality != null) {
+          setState(() {
+            locationName =  address.locality!;
+          });
+          print("Location: $locationName");
+        } else {
+          setState(() {
+            locationName = 'Location is unknown';
+          });
+        }
+    } else {
+      setState(() {
+        locationName = 'Location is unknown';
+      });
+    }
+  } catch (e) {
+    setState(() {
+      locationName = 'Location is not available ';
+    });
+    }
+  }
+
+
 
   /// Fetch item data and count items by category using ItemService
   Future<void> fetchData() async {
@@ -81,7 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 // Location name
                 Text(
-                  'Fairfax', // TODO: Pull actual location data dynamically
+                  // TODO: Pull actual location data dynamically
+                  locationName,
                   textAlign: TextAlign.center,
                   style: kBodyMedium,
                 ),
