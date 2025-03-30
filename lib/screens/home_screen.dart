@@ -1,157 +1,164 @@
 import 'package:dressify_app/constants.dart';
-import 'package:dressify_app/screens/add_item_screen.dart';
+import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
+import 'package:dressify_app/services/item_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
+import 'package:dressify_app/widgets/item_count_display_column.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dressify_app/widgets/vertical_divider.dart';
 
-class HomeScreen extends StatelessWidget {
+/// HomeScreen - Displays weather, wardrobe insights, and action buttons
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Flag to indicate if data is still loading
+  bool isLoading = true;
+
+  // Counters for items in the wardrobe
+  int topCount = 0;
+  int bottomCount = 0;
+  int shoeCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch item data and count when the screen initializes
+    fetchData();
+  }
+
+  /// Fetch item data and count items by category using ItemService
+  Future<void> fetchData() async {
+    // Create an instance of ItemService to fetch and count items
+    ItemService itemService = ItemService();
+
+    // Fetch item counts for different categories
+    Map<String, int> itemCounts =
+        await itemService.fetchAndCountItems(kUsername); 
+
+    // Update state with the fetched item counts and stop loading indicator
+    setState(() {
+      topCount = itemCounts['topCount'] ?? 0;
+      bottomCount = itemCounts['bottomCount'] ?? 0;
+      shoeCount = itemCounts['shoeCount'] ?? 0;
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions to adjust layout dynamically
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      // Background color for the entire screen
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
 
-      //App Bar
+      // Custom App Bar at the top
       appBar: CustomAppBar(),
 
-      // Body
+      // Main body of the screen
       body: Container(
         padding: EdgeInsets.only(top: screenHeight * 0.06),
         child: Column(
-          spacing: screenHeight * 0.02,
+          spacing: screenHeight * 0.02, // Vertical spacing between widgets
           children: [
-            //Weather
+            // Weather information section
             Column(
-              spacing: 0,
+              spacing: 0, // No spacing between widgets
               children: [
-                //Condition
+                // Weather condition icon
                 Image.asset(
                   'lib/assets/icons/fluent_weather-hail-day-24-regular.png',
                 ),
-                //Location
+                // Location name
                 Text(
-                  'Fairfax', // TODO: Pull actual location data
+                  'Fairfax', // TODO: Pull actual location data dynamically
                   textAlign: TextAlign.center,
                   style: kBodyMedium,
                 ),
-                //Temperature
+                // Current temperature
                 Text(
-                  '54°F', // TODO: Pull actual weather data
+                  '54°F', // TODO: Pull actual weather data dynamically
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
+                // Temperature range (min/max)
                 Text(
-                  '37° - 64°', // TODO: Pull actual weather data. I am also not sure what the range represents--maybe we don't need this
+                  '37° - 64°', // TODO: Pull actual weather data dynamically
                   style: kBodyMedium,
                 ),
               ],
             ),
 
-            // Insights
+            // Wardrobe Insights section
             Column(
-              spacing: screenHeight * 0.012,
+              spacing: screenHeight * 0.012, // Space between widgets
               children: [
+                // Section title
                 Text('Insight your wardrobe',
                     textAlign: TextAlign.center, style: kH3),
+                // Container to hold item count display
                 Container(
                   padding: EdgeInsets.all(screenWidth * 0.05),
-                  child: Row(
-                    spacing: screenWidth * 0.05,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            '45', // TODO: pull actual data from database
-                            textAlign: TextAlign.center,
-                            style: kH3,
-                          ),
-                          Text(
-                            'Tops',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.playfairDisplay(textStyle: kH3),
-                          )
-                        ],
-                      ),
-                      Container(
-                        width: screenWidth * 0.005,
-                        height: screenHeight * 0.12,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF302D30),
+                  // Show CircularProgressIndicator while data is loading
+                  child: isLoading
+                      ? const Center(
+                          child:
+                              CircularProgressIndicator(), // Show loader while fetching data
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Display item count for Tops
+                            BuildCountColumn('Tops', topCount, kH3),
+                            // Vertical divider between items
+                            BuildDivider(screenWidth, screenHeight),
+                            // Display item count for Bottoms
+                            BuildCountColumn('Bottoms', bottomCount, kH3),
+                            // Vertical divider between items
+                            BuildDivider(screenWidth, screenHeight),
+                            // Display item count for Shoes
+                            BuildCountColumn('Shoes', shoeCount, kH3),
+                          ],
                         ),
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '23', // TODO: Pull actual data from database
-                            textAlign: TextAlign.center,
-                            style: kH2,
-                          ),
-                          Text(
-                            'Bottoms',
-                            textAlign: TextAlign.center,
-                            style: kH3,
-                          ),
-                        ],
-                      ),
-                      Container(
-                        width: screenWidth * 0.005,
-                        height: screenHeight * 0.12,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF302D30),
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '12', // TODO: Pull actual data from database
-                            textAlign: TextAlign.center,
-                            style: kH2,
-                          ),
-                          Text(
-                            'Shoes',
-                            textAlign: TextAlign.center,
-                            style: kH3,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
 
-            // Buttons
+            // Button Section - Action buttons
             Container(
-              // padding: EdgeInsets.all(20),
               child: Column(
-                spacing: screenHeight * 0.01,
+                spacing: screenHeight * 0.01, // Space between buttons
                 children: [
+                  // Button to navigate to Create Outfit screen
                   CustomButton2(
                     text: 'CREATE OUTFIT',
                     onPressed: () {
-                    
-                      // TODO: Implement button functionality after the create outfit page is complete
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateOutfitScreen(),
+                        ),
+                      );
                     },
                   ),
+                  // Button to play it safe - show favorite outfit
                   CustomButton2(
                     text: 'PLAY IT SAFE',
                     onPressed: () {
-                      // TODO: before navigating we need to select an outfit from favorites, retrieve each item's ID
-                      // and pass them to the OutfitSuggestionScreen so the images can be displayed
-                      // The OutfitSuggestionScreen will be modidfied to maybe take 3 parameters: topId, bottomID and shoeID
+                      // TODO: Select an outfit from favorites and pass item IDs to OutfitSuggestionScreen
+                      // OutfitSuggestionScreen will need to take 3 parameters: topId, bottomId, and shoeId
 
-                      // TODO: When we navigate to the display outfit screen by clicking this button-- we should not see the option to add an outfit to favorites
-                      // as the item is already pulled from the user's favorite outfits. We will need to modify the DisplayOutfitScreen to take a boolean argument
-                      // that will determine whether the favorite button is displayed or not.
+                      // TODO: Modify DisplayOutfitScreen to take a boolean parameter that determines
+                      // whether the favorite button is displayed or not (since this is a favorite outfit)
                       Navigator.push(
                         context,
                         PageRouteBuilder(
@@ -164,10 +171,12 @@ class HomeScreen extends StatelessWidget {
                       );
                     },
                   ),
+                  // Button to generate a random outfit
                   CustomButton2(
-                    // TODO: Implement AI feature and retrieve the ID's of the outfit components to pass to OutfitSuggestionScreen.
                     text: 'SURPRISE ME',
                     onPressed: () {
+                      // TODO: Implement AI feature to generate random outfits
+                      // Retrieve the ID's of the outfit components and pass to OutfitSuggestionScreen
                       Navigator.push(
                         context,
                         PageRouteBuilder(
@@ -187,6 +196,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
+      // Bottom Navigation Bar
       bottomNavigationBar: const CustomNavBar(),
     );
   }

@@ -1,25 +1,11 @@
-// This screen will allow the user to add a new clothing item to their closet
-// It will consist of:
-//1) App Bar -- which I already added in.
-//2) Body-- which will contain 6 elements: 1) "Add New Item" text (use one of the styles defined in the constants.dart (e.g kH1 or kH2)
-                                        // 2) Container that will display the clothing item once uploaded (do not worry about the functionality yet-- but
-                                        //    this containerwhen clicked will open a prompt asking the user if they want to upload an image from gallery or take a picture) To be done later on
-                                        // 2) A text input field for the item name (this will take maximum 15 characters including whitespaces and will have a hint text: "Name your item")
-                                              // -- the text input should have a label "Name" displayed above it.
-                                        // 3) Category selection buttons that will allow the user to select the category the item should be added in (do not worry about the functionality-- just add the buttons)
-                                        // 4) Temperature selection buttons that will allow the user to select the appropriate temperature for their item (can choose more than one; the 4 options are: hot, warm, cool and cold)
-                                        // 5) A row containing 2 buttons: "Save" and "Cancel" (you can reuse the custom_button widget inside the widget folder)
-//3) Bottom Navigation Bar -- which I have already added in.
-
-import 'package:dressify_app/constants.dart'; // this allows us to use the constants defined in lib/constants.dart
-import 'package:dressify_app/widgets/custom_app_bar.dart'; // this allows us to use the custom app bar defined in lib/widgets/custom_app_bar.dart
-import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // this allows us to use the custom bottom navigation bar defined in lib/widgets/custom_bottom_navbar.dart
-import 'package:dressify_app/widgets/custom_button.dart';
-import 'package:dressify_app/widgets/custom_button_3.dart';
+import 'package:dressify_app/constants.dart'; // Import constants for text styles and colors
+import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar
+import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button with active/inactive state
+import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 
+/// AddItemScreen - Allows the user to add a new clothing item to their closet.
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
 
@@ -28,59 +14,81 @@ class AddItemScreen extends StatefulWidget {
 }
 
 class _AddItemScreenState extends State<AddItemScreen> {
+  // Controller to manage input for item name
   final TextEditingController _nameController = TextEditingController();
+
+  // Selected category and list of available categories
   String selectedCategory = '';
   List<String> categories = ['Tops', 'Bottoms', 'Shoes'];
+
+  // Selected temperatures and list of available temperature options
   List<String> selectedTemperatures = [];
   List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
-  
-  @override // override to use setState()
-  void initState() {
-    super.initState();
-    _nameController.addListener(() {
-      setState(() {}); // rebuild when name input changes
+
+  // Path to the selected image (if any)
+  String? _imagePath;
+
+  /// Method to update the selected image path
+  void _updateImage(String? imagePath) {
+    setState(() {
+      _imagePath = imagePath;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions to ensure responsive design
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
-      appBar: CustomAppBar(showBackButton: true,),
+
+      // Custom App Bar with a back button enabled
+      appBar: CustomAppBar(
+        showBackButton: true,
+      ),
+
+      // Body of the Add Item Screen
       body: Column(
         children: [
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: SingleChildScrollView( // Add scroll if content is still too large
+              child: SingleChildScrollView(
+                // Allows scrolling if the content overflows
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Add spacing at the top
                     SizedBox(height: screenHeight * 0.02),
-                    Text("Adding New Item", style: kH2,),
+
+                    // "Adding New Item" heading
+                    Text(
+                      "Adding New Item",
+                      style: kH2,
+                    ),
+
+                    // Add spacing below the heading
                     SizedBox(height: screenHeight * 0.02),
-                    GestureDetector(
-                      onTap: () {
-                        // Placeholder for image upload functionality
-                      },
-                      child: Center(
-                        child: Container(
-                          width: screenWidth * 0.75,
-                          height: screenHeight * 0.3,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black45),
-                          ),
-                          child: const Center(child: Icon(Icons.camera_alt, size: 50, color: Colors.black45)),
-                        ),
+
+                    // Image Picker container that opens a prompt for choosing from camera/gallery
+                    Center(
+                      child: ImagePickerContainer(
+                        onImageSelected:
+                            _updateImage, // Pass method to update selected image
+                        initialImagePath:
+                            _imagePath, // Show previously selected image (if any)
                       ),
                     ),
+
+                    // Add spacing below image picker
                     SizedBox(height: screenHeight * 0.01),
+
+                    // Label for name input
                     Text("Name", style: kH2),
+
+                    // TextField for entering item name (max length: 15 characters)
                     TextField(
                       controller: _nameController,
                       maxLength: 15,
@@ -89,120 +97,159 @@ class _AddItemScreenState extends State<AddItemScreen> {
                         border: OutlineInputBorder(),
                       ),
                     ),
+
+                    // Add spacing below name input
                     SizedBox(height: screenHeight * 0.01),
+
+                    // Label for category selection
                     Text("Category", style: kH2),
+
+                    // Wrap to display category selection buttons horizontally
                     Wrap(
-                      spacing: 6,
-                      children: categories.map((category) => IntrinsicWidth(
-                        child: ChoiceChip(
-                          label: Center(
-                            child: Text(
-                              category,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500, 
-                                color: selectedCategory == category ? Colors.white : Colors.black,
+                      spacing: 6, // Space between buttons
+                      children: categories
+                          .map(
+                            (category) => IntrinsicWidth(
+                              child: ChoiceChip(
+                                label: Center(
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: selectedCategory == category
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                selected: selectedCategory == category,
+                                onSelected: (selected) {
+                                  setState(() => selectedCategory = category);
+                                },
+                                selectedColor: Colors.black,
+                                backgroundColor: Colors.white,
+                                showCheckmark:
+                                    false, // Prevents the checkmark from appearing
+                                visualDensity:
+                                    VisualDensity.compact, // Consistent height
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                             ),
-                          ),
-                          selected: selectedCategory == category,
-                          onSelected: (selected) {
-                            setState(() => selectedCategory = category);
-                          },
-                          selectedColor: Colors.black,
-                          backgroundColor: Colors.white,
-                          showCheckmark: false, // Prevents the checkmark from appearing
-                          visualDensity: VisualDensity.compact, // Ensures consistent height
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Consistent padding
-                        ),
-                      )).toList(),
+                          )
+                          .toList(),
                     ),
+
+                    // Add spacing below category buttons
                     SizedBox(height: screenHeight * 0.01),
+
+                    // Label for temperature selection
                     Text("Temperature", style: kH2),
+
+                    // Wrap to display temperature selection buttons horizontally
                     Wrap(
-                      spacing: 6,
-                      children: temperatures.map((temp) => IntrinsicWidth(
-                        child: ChoiceChip(
-                          label: Center(
-                            child: Text(
-                              temp,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500, // Keep consistent weight
-                                color: selectedTemperatures.contains(temp) ? Colors.white : Colors.black,
+                      spacing: 6, // Space between buttons
+                      children: temperatures
+                          .map(
+                            (temp) => IntrinsicWidth(
+                              child: ChoiceChip(
+                                label: Center(
+                                  child: Text(
+                                    temp,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color:
+                                          selectedTemperatures.contains(temp)
+                                              ? Colors.white
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                selected:
+                                    selectedTemperatures.contains(temp), // Check if selected
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedTemperatures.add(temp);
+                                    } else {
+                                      selectedTemperatures.remove(temp);
+                                    }
+                                  });
+                                },
+                                selectedColor: Colors.black,
+                                backgroundColor: Colors.white,
+                                showCheckmark: false,
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                             ),
-                          ),
-                          selected: selectedTemperatures.contains(temp),
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedTemperatures.add(temp);
-                              } else {
-                                selectedTemperatures.remove(temp);
-                              }
-                            });
-                          },
-                          selectedColor: Colors.black,
-                          backgroundColor: Colors.white,
-                          showCheckmark: false, // Prevents the checkmark from appearing
-                          visualDensity: VisualDensity.compact, // Ensures consistent height
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Consistent padding
-                        ),
-                      )).toList(),
+                          )
+                          .toList(),
                     ),
+
+                    // Add spacing before Save and Cancel buttons
                     SizedBox(height: screenHeight * 0.03),
+
+                    // Row for Save and Cancel buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+                      children: [
+                        // Save Button
+                        CustomButton3(
+                          // Button is active only if all required fields are filled
+                          isActive: selectedCategory.isNotEmpty &&
+                              selectedTemperatures.isNotEmpty &&
+                              _nameController.text.isNotEmpty &&
+                              _imagePath != null,
 
-              CustomButton3(
-                // THIS WIDGET HAS AN ACTIVE AND INACTIVE STATE NOW
-                // Default is : isActive: true
-                // We start with the button as isActive: false.Once all conditions are met (all inputs are provided, you want to set isActive: true)
-                // This will only allow the user to save an item that has all the required attributes entered
-                // This widget is defined in lib/widgets/custom_button_3.dart
-                isActive: _nameController.text.isNotEmpty && selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty, // Button only active when all are selected
-                
-                // TODO: Once we write the functionality that allows users to upload an image, we must also check that an image was successfully uploaded
-                //       as we cannot write to the DB unless we have all the required attributes: image url, label, category and weather suitability.
-                
-                label: "SAVE",
-                onPressed: (selectedCategory.isNotEmpty && selectedTemperatures.isNotEmpty) 
-                  ? () {
-                      // Save functionality here
-                      print("Item Saved!");
-                    }
-                  : () {}, // If inactive, do nothing
+                          label: "SAVE",
+                          onPressed: (selectedCategory.isNotEmpty &&
+                                  selectedTemperatures.isNotEmpty &&
+                                  _nameController.text.isNotEmpty &&
+                                  _imagePath != null)
+                              ? () {
+                                  // Logic to save the item when all attributes are filled
+                                  print("Item Saved!");
+                                }
+                              : () {}, // If button is inactive, do nothing
+                        ),
 
-                //isActive: false,
-                //label: "SAVE",
-                //onPressed: () {}, // Keep logic for enabling/disabling here
-              ),
-              
-              CustomButton3( 
-                label: "CANCEL",
-                onPressed: () {
-                  setState(() {
-                    _nameController.clear();
-                    selectedCategory = ''; // Unselect category
-                    selectedTemperatures.clear(); // Clear all selected temperatures
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-            SizedBox(height: screenHeight * 0.1),
+                        // Cancel Button
+                        CustomButton3(
+                          label: "CANCEL",
+                          onPressed: () {
+                            setState(() {
+                              // Reset all input fields and selections
+                              _nameController.clear(); // Clear name field
+                              selectedCategory = ''; // Clear category selection
+                              selectedTemperatures
+                                  .clear(); // Clear temperature selection
+                            });
+
+                            // Return to the previous screen
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+
+                    // Add extra space below buttons
+                    SizedBox(height: screenHeight * 0.1),
                   ],
-                  
                 ),
               ),
             ),
           ),
-          
         ],
       ),
-      // bottomNavigationBar: const CustomNavBar(), HID THIS TO SAVE SCREEN SPACE
+
+      // Bottom navigation bar is hidden to save screen space
+      // bottomNavigationBar: const CustomNavBar(),
     );
   }
 }
-
