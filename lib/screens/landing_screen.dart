@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// LandingScreen - The initial screen that welcomes the user
 /// Displays the app logo, title, and buttons for 'Create Account' and 'Log in'
@@ -47,8 +48,8 @@ class LandingScreen extends StatelessWidget {
                   ),
                 ),
                 // Logo image (Logo_Mark.png) centered in the oval
-                Image.asset(
-                  'lib/assets/images/Logo_Mark.png',
+                SvgPicture.asset(
+                  'lib/assets/images/Logo_Mark.svg',
                   width: screenWidth * 0.4, // Logo width is 40% of screen width
                 ),
               ],
@@ -59,8 +60,8 @@ class LandingScreen extends StatelessWidget {
           Positioned(
             top: screenHeight * 0.55, // Position 55% from the top
             left: screenWidth * 0.08, // Position 8% from the left
-            child: Image.asset(
-              "lib/assets/images/Logo_Type.png",
+            child: SvgPicture.asset(
+              "lib/assets/images/Logo_Type.svg",
               width: screenWidth * 0.85, // Logo width is 85% of screen width
             ),
           ),

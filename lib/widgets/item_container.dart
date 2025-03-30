@@ -1,5 +1,6 @@
 import 'package:dressify_app/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 Widget outfitItem(String label, double screenWidth, {VoidCallback? onTap, String? imageUrl}) {
   Widget item = Stack(
@@ -13,15 +14,15 @@ Widget outfitItem(String label, double screenWidth, {VoidCallback? onTap, String
                 width: screenWidth * 0.52,
                 height: screenWidth * 0.52,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Image.asset(
-                  "lib/assets/images/item-image.png", // Fallback image
+                errorBuilder: (context, error, stackTrace) => SvgPicture.asset(
+                  "lib/assets/images/item-image.svg", // Fallback image
                   width: screenWidth * 0.52,
                   height: screenWidth * 0.52,
                   fit: BoxFit.cover,
                 ),
               )
-            : Image.asset(
-                "lib/assets/images/item-image.png", // Default asset if no image URL
+            : SvgPicture.asset(
+                "lib/assets/images/item-image.svg", // Default asset if no image URL
                 width: screenWidth * 0.52,
                 height: screenWidth * 0.52,
                 fit: BoxFit.cover,

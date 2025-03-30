@@ -28,11 +28,35 @@ class _AddItemScreenState extends State<AddItemScreen> {
   // Path to the selected image (if any)
   String? _imagePath;
 
+  @override//override initState to use setState
+  void initState() {
+    super.initState();
+
+    // Add a listener to update the UI when the name field changes
+    _nameController.addListener(_updateButtonState);
+  }
+
+  /// Updates the UI to reflect changes in name input
+  void _updateButtonState() {
+    setState(() {});
+  }
+
+
+  /*
+  @override//override dispose for cleaning up thr resurce to make the app run smoothier
+  void dispose() {
+    _nameController.removeListener(_updateButtonState);
+    _nameController.dispose();
+    super.dispose();
+  }
+  */
+
   /// Method to update the selected image path
   void _updateImage(String? imagePath) {
     setState(() {
       _imagePath = imagePath;
     });
+    setState(() {}); // This will re-evaluate the isActive condition
   }
 
   @override
@@ -229,6 +253,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                               selectedCategory = ''; // Clear category selection
                               selectedTemperatures
                                   .clear(); // Clear temperature selection
+                              _imagePath = null;//clear the image path
                             });
 
                             // Return to the previous screen

@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   
   final bool showBackButton;
@@ -20,7 +22,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: kBackgroundColor,
-      title: Image.asset("lib/assets/icons/header_logo_type.png"),
+      title: SvgPicture.asset("lib/assets/icons/Logo_type.svg"),
       leading: showBackButton
           ? IconButton(
               icon: const Icon(Icons.chevron_left, color: Colors.black, size: 40),
@@ -28,14 +30,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Image.asset('lib/assets/icons/menu.png'),
+              child: SvgPicture.asset('lib/assets/icons/menu.svg'),
             ),
       actions: [
         IconButton(
           onPressed: () {
             // TODO: Handle profile navigation
           },
-          icon: Image.asset('lib/assets/icons/account.png'),
+          icon: SvgPicture.asset('lib/assets/icons/account.svg'),
         ),
       ],
       bottom: PreferredSize(
