@@ -9,6 +9,7 @@ import 'package:dressify_app/widgets/item_count_display_column.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -76,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
               spacing: 0, // No spacing between widgets
               children: [
                 // Weather condition icon
-                Image.asset(
-                  'lib/assets/icons/fluent_weather-hail-day-24-regular.png',
+                SvgPicture.asset(
+                  'lib/assets/icons/fluent_weather-hail-day-24-regular.svg',
                 ),
                 // Location name
                 Text(
