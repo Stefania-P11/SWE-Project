@@ -4,13 +4,13 @@ import 'package:dressify_app/constants.dart';
 // Item class to model clothing items
 class Item {
   // Properties to store item details
-  late final String category;   // Category of the item (e.g., Top, Bottom, Shoes)
-  late final String color;      // Color of the item
+  late  String category;   // Category of the item (e.g., Top, Bottom, Shoes)
+  late  String color;      // Color of the item
   late final int id;            // Unique ID for the item
-  late final String label;      // Label or name of the item
+  late  String label;      // Label or name of the item
   int timesWorn;                // Number of times the item has been worn
   late final String url;        // URL for the item's image
-  late final String weather;    // Weather conditions suited for the item
+  late List<String> weather;    // Weather conditions suited for the item
 
   // Static list to store fetched items
   static List<Item> itemList = [];
@@ -35,7 +35,11 @@ class Item {
   factory Item.fromFirestore(DocumentSnapshot doc) {
     // Map Firestore document data to a Map
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
+    List<String> weatherList = [];
+    List.from(data['weather']).forEach((element){
+      String weatherCategory = element;
+      weatherList.add(weatherCategory);
+    });
     // Create and return an Item with data from Firestore
     return Item(
       category: data['category'],   // Assign category from Firestore
@@ -44,15 +48,7 @@ class Item {
       label: data['label'],         // Assign label from Firestore
       timesWorn: data['timesWorn'], // Assign times worn from Firestore
       url: data['url'],             // Assign URL from Firestore
-
-      // Handle weather field which can be either a string or a list
-      weather: data['weather'] is String
-          ? data['weather'] // If it's a String, assign directly
-          : (data['weather'] is List<dynamic> 
-              ? (data['weather'] as List<dynamic>).join(', ') // Join list items into a string
-              : ''), // If neither, assign an empty string
-              // NOTE: we might need to add some checks here  because all attributes are required
-              // so weather cannot be the empty string. Using it for now to avoid errors.
+      weather: weatherList
     );
   }
 
