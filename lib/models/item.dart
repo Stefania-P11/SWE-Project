@@ -4,10 +4,9 @@ import 'package:dressify_app/constants.dart';
 // Item class to model clothing items
 class Item {
   // Properties to store item details
-  late  String category;   // Category of the item (e.g., Top, Bottom, Shoes)
-  late  String color;      // Color of the item
+  late  String category;        // Category of the item (e.g., Top, Bottom, Shoes)
   late final int id;            // Unique ID for the item
-  late  String label;      // Label or name of the item
+  late  String label;           // Label or name of the item
   int timesWorn;                // Number of times the item has been worn
   late final String url;        // URL for the item's image
   late List<String> weather;    // Weather conditions suited for the item
@@ -23,7 +22,6 @@ class Item {
   // Constructor to initialize an Item
   Item({
     required this.category,
-    required this.color,
     required this.id,
     required this.label,
     required this.timesWorn,
@@ -43,12 +41,11 @@ class Item {
     // Create and return an Item with data from Firestore
     return Item(
       category: data['category'],   // Assign category from Firestore
-      color: data['color'],         // Assign color from Firestore
       id: data['id'],               // Assign item ID from Firestore
       label: data['label'],         // Assign label from Firestore
       timesWorn: data['timesWorn'], // Assign times worn from Firestore
       url: data['url'],             // Assign URL from Firestore
-      weather: weatherList
+      weather: weatherList          // Assign weather array from Firestore
     );
   }
 
