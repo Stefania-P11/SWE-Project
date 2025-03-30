@@ -17,26 +17,16 @@ class Item{
   factory Item.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Item(
-      category : data['category'] ?? '',
-      color : data['color'] ?? '',
-      id : (data['id'] ?? 0),
-      label : data['label'] ?? '',
-      timesWorn : (data['timesWorn'] ?? 0),
-      url : data['url'] ?? '',
-      weather : data['weather'] ?? '',
-    );
-  }
 
-  Map<String, dynamic> toFirestore(){
-    return {
-      'category' : category,
-      'color' : color,
-      'id' : id,
-      "label" : label,
-      'timesWorn' : timesWorn,
-      'url' : url,
-      'weather' : weather
-    };
+      category : data['category'],
+      color : data['color'],
+      id : data['id'],
+      label : data['label'],
+      timesWorn : data['timesWorn'],
+      url : data['url'],
+      weather : data['weather'],
+
+    );
   }
   static Future<void> fetchItems(String username) async{
     FirebaseFirestore db = FirebaseFirestore.instance;  
