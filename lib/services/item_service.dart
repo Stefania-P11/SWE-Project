@@ -1,12 +1,13 @@
+import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/models/item.dart';
 
 /// A service that handles fetching items from Firestore.
 class ItemService {
   /// Fetch items from Firestore and filter them by category.
-  Future<List<Item>> fetchItemsByCategory(String category, String username) async {
+  Future<List<Item>> fetchItemsByCategory(String category, String kUsername) async {
     try {
       // Fetch items from Firestore
-      await Item.fetchItems(username); // Fetch all items
+      await Item.fetchItems(kUsername); // Fetch all items
 
       // Filter items by category
       return Item.itemList
@@ -19,10 +20,10 @@ class ItemService {
   }
 
   /// Fetch items and count them by category.
-  Future<Map<String, int>> fetchAndCountItems(String username) async {
+  Future<Map<String, int>> fetchAndCountItems(String KUsername) async {
     try {
       // Fetch items from Firestore
-      await Item.fetchItems(username);
+      await Item.fetchItems(kUsername);
       await Item.countItemsPerCategory();
 
       // Return item counts for different categories
