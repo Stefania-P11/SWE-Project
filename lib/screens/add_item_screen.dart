@@ -335,3 +335,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
     );
   }
 }
+
+
+//TODO: Fix the image display container-- some items appear cropped
