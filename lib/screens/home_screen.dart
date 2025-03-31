@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) =>
-                                  const OutfitSuggestionScreen(),
+                                  const OutfitSuggestionScreen(showFavorite: false,),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
