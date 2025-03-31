@@ -13,6 +13,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:dressify_app/services/location.dart'; 
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dressify_app/services/weather_service.dart';
+import 'package:weather/weather.dart';
 
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
@@ -34,13 +36,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //location name
   String locationName = 'Getting location name...';
-
+  
+  //Future<Weather> weather = await getTheWeather();
+  String currentTemp = 'default°F';
+  
+  Future<void> getUserWeather() async {
+	Weather weather = await getTheWeather();
+	double? temp = weather.temperature?.fahrenheit;
+	if (temp != null) {
+		currentTemp = temp.toString();
+	}
+	//currentTemp = weather.temperature?.fahrenheit.toString();
+  }
+  
   @override
   void initState() {
     super.initState();
     // Fetch item data and count when the screen initializes
     fetchData();
     getUserLocation();
+	getUserWeather();
   }
 
   Future<void> getUserLocation() async {
@@ -129,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 // Current temperature
                 Text(
-                  '54°F', // TODO: Pull actual weather data dynamically
+                  currentTemp, // TODO: Pull actual weather data dynamically
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
                 // Temperature range (min/max)
