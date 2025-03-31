@@ -4,6 +4,7 @@ import 'package:dressify_app/screens/favorites_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/insights_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomNavBar extends StatelessWidget {
   const CustomNavBar({super.key});
@@ -57,20 +58,20 @@ class CustomNavBar extends StatelessWidget {
           },
           items: [
             BottomNavigationBarItem(
-              icon: Image.asset("lib/assets/icons/heroicons_home.png"),
+              icon: SvgPicture.asset("lib/assets/icons/heroicons_home.svg"),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Image.asset("lib/assets/icons/solar_hanger-bold.png"),
+              icon: SvgPicture.asset("lib/assets/icons/solar_hanger-bold.svg"),
               label: 'Wardrobe',
             ),
             BottomNavigationBarItem(
-              icon: Image.asset("lib/assets/icons/solar_heart-outline.png"),
+              icon: SvgPicture.asset("lib/assets/icons/solar_heart-outline.svg"),
               label: 'Favorites',
             ),
             BottomNavigationBarItem(
-              icon: Image.asset(
-                "lib/assets/icons/material-symbols-light_search-insights-rounded.png",
+              icon: SvgPicture.asset(
+                "lib/assets/icons/material-symbols-light_search-insights-rounded.svg",
               ),
               label: 'Insights',
             ),
