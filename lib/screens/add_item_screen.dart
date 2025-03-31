@@ -1,13 +1,15 @@
 import 'package:dressify_app/constants.dart'; // Import constants for text styles and colors
-import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar
+import 'package:dressify_app/models/item.dart'; // Import Item model to populate and save item data
+import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar for navigation
 import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button with active/inactive state
 import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
 
-
-/// AddItemScreen - Allows the user to add a new clothing item to their closet.
+/// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
-  const AddItemScreen({super.key});
+  final Item? item; // If an item is passed, screen opens in view mode
+
+  const AddItemScreen({super.key, this.item});
 
   @override
   _AddItemScreenState createState() => _AddItemScreenState();
@@ -19,44 +21,82 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
   // Selected category and list of available categories
   String selectedCategory = '';
-  List<String> categories = ['Tops', 'Bottoms', 'Shoes'];
+  List<String> categories = ['Top', 'Bottom', 'Shoes'];
 
   // Selected temperatures and list of available temperature options
   List<String> selectedTemperatures = [];
   List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
 
-  // Path to the selected image (if any)
+  // Path to the selected image (if any) or URL from Firestore
   String? _imagePath;
 
-  @override//override initState to use setState
+  late bool isViewMode = true; // Start in view mode by default
+
+  @override
   void initState() {
     super.initState();
 
-    // Add a listener to update the UI when the name field changes
+    // Determine if the screen should be in view mode or edit mode
+    isViewMode = widget.item != null;
+
+    // Pre-populate fields if an item is passed for editing/viewing
+    if (widget.item != null) {
+      _nameController.text = widget.item!.label;
+
+      // Assign category if it matches one of the available options
+      if (categories.contains(widget.item!.category)) {
+        selectedCategory = widget.item!.category;
+      }
+
+      // Assign temperature preferences
+      selectedTemperatures = List<String>.from(widget.item!.weather);
+
+      // Load image URL from Firestore if available
+      _imagePath = widget.item!.url;
+    }
+
+    // Add a listener to update button state when text field changes
     _nameController.addListener(_updateButtonState);
   }
 
-  /// Updates the UI to reflect changes in name input
+  /// Handles saving or updating item details
+  /// TODO: Remove this once actual method is implemented in it's own file
+  void _handleSaveOrUpdate() {
+    if (widget.item == null) {
+      // New item being added
+      print("New Item:");
+    } else {
+      // Existing item being updated
+      print("Updating Item ID: ${widget.item!.id}");
+    }
+
+    // Log item details for debugging
+    print("Name: ${_nameController.text}");
+    print("Category: $selectedCategory");
+    print("Temperatures: $selectedTemperatures");
+    print("Image Path: $_imagePath");
+
+    // Return to previous screen after saving/updating
+    Navigator.pop(context);
+  }
+
+  /// Switches to Edit Mode when the edit icon is clicked
+  void _switchToEditMode() {
+    setState(() {
+      isViewMode = false; // Switch to edit mode
+    });
+  }
+
+  /// Updates the button state when the name input changes
   void _updateButtonState() {
     setState(() {});
   }
 
-
-  /*
-  @override//override dispose for cleaning up thr resurce to make the app run smoothier
-  void dispose() {
-    _nameController.removeListener(_updateButtonState);
-    _nameController.dispose();
-    super.dispose();
-  }
-  */
-
-  /// Method to update the selected image path
+  /// Updates the selected image path
   void _updateImage(String? imagePath) {
     setState(() {
-      _imagePath = imagePath;
+      _imagePath = imagePath; // Update the selected image path
     });
-    setState(() {}); // This will re-evaluate the isActive condition
   }
 
   @override
@@ -68,9 +108,11 @@ class _AddItemScreenState extends State<AddItemScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 239, 240, 240),
 
-      // Custom App Bar with a back button enabled
+      // Custom App Bar with back button and optional edit/delete icons
       appBar: CustomAppBar(
         showBackButton: true,
+        isViewMode: isViewMode,
+        onEditPressed: _switchToEditMode, // Pass callback to enable edit mode
       ),
 
       // Body of the Add Item Screen
@@ -87,22 +129,37 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     // Add spacing at the top
                     SizedBox(height: screenHeight * 0.02),
 
-                    // "Adding New Item" heading
-                    Text(
-                      "Adding New Item",
-                      style: kH2,
+                    // Show different titles based on mode
+                    SizedBox(
+                      child: !isViewMode
+                          ? (widget.item != null
+                              ? Text(
+                                  "Update Item", // Show this title when in edit mode
+                                  style: kH2,
+                                )
+                              : Text(
+                                  "Adding New Item", // Show this title when adding a new item
+                                  style: kH2,
+                                ))
+                          : Text(
+                              "Item Details", // Show this title when viewing an item
+                              style: kH2,
+                            ),
                     ),
 
-                    // Add spacing below the heading
+                    // Add spacing below the title
                     SizedBox(height: screenHeight * 0.02),
 
                     // Image Picker container that opens a prompt for choosing from camera/gallery
                     Center(
-                      child: ImagePickerContainer(
-                        onImageSelected:
-                            _updateImage, // Pass method to update selected image
-                        initialImagePath:
-                            _imagePath, // Show previously selected image (if any)
+                      child: GestureDetector(
+                        onTap: isViewMode
+                            ? null // Disable image selection in View Mode
+                            : () => _updateImage(_imagePath),
+                        child: ImagePickerContainer(
+                          onImageSelected: _updateImage,
+                          initialImagePath: _imagePath,
+                        ),
                       ),
                     ),
 
@@ -116,6 +173,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     TextField(
                       controller: _nameController,
                       maxLength: 15,
+                      enabled: !isViewMode, // Disable in View Mode
                       decoration: const InputDecoration(
                         hintText: "e.g. Old Navy Crewneck",
                         border: OutlineInputBorder(),
@@ -147,13 +205,16 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                   ),
                                 ),
                                 selected: selectedCategory == category,
-                                onSelected: (selected) {
-                                  setState(() => selectedCategory = category);
-                                },
+                                onSelected: isViewMode
+                                    ? null // Disable selection in view mode
+                                    : (selected) {
+                                        setState(
+                                            () => selectedCategory = category);
+                                      },
                                 selectedColor: Colors.black,
                                 backgroundColor: Colors.white,
                                 showCheckmark:
-                                    false, // Prevents the checkmark from appearing
+                                    false, // Prevent checkmark from appearing
                                 visualDensity:
                                     VisualDensity.compact, // Consistent height
                                 padding: EdgeInsets.symmetric(
@@ -184,24 +245,24 @@ class _AddItemScreenState extends State<AddItemScreen> {
                                     temp,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w500,
-                                      color:
-                                          selectedTemperatures.contains(temp)
-                                              ? Colors.white
-                                              : Colors.black,
+                                      color: selectedTemperatures.contains(temp)
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
                                   ),
                                 ),
-                                selected:
-                                    selectedTemperatures.contains(temp), // Check if selected
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      selectedTemperatures.add(temp);
-                                    } else {
-                                      selectedTemperatures.remove(temp);
-                                    }
-                                  });
-                                },
+                                selected: selectedTemperatures.contains(temp),
+                                onSelected: isViewMode
+                                    ? null // Disable selection in view mode
+                                    : (selected) {
+                                        setState(() {
+                                          if (selected) {
+                                            selectedTemperatures.add(temp);
+                                          } else {
+                                            selectedTemperatures.remove(temp);
+                                          }
+                                        });
+                                      },
                                 selectedColor: Colors.black,
                                 backgroundColor: Colors.white,
                                 showCheckmark: false,
@@ -219,48 +280,47 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     // Add spacing before Save and Cancel buttons
                     SizedBox(height: screenHeight * 0.03),
 
-                    // Row for Save and Cancel buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Save Button
-                        CustomButton3(
-                          // Button is active only if all required fields are filled
-                          isActive: selectedCategory.isNotEmpty &&
-                              selectedTemperatures.isNotEmpty &&
-                              _nameController.text.isNotEmpty &&
-                              _imagePath != null,
-
-                          label: "SAVE",
-                          onPressed: (selectedCategory.isNotEmpty &&
+                    // Show Save/Cancel buttons only in Edit Mode
+                    Visibility(
+                      visible: !isViewMode, // Hide buttons in View Mode
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Save Button
+                          CustomButton3(
+                            isActive: selectedCategory.isNotEmpty &&
+                                selectedTemperatures.isNotEmpty &&
+                                _nameController.text.isNotEmpty &&
+                                _imagePath != null,
+                            label: widget.item == null ? "SAVE" : "UPDATE",
+                            onPressed: () {
+                              if (selectedCategory.isNotEmpty &&
                                   selectedTemperatures.isNotEmpty &&
                                   _nameController.text.isNotEmpty &&
-                                  _imagePath != null)
-                              ? () {
-                                  // Logic to save the item when all attributes are filled
-                                  print("Item Saved!");
-                                }
-                              : () {}, // If button is inactive, do nothing
-                        ),
+                                  _imagePath != null) {
+                                _handleSaveOrUpdate(); // Save or update logic
+                              }
+                            },
+                          ),
+                          // Cancel Button
+                          CustomButton3(
+                            label: "CANCEL",
+                            onPressed: () {
+                              setState(() {
+                                _nameController.clear();
+                                selectedCategory =
+                                    ''; // Clear category selection
+                                selectedTemperatures
+                                    .clear(); // Clear temperature selection
+                                _imagePath = null; // Clear the image path
+                              });
 
-                        // Cancel Button
-                        CustomButton3(
-                          label: "CANCEL",
-                          onPressed: () {
-                            setState(() {
-                              // Reset all input fields and selections
-                              _nameController.clear(); // Clear name field
-                              selectedCategory = ''; // Clear category selection
-                              selectedTemperatures
-                                  .clear(); // Clear temperature selection
-                              _imagePath = null;//clear the image path
-                            });
-
-                            // Return to the previous screen
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
+                              // Return to the previous screen
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
 
                     // Add extra space below buttons
@@ -272,9 +332,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
           ),
         ],
       ),
-
-      // Bottom navigation bar is hidden to save screen space
-      // bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

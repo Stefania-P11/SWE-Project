@@ -36,6 +36,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
   }
 
   /// Fetches items from Firebase Firestore and updates the item list
+  /// TODO: Stefania move this to the proper file
   Future<void> _loadItems() async {
     try {
       await Item.fetchItems(kUsername); // Fetch items using a placeholder username (replace with real username later)
@@ -46,12 +47,13 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
     } catch (e) {
       print("Error loading items: $e"); // Handle any errors during item fetching
       setState(() {
-        _isLoading = false;
+        _isLoading = false; // Hide loading indicator if an error occurs
       });
     }
   }
 
   /// Filters items based on the selected category
+  /// TODO: Stefania move this to the proper file
   List<Item> getFilteredItems() {
     if (selectedFilter == 'All') {
       return _items; // Show all items if "All" is selected
@@ -93,7 +95,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                           context,
                           PageRouteBuilder(
                             pageBuilder: (context, animation, secondaryAnimation) =>
-                                const AddItemScreen(), // Navigate to AddItemScreen
+                                AddItemScreen(), // Navigate to AddItemScreen for adding a new item
                             transitionDuration: Duration.zero, // No transition animation
                             reverseTransitionDuration: Duration.zero,
                           ),
@@ -112,35 +114,53 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                       : _items.isEmpty
                           ? const Center(child: Text('No items in your wardrobe.')) // Show message if no items
                           : GridView.builder(
-                              padding: const EdgeInsets.only(bottom: 80),
-                              itemCount: getFilteredItems().length,
+                              padding: const EdgeInsets.only(bottom: 80), // Padding to avoid overlapping with nav bar
+                              itemCount: getFilteredItems().length, // Count of filtered items
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2, // 2 items per row
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 3 / 4,
+                                crossAxisSpacing: 12, // Horizontal spacing between items
+                                mainAxisSpacing: 12, // Vertical spacing between items
+                                childAspectRatio: 3 / 4, // Aspect ratio to control item size
                               ),
                               itemBuilder: (context, index) {
-                                final item = getFilteredItems()[index];
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.black12),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Expanded(
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(12),
-                                          child: Image.network(
-                                            item.url,
-                                            fit: BoxFit.cover, // Display item image
+                                final item = getFilteredItems()[index]; // Get the item at the current index
+
+                                // Wrap item in GestureDetector to navigate to AddItemScreen when tapped
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddItemScreen(item: item), // Pass item data to AddItemScreen
+                                      ),
+                                    ).then((_) {
+                                      // Reload items when returning to refresh the list
+                                      _loadItems();
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white, // Item background
+                                      borderRadius: BorderRadius.circular(12), // Rounded corners
+                                      border: Border.all(color: Colors.black12), // Light border
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        // Display item image
+                                        Expanded(
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12), // Rounded corners for image
+                                            child: Image.network(
+                                              item.url, // Display item image from URL
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Text(item.label, style: kH3), // Display item label
-                                    ],
+                                        // Display item name or label
+                                        Text(item.label, style: kH3),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -152,7 +172,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: filters.map((filter) {
-                    final isSelected = selectedFilter == filter;
+                    final isSelected = selectedFilter == filter; // Check if filter is selected
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -164,18 +184,18 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.012,
+                              vertical: screenHeight * 0.012, // Add vertical padding to the button
                             ),
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.black : Colors.white,
+                              color: isSelected ? Colors.black : Colors.white, // Highlight selected filter
                               borderRadius: BorderRadius.circular(30), // Rounded corners for buttons
-                              border: Border.all(color: Colors.black),
+                              border: Border.all(color: Colors.black), // Black border for all buttons
                             ),
                             child: Text(
                               filterLabels[filter] ?? filter, // Show appropriate label for the filter
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
+                                color: isSelected ? Colors.white : Colors.black, // Change text color based on selection
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

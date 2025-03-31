@@ -3,6 +3,9 @@ import 'package:dressify_app/models/item.dart';
 
 /// A service that handles fetching items from Firestore.
 class ItemService {
+  
+  
+  
   /// Fetch items from Firestore and filter them by category.
   Future<List<Item>> fetchItemsByCategory(String category, String kUsername) async {
     try {
