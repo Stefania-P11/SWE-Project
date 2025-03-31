@@ -13,7 +13,10 @@ import 'package:flutter/material.dart'; // Import Flutter Material Design packag
 /// - Add the outfit to favorites
 /// - Regenerate a new outfit
 class OutfitSuggestionScreen extends StatefulWidget {
-  const OutfitSuggestionScreen({super.key});
+  // Optional parameter to control the visibility of the favorite icon
+  final bool showFavorite;
+
+  const OutfitSuggestionScreen({super.key, this.showFavorite = true});
 
   @override
   State<OutfitSuggestionScreen> createState() =>
@@ -86,41 +89,76 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             // Add spacing between outfit display and buttons
             SizedBox(height: screenHeight * 0.03),
 
-            // Buttons Row for Favorite and Regenerate actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Heart icon to mark/unmark outfit as a favorite
-                IconButton(
-                  iconSize: screenWidth * 0.1, // Icon size relative to screen width
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite
-                        ? Colors.red
-                        : Colors.black, // Change color based on favorite status
+            // Buttons Row for Favorite and Regenerate actions (plus thumbs up/down if applicable)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                mainAxisAlignment: widget.showFavorite
+                    ? MainAxisAlignment.spaceBetween
+                    : MainAxisAlignment.spaceEvenly, // Adjust alignment
+                children: [
+                  // Show thumbs down icon if showFavorite is true
+                  if (widget.showFavorite)
+                    IconButton(
+                      iconSize: screenWidth * 0.08, // Icon size relative to screen width
+                      icon: const Icon(
+                        Icons.thumb_down,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        // TODO: Add dislike logic here
+                        print("Thumbs down pressed");
+                      },
+                    ),
+              
+                  // Heart icon to mark/unmark outfit as a favorite
+                  if (widget.showFavorite)
+                    IconButton(
+                      iconSize: screenWidth * 0.1, // Icon size relative to screen width
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite
+                            ? Colors.red
+                            : Colors.black, // Change color based on favorite status
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          // Toggle the favorite state
+                          isFavorite = !isFavorite;
+                        });
+              
+                        // TODO: Add favorite logic here
+                        // Add logic to save/remove the outfit from favorites
+                        // Display a pop-up asking for a name when the outfit is added to favorites
+                      },
+                    ),
+              
+                  // Regenerate outfit button to suggest a new outfit
+                  IconButton(
+                    iconSize: screenWidth * 0.1, // Icon size relative to screen width
+                    icon: const Icon(Icons.autorenew), // Icon for regenerating outfit
+                    onPressed: () {
+                      // TODO: Add regenerate logic here
+                      // Add logic to generate a new outfit dynamically
+                      print("Regenerate pressed");
+                    },
                   ),
-                  onPressed: () {
-                    setState(() {
-                      // Toggle the favorite state
-                      isFavorite = !isFavorite;
-                    });
-
-                    // TODO: Add favorite logic here
-                    // Add logic to save/remove the outfit from favorites
-                    // Display a pop-up asking for a name when the outfit is added to favorites
-                  },
-                ),
-
-                // Regenerate outfit button to suggest a new outfit
-                IconButton(
-                  iconSize: screenWidth * 0.1, // Icon size relative to screen width
-                  icon: const Icon(Icons.autorenew), // Icon for regenerating outfit
-                  onPressed: () {
-                    // TODO: Add regenerate logic here
-                    // Add logic to generate a new outfit dynamically
-                  },
-                ),
-              ],
+              
+                  // Show thumbs up icon if showFavorite is true
+                  if (widget.showFavorite)
+                    IconButton(
+                      iconSize: screenWidth * 0.08, // Icon size relative to screen width
+                      icon: const Icon(
+                        Icons.thumb_up,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        // TODO: Add like logic here
+                        print("Thumbs up pressed");
+                      },
+                    ),
+                ],
+              ),
             ),
           ],
         ),
