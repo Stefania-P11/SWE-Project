@@ -4,6 +4,8 @@ import 'package:dressify_app/screens/add_item_screen.dart'; // Importing AddItem
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Importing custom app bar widget
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart'; // Importing custom bottom navigation bar
 import 'package:flutter/material.dart'; // Importing Flutter Material Design
+import 'package:flutter_svg/flutter_svg.dart';//Importing flutter_svg to use image in .svg
+
 
 /// ClosetItemsScreen displays the user's wardrobe with filter functionality
 /// Users can view their items, add new items, and filter items by category.
@@ -16,14 +18,15 @@ class ClosetItemsScreen extends StatefulWidget {
 
 class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
   // Define categories and temperatures within the class
-  static const List<String> categories = ['All', 'Top', 'Bottom', 'Shoes'];
+  static const List<String> categories = ['Top', 'Bottom', 'Shoes'];
   static const List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
-  String selectedCateg = 'All';
-  String? selectedTemp; // No temperature is selected initially
+  String? selectedCateg; //No catgeory is selected initially
+  Set<String> selectedTemps = {}; // temperature can be selected more than 1 choice
 
   List<Item> _items = []; // List to store fetched items
   bool _isLoading = true; // Indicates whether items are being loaded
-  
+  bool _isFilterVisible = false; //ensure filter button active/inactive when needed.
+
   @override
   void initState() {
     super.initState();
@@ -46,16 +49,65 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
       });
     }
   }
+  /*method to inactivate filter button */
+  void _applyFilters() {
+    setState(() {
+      _isFilterVisible = false;
+    });
+  }
+
+  /*method to reset filter as default*/
+  void _resetFilters() {
+  setState(() {
+    selectedCateg = null; // Reset category selection
+    selectedTemps.clear(); // Clear temperature selection
+    _isFilterVisible = false; // Hide filter UI
+  });
+}
+
 
   /// Filters items based on the currently selected category and temperature filters
   /// TODO: Stefania move this to the proper file
   List<Item> getFilteredItems() {
     return _items.where((item) {
-      final matchesCategory = selectedCateg == 'All' || item.category == selectedCateg;
-      final matchesTemperature = selectedTemp == null || item.weather.contains(selectedTemp);
+      final matchesCategory = selectedCateg == null || item.category == selectedCateg;
+      //final matchesTemperature = selectedTemps == null || item.weather.contains(selectedTemps);
+      //final matchesTemperature = selectedTemps.isEmpty || selectedTemps.any(item.weather.contains);
+      final matchesTemperature = selectedTemps.isEmpty || selectedTemps.intersection(item.weather.toSet()).isNotEmpty;
       return matchesCategory && matchesTemperature;
     }).toList();
   }
+  /*filter icon to open a filter settings dialog*/
+  /*void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Filter Items"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Wrap(
+                spacing: 8,
+                children: _availableCategories.map((category) {
+                  return ChoiceChip(
+                    label: Text(category),
+                    selected: selectedCateg == category,
+                    onSelected: (selected) {
+                      setState(() {
+                        selectedCateg = selected ? category : null;
+                      });
+                      Navigator.pop(context); // Close dialog
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +134,28 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Your Wardrobe", style: kH2), // Title with custom style
+                    IconButton(// add filter buttom for sorting
+                      icon: SvgPicture.asset(
+                        'lib/assets/icons/filter-icon.svg', 
+                        width: 24,
+                        height: 24,
+                        color: Colors.black, // Optional color tint
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isFilterVisible = !_isFilterVisible;
+                        });
+                      },
+                    ),
+                    /*
+                    IconButton( // add filter buttom for sorting
+                      icon: const Icon(Icons.filter_list, size: 28),
+                      onPressed: () {
+                        setState(() {
+                          _isFilterVisible = !_isFilterVisible;
+                        });
+                      },
+                    ),*/
                     IconButton(
                       icon: const Icon(Icons.add, size: 28), // Add icon for adding items
                       onPressed: () {
@@ -98,6 +172,72 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                     ),
                   ],
                 ),
+
+              //activate filter button and drop the the container for selecting filter choice
+              if (_isFilterVisible)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 5),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Category", style: kH3),
+                        Wrap(
+                          spacing: 8,
+                          children: categories.map((category) {
+                            return ChoiceChip(
+                              label: Text(category),
+                              selected: selectedCateg == category,
+                              onSelected: (selected) {
+                                setState(() {
+                                  selectedCateg = selected ? category : null;
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 10),
+                        Text("Temperature", style: kH3), 
+                        Wrap(
+                          spacing: 8,
+                          children: temperatures.map((temperature) { //map temperatures elemeent to category of Item
+                            final isSelected = selectedTemps.contains(temperature); // Check if selected
+                            return ChoiceChip(
+                              label: Text(temperature),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    selectedTemps.add(temperature); // Add to selected set
+                                  } else {
+                                    selectedTemps.remove(temperature); // Remove if deselected
+                                  }
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(onPressed: _resetFilters, child: const Text("Cancel")),
+                            ElevatedButton(
+                              onPressed: selectedCateg != 'All' || selectedTemps != null ? _applyFilters : null,
+                              child: const Text("Apply"),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
 
                 SizedBox(height: screenHeight * 0.015),
 
@@ -162,7 +302,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                 ),
 
                 /// Filter Buttons to Filter Items by Category
-                SizedBox(height: screenHeight * 0.015),
+                /*SizedBox(height: screenHeight * 0.015),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: categories.map((category) { //map each category of item in categories list
@@ -237,7 +377,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                     );
                   }).toList(),
                 ),
-
+              */
 
                 SizedBox(height: screenHeight * 0.03),
               ],
