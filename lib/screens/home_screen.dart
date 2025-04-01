@@ -2,6 +2,7 @@ import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/services/item_service.dart';
+import 'package:dressify_app/services/weather_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
@@ -13,6 +14,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:dressify_app/services/location_service.dart'; 
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:weather/weather.dart';
+
 
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
@@ -35,6 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
   //shows the users location name
   String locationName = 'Getting location name...';
 
+  String currentTemp = '';
+  String tempRange = '';
+
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +49,43 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchData();
     //gets the users current location on the screen
     getUserLocation();
+
+    getUserWeather();
   }
+
+  Future<void> getUserWeather() async {
+    try {
+      WeatherService weatherService = WeatherService();
+      Weather weather = await weatherService.getTheWeather();
+
+      double? temp = weather.temperature?.fahrenheit;
+      double? tempMin = weather.tempMin?.fahrenheit;
+      double? tempMax = weather.tempMax?.fahrenheit;
+
+      setState(() {
+        if (temp != null) {
+          currentTemp = '${temp.toStringAsFixed(0)}°F';
+        } else {
+          currentTemp = 'Unavailable';
+        }
+
+        if (tempMin != null && tempMax != null) {
+          tempRange = '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°';
+        } else {
+          tempRange = 'Unavailable';
+        }
+
+      });
+      print('Current Temp: $currentTemp');
+      print('Temp Range: $tempRange');
+    } catch (e) {
+      setState(() {
+        currentTemp = 'Unavailable';
+        tempRange = 'Unavailable';
+      });
+    }
+  }
+
 
   ///Gets the users location and updates location based on: coordinates and reverse geo-encoding
   Future<void> getUserLocation() async {
@@ -138,12 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 // Current temperature
                 Text(
-                  '54°F', // TODO: Pull actual weather data dynamically
+                  //'54°F', // TODO: Pull actual weather data dynamically
+                  currentTemp,
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
                 // Temperature range (min/max)
                 Text(
-                  '37° - 64°', // TODO: Pull actual weather data dynamically
+                  //'37° - 64°', // TODO: Pull actual weather data dynamically
+                  tempRange,
                   style: kBodyMedium,
                 ),
               ],
