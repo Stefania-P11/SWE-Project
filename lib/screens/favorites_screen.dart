@@ -22,11 +22,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   void initState() {
     super.initState();
     // Load items and outfits when the screen initializes
+   // _fetchOutfitsFuture = loadItemsAndFetchOutfits();
+    // CHANGED: Load data locally only (no Firestore calls)
     _fetchOutfitsFuture = loadItemsAndFetchOutfits();
+
+
   }
 
   /// Fetches items first, then fetches outfits after items are loaded
-  Future<void> loadItemsAndFetchOutfits() async {
+  /*Future<void> loadItemsAndFetchOutfits() async {
     // Check if the item list is empty before fetching items
     if (Item.itemList.isEmpty) {
       print('Loading items for user: $kUsername');
@@ -38,7 +42,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     print('Fetching outfits for user: $kUsername');
     await Outfit.fetchOutfits(kUsername);
     print('Outfits loaded: ${Outfit.outfitList.length}'); // Debug log
+  }*/
+
+  /// CHANGED: Local-only version for demo (no Firestore fetch)
+ Future<void> loadItemsAndFetchOutfits() async {
+  // Load items from Firestore once at launch
+  if (Item.itemList.isEmpty) {
+    print('Loading items from Firestore for user: $kUsername');
+    await Item.fetchItems(kUsername);
   }
+
+  // Load outfits from Firestore once at launch
+  if (Outfit.outfitList.isEmpty) {
+    print('Loading outfits from Firestore for user: $kUsername');
+    await Outfit.fetchOutfits(kUsername);
+  }
+
+  setState(() {}); // Refresh UI
+}
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +86,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             );
           }
 
-          // Show a message if no outfits are found
-          if (Outfit.outfitList.isEmpty) {
+          // CHANGED: Filter outfits to exclude those with missing items
+          final filteredOutfits = Outfit.outfitList.where((outfit) {
+            return Item.itemList.contains(outfit.topItem) &&
+                   Item.itemList.contains(outfit.bottomItem) &&
+                   Item.itemList.contains(outfit.shoeItem);
+          }).toList();
+
+           // Show a message if no valid outfits remain
+          if (filteredOutfits.isEmpty) {
             return const Center(
               child: Text(
                 'Your favorite outfits will appear here!',
@@ -75,30 +103,41 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             );
           }
 
-          return GridView.builder(
-  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-  itemCount: Outfit.outfitList.length,
-  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2, // Two cards per row
-    crossAxisSpacing: 16,
-    mainAxisSpacing: 16,
-    childAspectRatio: 0.55, // Adjust to match card height/width balance
-  ),
-  itemBuilder: (context, index) {
-    final outfit = Outfit.outfitList[index];
-    return OutfitCard(
-      outfit: outfit,
-      isSelected: false,
-      onTap: () {
-        print('Outfit selected: ${outfit.label}');
-      },
-    );
-  },
-);
+         /* // Show a message if no outfits are found
+          if (Outfit.outfitList.isEmpty) {
+            return const Center(
+              child: Text(
+                'Your favorite outfits will appear here!',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }*/
 
+        // CHANGED: use filteredOutfits here instead of Outfit.outfitList
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            itemCount: filteredOutfits.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.55,
+            ),
+            itemBuilder: (context, index) {
+              final outfit = filteredOutfits[index];
+              return OutfitCard(
+                outfit: outfit,
+                isSelected: false,
+                onTap: () {
+                  print('Outfit selected: ${outfit.label}');
+                },
+              );
+            },
+          );
         },
       ),
-      bottomNavigationBar: CustomNavBar(), // Display custom bottom navbar
+
+      bottomNavigationBar: CustomNavBar(),
     );
   }
 }

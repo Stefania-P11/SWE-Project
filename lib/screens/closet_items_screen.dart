@@ -32,20 +32,44 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
 
   /// Fetches items from Firebase Firestore and updates the item list
   /// TODO: Stefania move this to the proper file
-  Future<void> _loadItems() async {
-    try {
-      await Item.fetchItems(kUsername); // Fetch items using a placeholder username (replace with real username later)
+  //Future<void> _loadItems() async {
+    //try {
+     // await Item.fetchItems(kUsername); // Fetch items using a placeholder username (replace with real username later)
+    //  setState(() {
+    //    _items = Item.itemList; // Populate the item list with fetched data
+    //    _isLoading = false; // Hide loading indicator after fetching
+    //  });
+    //} catch (e) {
+    //  print("Error loading items: $e"); // Handle any errors during item fetching
+    //  setState(() {
+    //    _isLoading = false; // Hide loading indicator if an error occurs
+    //  });
+  //  }
+ // }
+
+   /* Future<void> _loadItems() async {
       setState(() {
-        _items = Item.itemList; // Populate the item list with fetched data
-        _isLoading = false; // Hide loading indicator after fetching
+        _items = Item.itemList; //  Only uses local list
+        _isLoading = false;
       });
-    } catch (e) {
-      print("Error loading items: $e"); // Handle any errors during item fetching
-      setState(() {
-        _isLoading = false; // Hide loading indicator if an error occurs
-      });
-    }
+    } */
+
+    Future<void> _loadItems() async {
+  setState(() => _isLoading = true); // Show loader while checking
+
+  //CHANGED: Load items from Firestore only if itemList is still empty
+  if (Item.itemList.isEmpty) {
+    await Item.fetchItems(kUsername);
   }
+
+  setState(() {
+    _items = Item.itemList; // Now itemList is guaranteed to be populated
+    _isLoading = false;
+  });
+}
+
+
+
 
   /// Filters items based on the currently selected category and temperature filters
   /// TODO: Stefania move this to the proper file
@@ -121,18 +145,20 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
 
                                 // Wrap item in GestureDetector to navigate to AddItemScreen when tapped
                                 return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
+                                  onTap: () async {
+                                    final result = await Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AddItemScreen(item: item), // Pass item data to AddItemScreen
-                                      ),
-                                    ).then((_) {
-                                      // Reload items when returning to refresh the list
+                                     MaterialPageRoute(
+                                      builder: (context) => AddItemScreen(item: item),
+                                     ),
+                                    );
+
+                                     // Only reload if the item was deleted
+                                    if (result == true) {
                                       _loadItems();
-                                    });
+                                    }
                                   },
+
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white, // Item background
