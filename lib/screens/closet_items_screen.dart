@@ -101,6 +101,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Your Wardrobe", style: kH2), // Title with custom style
+
                     IconButton(// add filter buttom for sorting
                       icon: SvgPicture.asset(
                         'lib/assets/icons/filter-icon.svg', 
@@ -151,14 +152,27 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                         Wrap(
                           spacing: 8,
                           children: categories.map((category) {
-                            return ChoiceChip(
-                              label: Text(category),
-                              selected: selectedCateg == category,
-                              onSelected: (selected) {
+                            final isSelected = selectedCateg == category;
+                            return GestureDetector(
+                              onTap: () {
                                 setState(() {
-                                  selectedCateg = selected ? category : null;
+                                  selectedCateg = isSelected ? null : category;
                                 });
                               },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.grey[400] : Colors.white, // Grey when selected
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: Text(
+                                  category,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.black : Colors.grey[700],
+                                  ),
+                                ),
+                              ),
                             );
                           }).toList(),
                         ),
@@ -168,18 +182,30 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                           spacing: 8,
                           children: temperatures.map((temperature) { //map temperatures elemeent to category of Item
                             final isSelected = selectedTemps.contains(temperature); // Check if selected
-                            return ChoiceChip(
-                              label: Text(temperature),
-                              selected: isSelected,
-                              onSelected: (selected) {
+                            return GestureDetector(
+                              onTap: () {
                                 setState(() {
-                                  if (selected) {
-                                    selectedTemps.add(temperature); // Add to selected set
+                                  if (isSelected) {
+                                    selectedTemps.remove(temperature);
                                   } else {
-                                    selectedTemps.remove(temperature); // Remove if deselected
+                                    selectedTemps.add(temperature);
                                   }
                                 });
                               },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.grey[400] : Colors.white, // Grey when selected
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: Text(
+                                  temperature,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.black : Colors.grey[700],
+                                  ),
+                                ),
+                              ),
                             );
                           }).toList(),
                         ),
@@ -187,10 +213,42 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            TextButton(onPressed: _resetFilters, child: const Text("Cancel")),
-                            ElevatedButton(
-                              onPressed: selectedCateg != 'All' || selectedTemps != null ? _applyFilters : null,
-                              child: const Text("Apply"),
+                            GestureDetector(
+                              onTap: _resetFilters,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white, // Default color
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey), // Grey border
+                                ),
+                                child: Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold, // Make text bold
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8), // Space between buttons
+                            GestureDetector(
+                              onTap: _applyFilters,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white, // Default color
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey), // Grey border
+                                ),
+                                child: Text(
+                                  "Apply",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold, // Make text bold
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
