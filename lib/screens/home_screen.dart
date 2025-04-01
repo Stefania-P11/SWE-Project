@@ -84,8 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   /// Fetch item data and count items by category using ItemService
   Future<void> fetchData() async {
     // Create an instance of ItemService to fetch and count items

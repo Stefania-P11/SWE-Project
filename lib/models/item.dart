@@ -4,9 +4,9 @@ import 'package:dressify_app/constants.dart';
 // Item class to model clothing items
 class Item {
   // Properties to store item details
-  late  String category;        // Category of the item (e.g., Top, Bottom, Shoes)
+  late String category;        // Category of the item (e.g., Top, Bottom, Shoes)
   late final int id;            // Unique ID for the item
-  late  String label;           // Label or name of the item
+  late String label;           // Label or name of the item
   int timesWorn;                // Number of times the item has been worn
   late final String url;        // URL for the item's image
   late List<String> weather;    // Weather conditions suited for the item
