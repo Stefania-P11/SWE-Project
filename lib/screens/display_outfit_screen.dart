@@ -13,24 +13,29 @@ import 'package:flutter/material.dart'; // Import Flutter Material Design packag
 /// - View suggested outfit components (Top, Bottom, Shoes)
 /// - Add the outfit to favorites
 /// - Regenerate a new outfit
+
 class OutfitSuggestionScreen extends StatefulWidget {
-  
   // Optional parameter to control the visibility of the favorite icon
   final bool showFavorite;
 
   // Optional parameter to control the visibility of the regenerate button
   final bool showRegenerate;
 
+  // Optional parameter to control the visibility of the delete icon
+  final bool showDeleteIcon;
 
   // Outfit object to display the suggested outfit
   final Outfit? outfit;
 
+  final VoidCallback? onRegenerate;
 
   const OutfitSuggestionScreen(
       {super.key,
       this.showFavorite = true,
       this.showRegenerate = true,
-      this.outfit});
+      this.outfit,
+      this.onRegenerate,
+      this.showDeleteIcon = true});
 
   @override
   State<OutfitSuggestionScreen> createState() =>
@@ -56,6 +61,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         showBackButton: true,
         isViewMode: true,
         showEditIcon: false,
+        showDeleteIcon: widget.showDeleteIcon,
       ),
 
       // Main body content
@@ -81,19 +87,22 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         Positioned(
                           top: screenHeight * 0.03,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
+                          child: outfitItem("Top", screenWidth,
+                              imageUrl: widget.outfit?.topItem.url),
                         ),
                         // Display Bottom item below Top
                         Positioned(
                           top: screenHeight * 0.25,
                           right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
+                          child: outfitItem("Bottom", screenWidth,
+                              imageUrl: widget.outfit?.bottomItem.url),
                         ),
                         // Display Shoes item at the bottom
                         Positioned(
                           top: screenHeight * 0.45,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),  
+                          child: outfitItem("Shoes", screenWidth,
+                              imageUrl: widget.outfit?.shoeItem.url),
                         ),
                       ],
                     ),
@@ -157,9 +166,11 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     IconButton(
                       iconSize: screenWidth * 0.1,
                       icon: const Icon(Icons.autorenew),
-                      onPressed: () {
-                        print("Regenerate pressed");
-                      },
+                      onPressed: widget.onRegenerate ??
+                          () {
+                            // Default behavior if onRegenerate isn't passed
+                            print("Regenerate pressed");
+                          },
                     ),
 
                   // Show thumbs up icon if showFavorite is true
