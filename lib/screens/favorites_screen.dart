@@ -75,24 +75,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             );
           }
 
-          /// Display outfits in a list using ListView.builder
-          return ListView.builder(
-            padding: const EdgeInsets.all(16.0), // Add padding around the list
-            itemCount: Outfit.outfitList.length, // Number of outfits to display
-            itemBuilder: (context, index) {
-              Outfit outfit = Outfit.outfitList[index]; // Get each outfit
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0), // Add spacing between cards
-                child: OutfitCard(
-                  outfit: outfit, // Pass outfit to the card widget
-                  isSelected: false, // Default selection state
-                  onTap: () {
-                    print('Outfit selected: ${outfit.label}'); // Log selected outfit
-                  },
-                ),
-              );
-            },
-          );
+          return GridView.builder(
+  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+  itemCount: Outfit.outfitList.length,
+  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2, // Two cards per row
+    crossAxisSpacing: 16,
+    mainAxisSpacing: 16,
+    childAspectRatio: 0.55, // Adjust to match card height/width balance
+  ),
+  itemBuilder: (context, index) {
+    final outfit = Outfit.outfitList[index];
+    return OutfitCard(
+      outfit: outfit,
+      isSelected: false,
+      onTap: () {
+        print('Outfit selected: ${outfit.label}');
+      },
+    );
+  },
+);
+
         },
       ),
       bottomNavigationBar: CustomNavBar(), // Display custom bottom navbar

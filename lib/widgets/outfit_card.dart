@@ -18,81 +18,73 @@ class OutfitCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to OutfitSuggestionScreen without favorite buttons
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OutfitSuggestionScreen(showFavorite: false, outfit: outfit, showRegenerate: false,),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(8), // Padding around the outfit
-        decoration: BoxDecoration(
-          color: Colors.white, // Background color of the card
-          borderRadius: BorderRadius.circular(12), // Rounded corners
-          border: Border.all(
-            color: isSelected
-                ? Colors.blue // Highlight border when selected
-                : Colors.black12, // Default border color when not selected
-            width: isSelected ? 3 : 1,
+Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final cardWidth = (screenWidth / 2) - 24; // Account for padding and spacing
+
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OutfitSuggestionScreen(
+            showFavorite: false,
+            outfit: outfit,
+            showRegenerate: false,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            /// Displays the outfit's label
-            Text(
-              outfit.label,
-              style: kH2, // Applies the text style from constants.dart
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 8), // Space between label and outfit items
-
-            /// Displays the top item
-            _buildOutfitSection(outfit.topItem.url),
-
-            const SizedBox(height: 8), // Space between items
-
-            /// Displays the bottom item
-            _buildOutfitSection(outfit.bottomItem.url),
-
-            const SizedBox(height: 8),
-
-            /// Displays the shoes item
-            _buildOutfitSection(outfit.shoeItem.url),
-          ],
+      );
+    },
+    child: Container(
+      width: cardWidth, // ✅ Restrict card width
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? Colors.blue : Colors.black12,
+          width: isSelected ? 3 : 1,
         ),
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            outfit.label,
+            style: kH2.copyWith(fontSize: 16), // Smaller title for compact card
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          _buildOutfitSection(outfit.topItem.url),
+          const SizedBox(height: 8),
+          _buildOutfitSection(outfit.bottomItem.url),
+          const SizedBox(height: 8),
+          _buildOutfitSection(outfit.shoeItem.url),
+        ],
+      ),
+    ),
+  );
+}
+
 
   /// Helper method to build a section with an image and label
   Widget _buildOutfitSection(String url) {
-    return Container(
-      height: 100, // Fixed height for each section
-      width: double.infinity, // Takes full width
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                url, // URL of the image from Item
-                fit: BoxFit.cover, // Ensures the image covers the space
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-              ),
-            ),
-          ),
-          
-        ],
+  return SizedBox(
+    height: 80,
+    width: double.infinity,
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        url,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.broken_image, size: 40, color: Colors.grey),
       ),
-    );
-  }
+    ),
+  );
+
+}
+
+  
 }
