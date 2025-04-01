@@ -3,6 +3,8 @@ import 'package:geolocator_android/geolocator_android.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import 'package:geolocator_apple/geolocator_apple.dart';
 
+///Determines the users position by checking there location service and permissions
+///Then, it returns the correct coordinates of the user
 Future<Position> determinePosition() async {
   bool serviceEnabled;
   LocationPermission permission;
@@ -34,8 +36,10 @@ Future<Position> determinePosition() async {
   return await Geolocator.getCurrentPosition(locationSettings: getLocationSettings());
 }
 
+///Returns the location settings of a device based on current platform it's on: Andriod, Apple, or Web.
 LocationSettings getLocationSettings() {
   if (defaultTargetPlatform == TargetPlatform.android) {
+    //returns the location settings for android devices
     return AndroidSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
@@ -50,15 +54,16 @@ LocationSettings getLocationSettings() {
       )
     );
   } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+    //returns the location settings for apple devices
     return AppleSettings(
       accuracy: LocationAccuracy.high,
       activityType: ActivityType.fitness,
       distanceFilter: 100,
       pauseLocationUpdatesAutomatically: true,
-      // Only set to true if our app will be started up in the background.
       showBackgroundLocationIndicator: false,
     );
   } else if (kIsWeb) {
+    //returns the location settings for web platforms
     return WebSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
