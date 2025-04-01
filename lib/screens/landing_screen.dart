@@ -1,3 +1,4 @@
+import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
@@ -72,9 +73,19 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.73, // Position 73% from the top
             child: CustomButton(
               text: 'Create Account', // Button label
-              onPressed: () {
-                // TODO: Implement navigation to Create Account screen
-              },
+               onPressed: () {
+
+                //TODO: Implement navigation to Create Account screen
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                HomeScreen(), // Navigate to HomeScreen
+                            transitionDuration: Duration.zero, // No transition animation
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      },
             ),
           ),
 
@@ -84,9 +95,18 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.81, // Position 81% from the top
             child: CustomButton(
               text: 'Log in', // Button label
-              onPressed: () {
-                // TODO: Implement navigation to Log in screen
-              },
+               onPressed: () {
+                //TODO: Implement navigation to Log in screen
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                HomeScreen(), // Navigate to Home Screen 
+                            transitionDuration: Duration.zero, // No transition animation
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      },
             ),
           ),
         ],

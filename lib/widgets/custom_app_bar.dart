@@ -11,6 +11,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackButton; // Flag to show/hide the back button
   final bool isViewMode; // Flag to determine if view mode is active
   final VoidCallback? onEditPressed; // Callback to trigger edit mode
+  final bool showEditIcon; // Flag to show/hide the edit button
 
   /// Constructor to initialize [showBackButton], [isViewMode], and [onEditPressed].
   /// Defaults:
@@ -22,6 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showBackButton = false,
     this.isViewMode = false,
     this.onEditPressed,
+    this.showEditIcon = true,
   });
 
   @override
@@ -45,6 +47,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         // Show edit and delete icons only when [isViewMode] is true
         if (isViewMode) ...[
+          if (showEditIcon)
           // Edit button to switch to edit mode
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.black), // Edit icon

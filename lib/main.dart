@@ -1,5 +1,6 @@
 
 import 'package:dressify_app/screens/home_screen.dart';
+import 'package:dressify_app/screens/landing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
       ),
 
 
-      home: const HomeScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const LandingScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
 
 
     );

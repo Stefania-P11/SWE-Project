@@ -28,7 +28,9 @@ Widget outfitItem(String label, double screenWidth, {VoidCallback? onTap, String
                 fit: BoxFit.cover,
               ),
       ),
-      Text(label, style: kButtons),
+         // 👇 Show label only if imageUrl is empty or null
+      if (imageUrl == null || imageUrl.isEmpty)
+        Text(label, style: kButtons),
     ],
   );
 
