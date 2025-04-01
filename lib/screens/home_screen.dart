@@ -1,4 +1,6 @@
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/features/play_it_safe.dart';
+import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/services/item_service.dart';
@@ -10,10 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:dressify_app/services/location_service.dart'; 
+import 'package:dressify_app/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -51,17 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
       Position position = await determinePosition();
 
       //converts the coordinates correctly
-      List<Placemark> cordinate = await placemarkFromCoordinates(position.latitude,position.longitude,);
+      List<Placemark> cordinate = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
       //checks if the coordinate data is there
       if (cordinate.isNotEmpty) {
-        Placemark address =  cordinate[0];
+        Placemark address = cordinate[0];
 
         //checks if the address from the coordinates contains a locailty AKA city name
         if (address.locality != null) {
           //the location name gets updated with the city name
           setState(() {
-            locationName =  address.locality!;
+            locationName = address.locality!;
           });
           print("Location: $locationName");
         } else {
@@ -70,17 +74,17 @@ class _HomeScreenState extends State<HomeScreen> {
             locationName = 'Location is unknown';
           });
         }
-    //coordinate data is not there, so the location name is unknown
-    } else {
+        //coordinate data is not there, so the location name is unknown
+      } else {
+        setState(() {
+          locationName = 'Location is unknown';
+        });
+      }
+      //catches any error that doesn't allow access to location
+    } catch (e) {
       setState(() {
-        locationName = 'Location is unknown';
+        locationName = 'Location is not available ';
       });
-    }
-  //catches any error that doesn't allow access to location
-  } catch (e) {
-    setState(() {
-      locationName = 'Location is not available ';
-    });
     }
   }
 
@@ -91,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Fetch item counts for different categories
     Map<String, int> itemCounts =
-        await itemService.fetchAndCountItems(kUsername); 
+        await itemService.fetchAndCountItems(kUsername);
 
     // Update state with the fetched item counts and stop loading indicator
     setState(() {
@@ -204,24 +208,79 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button to play it safe - show favorite outfit
                   CustomButton2(
                     text: 'PLAY IT SAFE',
-                    onPressed: () {
-                      // TODO: Select an outfit from favorites and pass item IDs to OutfitSuggestionScreen
-                      // OutfitSuggestionScreen will need to take 3 parameters: topId, bottomId, and shoeId
+                    onPressed: () async {
+                      // Step 1: Fetch all outfits from Firestore for the current user
+                      await Outfit.fetchOutfits(kUsername);
 
-                      // TODO: Modify DisplayOutfitScreen to take a boolean parameter that determines
-                      // whether the favorite button is displayed or not (since this is a favorite outfit)
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const OutfitSuggestionScreen(showFavorite: false,),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
+                      // Step 2: Retrieve a random "safe" outfit from the loaded list
+                      final safeOutfit = PlayItSafeService.getSafeOutfit();
+
+                      // Step 3: Define a helper method to regenerate and replace the current screen
+                      void regenerateAndReplace(BuildContext context) {
+                        final newOutfit = PlayItSafeService.getSafeOutfit();
+
+                        // If a new outfit is available, replace the current screen with the new one (no page flip animation)
+                        if (newOutfit != null) {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      OutfitSuggestionScreen(
+                                showFavorite:
+                                    false, // Don't show favorite icons in play-it-safe mode
+                                outfit:
+                                    newOutfit, // Display the new randomly selected outfit
+                                onRegenerate: () => regenerateAndReplace(
+                                    context), // 👈 Call recursively
+                                showDeleteIcon:
+                                    false, // Hide the delete (trash) icon
+                              ),
+                              transitionDuration:
+                                  Duration.zero, // Disable transition animation
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        } else {
+                          // If no new outfit is available, show a snackbar
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('No more outfits to show!')),
+                          );
+                        }
+                      }
+
+                      // Step 4: If a safe outfit exists, navigate to OutfitSuggestionScreen
+                      if (safeOutfit != null) {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    OutfitSuggestionScreen(
+                              showFavorite: false, // Don't show favorite icons
+                              outfit:
+                                  safeOutfit, // Display the initial safe outfit
+                              onRegenerate: () => regenerateAndReplace(
+                                  context), // Setup regenerate logic
+                              showDeleteIcon:
+                                  false, // Hide delete icon in play-it-safe mode
+                            ),
+                            transitionDuration:
+                                Duration.zero, // Disable page flip animation
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      } else {
+                        // Step 5: If no saved outfits are found, show a snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('No saved outfits available!')),
+                        );
+                      }
                     },
                   ),
+
                   // Button to generate a random outfit
                   CustomButton2(
                     text: 'SURPRISE ME',

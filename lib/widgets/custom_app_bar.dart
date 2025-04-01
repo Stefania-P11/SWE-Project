@@ -12,6 +12,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isViewMode; // Flag to determine if view mode is active
   final VoidCallback? onEditPressed; // Callback to trigger edit mode
   final bool showEditIcon; // Flag to show/hide the edit button
+  final bool showDeleteIcon; // Flag to show/hide the delete button
 
   /// Constructor to initialize [showBackButton], [isViewMode], and [onEditPressed].
   /// Defaults:
@@ -24,23 +25,28 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.isViewMode = false,
     this.onEditPressed,
     this.showEditIcon = true,
+    this.showDeleteIcon = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: kBackgroundColor, // Set app bar background color
-      title: SvgPicture.asset("lib/assets/icons/Logo_type.svg"), // Display the logo in the center
+      title: SvgPicture.asset(
+          "lib/assets/icons/Logo_type.svg"), // Display the logo in the center
 
       // Show back button if [showBackButton] is true, otherwise show menu icon
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.black, size: 40), // Back button
-              onPressed: () => Navigator.pop(context), // Navigate back when pressed
+              icon: const Icon(Icons.chevron_left,
+                  color: Colors.black, size: 40), // Back button
+              onPressed: () =>
+                  Navigator.pop(context), // Navigate back when pressed
             )
           : Padding(
               padding: const EdgeInsets.all(12.0),
-              child: SvgPicture.asset('lib/assets/icons/menu.svg'), // Display menu icon
+              child: SvgPicture.asset(
+                  'lib/assets/icons/menu.svg'), // Display menu icon
             ),
 
       // Right-side icons in the app bar
@@ -48,18 +54,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         // Show edit and delete icons only when [isViewMode] is true
         if (isViewMode) ...[
           if (showEditIcon)
-          // Edit button to switch to edit mode
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.black), // Edit icon
-            onPressed: onEditPressed, // Trigger edit mode when pressed
-          ),
+            // Edit button to switch to edit mode
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.black), // Edit icon
+              onPressed: onEditPressed, // Trigger edit mode when pressed
+            ),
           // Delete button to remove item
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red), // Trash icon (red)
-            onPressed: () {
-              // TODO: Add delete functionality later
-            },
-          ),
+          if (showDeleteIcon)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                // TODO: Add delete functionality later
+              },
+            ),
         ],
 
         // Profile button on the right side
@@ -67,7 +74,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             // TODO: Handle profile navigation
           },
-          icon: SvgPicture.asset('lib/assets/icons/account.svg'), // Profile icon
+          icon:
+              SvgPicture.asset('lib/assets/icons/account.svg'), // Profile icon
         ),
       ],
 

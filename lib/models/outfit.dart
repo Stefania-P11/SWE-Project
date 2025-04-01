@@ -205,4 +205,7 @@ class Outfit {
     outfitCount = outfitList.length;
     print('Total outfits: $outfitCount');
   }
+
+  
 }
+
