@@ -71,43 +71,10 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
   List<Item> getFilteredItems() {
     return _items.where((item) {
       final matchesCategory = selectedCateg == null || item.category == selectedCateg;
-      //final matchesTemperature = selectedTemps == null || item.weather.contains(selectedTemps);
-      //final matchesTemperature = selectedTemps.isEmpty || selectedTemps.any(item.weather.contains);
       final matchesTemperature = selectedTemps.isEmpty || selectedTemps.intersection(item.weather.toSet()).isNotEmpty;
       return matchesCategory && matchesTemperature;
     }).toList();
   }
-  /*filter icon to open a filter settings dialog*/
-  /*void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Filter Items"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                spacing: 8,
-                children: _availableCategories.map((category) {
-                  return ChoiceChip(
-                    label: Text(category),
-                    selected: selectedCateg == category,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedCateg = selected ? category : null;
-                      });
-                      Navigator.pop(context); // Close dialog
-                    },
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -147,15 +114,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                         });
                       },
                     ),
-                    /*
-                    IconButton( // add filter buttom for sorting
-                      icon: const Icon(Icons.filter_list, size: 28),
-                      onPressed: () {
-                        setState(() {
-                          _isFilterVisible = !_isFilterVisible;
-                        });
-                      },
-                    ),*/
+                
                     IconButton(
                       icon: const Icon(Icons.add, size: 28), // Add icon for adding items
                       onPressed: () {
@@ -301,83 +260,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                             ),
                 ),
 
-                /// Filter Buttons to Filter Items by Category
-                /*SizedBox(height: screenHeight * 0.015),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: categories.map((category) { //map each category of item in categories list
-                    final isSelected = selectedCateg == category; // Check if filter is selected
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedCateg = category; // Update the selected filter
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.012, // Add vertical padding to the button
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.black : Colors.white, // Highlight selected filter
-                              borderRadius: BorderRadius.circular(30), // Rounded corners for buttons
-                              border: Border.all(color: Colors.black), // Black border for all buttons
-                            ),
-                            child: Text(
-                              category, // Show appropriate label for the filter
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black, // Change text color based on selection
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              /// Filter Buttons to Filter Items by Temperature
-                SizedBox(height: screenHeight * 0.015),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: temperatures.map((temperature) { ////map each temperature of item in temperature list
-                    final isSelected = selectedTemp == temperature; // Check if filter is selected
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedTemp = isSelected ? null : temperature; // Update the selected filter
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.012, // Add vertical padding to the button
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.black : Colors.white, // Highlight selected filter
-                              borderRadius: BorderRadius.circular(30), // Rounded corners for buttons
-                              border: Border.all(color: Colors.black), // Black border for all buttons
-                            ),
-                            child: Text(
-                              temperature, // Show appropriate label for the filter
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black, // Change text color based on selection
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              */
+               
 
                 SizedBox(height: screenHeight * 0.03),
               ],
