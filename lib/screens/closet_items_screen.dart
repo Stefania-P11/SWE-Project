@@ -15,20 +15,15 @@ class ClosetItemsScreen extends StatefulWidget {
 }
 
 class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
-  String selectedFilter = 'All'; // Default filter is set to "All"
-  final filters = ['All', 'Top', 'Bottom', 'Shoes']; // Available filter options
-
-  /// Map that associates Firebase category names with display names
-  final Map<String, String> filterLabels = {
-    'All': 'All',
-    'Top': 'Tops', // Firebase category "Top" -> Show "Tops"
-    'Bottom': 'Bottoms', // Firebase category "Bottom" -> Show "Bottoms"
-    'Shoes': 'Shoes',
-  };
+  // Define categories and temperatures within the class
+  static const List<String> categories = ['All', 'Top', 'Bottom', 'Shoes'];
+  static const List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
+  String selectedCateg = 'All';
+  String? selectedTemp; // No temperature is selected initially
 
   List<Item> _items = []; // List to store fetched items
   bool _isLoading = true; // Indicates whether items are being loaded
-
+  
   @override
   void initState() {
     super.initState();
@@ -52,15 +47,14 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
     }
   }
 
-  /// Filters items based on the selected category
+  /// Filters items based on the currently selected category and temperature filters
   /// TODO: Stefania move this to the proper file
   List<Item> getFilteredItems() {
-    if (selectedFilter == 'All') {
-      return _items; // Show all items if "All" is selected
-    } else {
-      // Return filtered items matching the selected category
-      return _items.where((item) => item.category == selectedFilter).toList();
-    }
+    return _items.where((item) {
+      final matchesCategory = selectedCateg == 'All' || item.category == selectedCateg;
+      final matchesTemperature = selectedTemp == null || item.weather.contains(selectedTemp);
+      return matchesCategory && matchesTemperature;
+    }).toList();
   }
 
   @override
@@ -171,15 +165,15 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                 SizedBox(height: screenHeight * 0.015),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: filters.map((filter) {
-                    final isSelected = selectedFilter == filter; // Check if filter is selected
+                  children: categories.map((category) { //map each category of item in categories list
+                    final isSelected = selectedCateg == category; // Check if filter is selected
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
-                              selectedFilter = filter; // Update the selected filter
+                              selectedCateg = category; // Update the selected filter
                             });
                           },
                           child: Container(
@@ -192,7 +186,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                               border: Border.all(color: Colors.black), // Black border for all buttons
                             ),
                             child: Text(
-                              filterLabels[filter] ?? filter, // Show appropriate label for the filter
+                              category, // Show appropriate label for the filter
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: isSelected ? Colors.white : Colors.black, // Change text color based on selection
@@ -205,6 +199,45 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                     );
                   }).toList(),
                 ),
+              /// Filter Buttons to Filter Items by Temperature
+                SizedBox(height: screenHeight * 0.015),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: temperatures.map((temperature) { ////map each temperature of item in temperature list
+                    final isSelected = selectedTemp == temperature; // Check if filter is selected
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedTemp = isSelected ? null : temperature; // Update the selected filter
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.012, // Add vertical padding to the button
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.black : Colors.white, // Highlight selected filter
+                              borderRadius: BorderRadius.circular(30), // Rounded corners for buttons
+                              border: Border.all(color: Colors.black), // Black border for all buttons
+                            ),
+                            child: Text(
+                              temperature, // Show appropriate label for the filter
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black, // Change text color based on selection
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+
 
                 SizedBox(height: screenHeight * 0.03),
               ],
