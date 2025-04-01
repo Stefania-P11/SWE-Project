@@ -1,5 +1,6 @@
 import 'package:dressify_app/constants.dart'; // Import constants for styling
 import 'package:dressify_app/models/outfit.dart'; // Import Outfit model
+import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material package
 
 /// A widget that displays an outfit in a card format with top, bottom, and shoes.
@@ -19,7 +20,15 @@ class OutfitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // Handles outfit selection when tapped
+      onTap: () {
+        // Navigate to OutfitSuggestionScreen without favorite buttons
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OutfitSuggestionScreen(showFavorite: false, outfit: outfit, showRegenerate: false,),
+          ),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(8), // Padding around the outfit
         decoration: BoxDecoration(

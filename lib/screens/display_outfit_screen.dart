@@ -1,4 +1,5 @@
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
+import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar widget
 import 'package:dressify_app/widgets/item_container.dart'; // Import custom item container for outfit items
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
@@ -13,10 +14,23 @@ import 'package:flutter/material.dart'; // Import Flutter Material Design packag
 /// - Add the outfit to favorites
 /// - Regenerate a new outfit
 class OutfitSuggestionScreen extends StatefulWidget {
+  
   // Optional parameter to control the visibility of the favorite icon
   final bool showFavorite;
 
-  const OutfitSuggestionScreen({super.key, this.showFavorite = true});
+  // Optional parameter to control the visibility of the regenerate button
+  final bool showRegenerate;
+
+
+  // Outfit object to display the suggested outfit
+  final Outfit? outfit;
+
+
+  const OutfitSuggestionScreen(
+      {super.key,
+      this.showFavorite = true,
+      this.showRegenerate = true,
+      this.outfit});
 
   @override
   State<OutfitSuggestionScreen> createState() =>
@@ -40,6 +54,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       // Custom app bar with a back button enabled to allow the user to navigate back
       appBar: CustomAppBar(
         showBackButton: true,
+        isViewMode: true,
+        showEditIcon: false,
       ),
 
       // Main body content
@@ -65,19 +81,19 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         Positioned(
                           top: screenHeight * 0.03,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth),
+                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
                         ),
                         // Display Bottom item below Top
                         Positioned(
                           top: screenHeight * 0.25,
                           right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth),
+                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
                         ),
                         // Display Shoes item at the bottom
                         Positioned(
                           top: screenHeight * 0.45,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth),
+                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),  
                         ),
                       ],
                     ),
@@ -100,7 +116,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   // Show thumbs down icon if showFavorite is true
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth * 0.08, // Icon size relative to screen width
+                      iconSize: screenWidth *
+                          0.08, // Icon size relative to screen width
                       icon: const Icon(
                         Icons.thumb_down,
                         color: Colors.black,
@@ -110,44 +127,46 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         print("Thumbs down pressed");
                       },
                     ),
-              
+
                   // Heart icon to mark/unmark outfit as a favorite
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth * 0.1, // Icon size relative to screen width
+                      iconSize: screenWidth *
+                          0.1, // Icon size relative to screen width
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite
                             ? Colors.red
-                            : Colors.black, // Change color based on favorite status
+                            : Colors
+                                .black, // Change color based on favorite status
                       ),
                       onPressed: () {
                         setState(() {
                           // Toggle the favorite state
                           isFavorite = !isFavorite;
                         });
-              
+
                         // TODO: Add favorite logic here
                         // Add logic to save/remove the outfit from favorites
                         // Display a pop-up asking for a name when the outfit is added to favorites
                       },
                     ),
-              
+
                   // Regenerate outfit button to suggest a new outfit
-                  IconButton(
-                    iconSize: screenWidth * 0.1, // Icon size relative to screen width
-                    icon: const Icon(Icons.autorenew), // Icon for regenerating outfit
-                    onPressed: () {
-                      // TODO: Add regenerate logic here
-                      // Add logic to generate a new outfit dynamically
-                      print("Regenerate pressed");
-                    },
-                  ),
-              
+                  if (widget.showRegenerate)
+                    IconButton(
+                      iconSize: screenWidth * 0.1,
+                      icon: const Icon(Icons.autorenew),
+                      onPressed: () {
+                        print("Regenerate pressed");
+                      },
+                    ),
+
                   // Show thumbs up icon if showFavorite is true
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth * 0.08, // Icon size relative to screen width
+                      iconSize: screenWidth *
+                          0.08, // Icon size relative to screen width
                       icon: const Icon(
                         Icons.thumb_up,
                         color: Colors.black,
