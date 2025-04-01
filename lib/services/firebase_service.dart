@@ -79,7 +79,7 @@ class FirebaseService{
 
   //remove outfit from Firestore
   static removeFirestoreOutfit(Outfit outfit){
-    db.collection('users').doc(kUsername).collection('Outfits').doc(outfit.toString()).delete();
+    db.collection('users').doc(kUsername).collection('Outfits').doc(outfit.id.toString()).delete();
     return 0;
   }
 
