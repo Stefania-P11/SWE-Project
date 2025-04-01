@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:dressify_app/services/location.dart'; 
+import 'package:dressify_app/services/location_service.dart'; 
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int bottomCount = 0;
   int shoeCount = 0;
 
-  //location name
+  //shows the users location name
   String locationName = 'Getting location name...';
 
   @override
@@ -40,40 +40,49 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch item data and count when the screen initializes
     fetchData();
+    //gets the users current location on the screen
     getUserLocation();
   }
 
+  ///Gets the users location and updates location based on: coordinates and reverse geo-encoding
   Future<void> getUserLocation() async {
     try {
+      //finds the positions coordinates of the user
       Position position = await determinePosition();
+
+      //converts the coordinates correctly
       List<Placemark> cordinate = await placemarkFromCoordinates(position.latitude,position.longitude,);
 
+      //checks if the coordinate data is there
       if (cordinate.isNotEmpty) {
         Placemark address =  cordinate[0];
 
+        //checks if the address from the coordinates contains a locailty AKA city name
         if (address.locality != null) {
+          //the location name gets updated with the city name
           setState(() {
             locationName =  address.locality!;
           });
           print("Location: $locationName");
         } else {
+          //the location gets updated to unknown since the address does not have a city
           setState(() {
             locationName = 'Location is unknown';
           });
         }
+    //coordinate data is not there, so the location name is unknown
     } else {
       setState(() {
         locationName = 'Location is unknown';
       });
     }
+  //catches any error that doesn't allow access to location
   } catch (e) {
     setState(() {
       locationName = 'Location is not available ';
     });
     }
   }
-
-
 
   /// Fetch item data and count items by category using ItemService
   Future<void> fetchData() async {
