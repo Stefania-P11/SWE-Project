@@ -15,6 +15,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:dressify_app/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dressify_app/models/item.dart'; // Needed to use Item.itemList
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -89,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Fetch item data and count items by category using ItemService
-  Future<void> fetchData() async {
+  /*Future<void> fetchData() async {
     // Create an instance of ItemService to fetch and count items
     ItemService itemService = ItemService();
 
@@ -104,7 +105,23 @@ class _HomeScreenState extends State<HomeScreen> {
       shoeCount = itemCounts['shoeCount'] ?? 0;
       isLoading = false;
     });
+  }*/
+
+  // CHANGED: Count items from local memory for demo (no Firestore)
+  Future<void> fetchData() async {
+    int tops = Item.itemList.where((item) => item.category == 'Top').length;
+    int bottoms = Item.itemList.where((item) => item.category == 'Bottom').length;
+    int shoes = Item.itemList.where((item) => item.category == 'Shoes').length;
+
+    // Update state using local-only counts
+    setState(() {
+      topCount = tops;
+      bottomCount = bottoms;
+      shoeCount = shoes;
+      isLoading = false;
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
