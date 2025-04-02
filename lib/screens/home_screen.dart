@@ -4,6 +4,7 @@ import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/services/item_service.dart';
+import 'package:dressify_app/services/weather_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
@@ -16,6 +17,9 @@ import 'package:dressify_app/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dressify_app/models/item.dart'; // Needed to use Item.itemList
+import 'package:weather/weather.dart';
+
+
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -37,16 +41,60 @@ class _HomeScreenState extends State<HomeScreen> {
   //shows the users location name
   String locationName = 'Getting location name...';
 
+  String currentTemp = '';
+  String tempRange = '';
+
+
   @override
   void initState() {
     super.initState();
     // Fetch item data and count when the screen initializes
     fetchData();
     //gets the users current location on the screen
-    getUserLocation();
+    //getUserLocation();
+
+    //getUserWeather();
+ 
+    // Fetch weather and location data when the screen initializes
+    getUserWeatherAndLocation();
+
   }
 
-  ///Gets the users location and updates location based on: coordinates and reverse geo-encoding
+  /*Future<void> getUserWeather() async {
+    try {
+      WeatherService weatherService = WeatherService();
+      Weather weather = await weatherService.getTheWeather();
+
+      double? temp = weather.temperature?.fahrenheit;
+      double? tempMin = weather.tempMin?.fahrenheit;
+      double? tempMax = weather.tempMax?.fahrenheit;
+
+      setState(() {
+        if (temp != null) {
+          currentTemp = '${temp.toStringAsFixed(0)}°F';
+        } else {
+          currentTemp = 'Unavailable';
+        }
+
+        if (tempMin != null && tempMax != null) {
+          tempRange = '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°';
+        } else {
+          tempRange = 'Unavailable';
+        }
+
+      });
+      print('Current Temp: $currentTemp');
+      print('Temp Range: $tempRange');
+    } catch (e) {
+      setState(() {
+        currentTemp = 'Unavailable';
+        tempRange = 'Unavailable';
+      });
+    }
+  }
+*/
+
+  /*///Gets the users location and updates location based on: coordinates and reverse geo-encoding
   Future<void> getUserLocation() async {
     try {
       //finds the positions coordinates of the user
@@ -88,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+*/
 
   /// Fetch item data and count items by category using ItemService
   /*Future<void> fetchData() async {
@@ -159,12 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 // Current temperature
                 Text(
-                  '54°F', // TODO: Pull actual weather data dynamically
+                  //'54°F', // TODO: Pull actual weather data dynamically
+                  currentTemp,
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
                 // Temperature range (min/max)
                 Text(
-                  '37° - 64°', // TODO: Pull actual weather data dynamically
+                  //'37° - 64°', // TODO: Pull actual weather data dynamically
+                  tempRange,
                   style: kBodyMedium,
                 ),
               ],
@@ -327,4 +378,50 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: const CustomNavBar(),
     );
   }
+
+  
+Future<void> getUserWeatherAndLocation() async {
+  try {
+    Position position = await determinePosition();
+
+    // Get weather
+    WeatherService weatherService = WeatherService();
+    Weather weather = await weatherService.getTheWeather();
+
+    // Extract weather values
+    double? temp = weather.temperature?.fahrenheit;
+    double? tempMin = weather.tempMin?.fahrenheit;
+    double? tempMax = weather.tempMax?.fahrenheit;
+
+    // Reverse geocode
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    String location = placemarks.isNotEmpty && placemarks.first.locality != null
+        ? placemarks.first.locality!
+        : 'Location unknown';
+
+    // Update UI all at once
+    setState(() {
+      locationName = location;
+      currentTemp = temp != null ? '${temp.toStringAsFixed(0)}°F' : 'Unavailable';
+      tempRange = (tempMin != null && tempMax != null)
+          ? '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°'
+          : 'Unavailable';
+    });
+
+    print('Location: $locationName');
+    print('Current Temp: $currentTemp');
+    print('Temp Range: $tempRange');
+
+  } catch (e) {
+    setState(() {
+      locationName = 'Location is not available';
+      currentTemp = 'Unavailable';
+      tempRange = 'Unavailable';
+    });
+  }
+}
+
 }
