@@ -1,4 +1,5 @@
 import 'package:dressify_app/screens/home_screen.dart';
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
@@ -66,13 +67,34 @@ class LandingScreen extends StatelessWidget {
               width: screenWidth * 0.85, // Logo width is 85% of screen width
             ),
           ),
+          
+             /// Button to navigate to the "Log in" screen
+          Positioned(
+            left: screenWidth * 0.325, // Position 32% from the left
+            top: screenHeight * 0.73, // Position 81% from the top
+            child: CustomButton3(
+              label: 'Log in', // Button label
+               onPressed: () {
+                //TODO: Implement navigation to Log in screen
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                HomeScreen(), // Navigate to Home Screen 
+                            transitionDuration: Duration.zero, // No transition animation
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      },
+            ),
+          ),
 
           /// Button to navigate to the "Create Account" screen
           Positioned(
             left: screenWidth * 0.32, // Position 32% from the left
-            top: screenHeight * 0.73, // Position 73% from the top
-            child: CustomButton(
-              text: 'Create Account', // Button label
+            top: screenHeight * 0.81, // Position 73% from the top
+            child: CustomButton3(
+              label: 'Create Account', // Button label
                onPressed: () {
 
                 //TODO: Implement navigation to Create Account screen
@@ -89,26 +111,7 @@ class LandingScreen extends StatelessWidget {
             ),
           ),
 
-          /// Button to navigate to the "Log in" screen
-          Positioned(
-            left: screenWidth * 0.32, // Position 32% from the left
-            top: screenHeight * 0.81, // Position 81% from the top
-            child: CustomButton(
-              text: 'Log in', // Button label
-               onPressed: () {
-                //TODO: Implement navigation to Log in screen
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                HomeScreen(), // Navigate to Home Screen 
-                            transitionDuration: Duration.zero, // No transition animation
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
-            ),
-          ),
+       
         ],
       ),
     );

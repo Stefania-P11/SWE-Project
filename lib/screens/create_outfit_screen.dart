@@ -1,6 +1,7 @@
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/screens/choose_item_screen.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart';
 import 'package:dressify_app/widgets/label_input_field.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,6 @@ class CreateOutfitScreen extends StatefulWidget {
 }
 
 class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
-  
   // URLs to store the selected item images for top, bottom, and shoes
   String? topUrl;
   String? bottomUrl;
@@ -25,13 +25,11 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     // Get screen width and height for responsive UI
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      
       // Set background color using a constant defined in constants.dart
       backgroundColor: kBackgroundColor,
 
@@ -41,135 +39,121 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
       ), // Replaces the hamburger menu icon with a back arrow to allow the user to go back
 
       // Main body content
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            
-            // Scrollable Outfit Image Section
-            SizedBox(
-              height: screenHeight * 0.72, // Scroll area height
-              width: screenWidth,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.8),
-                  child: SizedBox(
-                    height: screenHeight * 0.8,
-                    child: Stack(
-                      children: [
-                        
-                        // Top Item Section
-                        Positioned(
-                          top: screenHeight * 0.03,
-                          left: screenWidth * 0.0,
-                          child: outfitItem(
-                            "Top",
-                            screenWidth,
-                            onTap: () async {
-                              
-                              // Navigate to ChooseItemScreen to select a Top
-                              final selectedItemUrl = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChooseItemScreen(category: "Top"),
-                                ),
-                              );
-
-                              // Update topUrl if a valid item is selected
-                              if (selectedItemUrl != null) {
-                                setState(() {
-                                  topUrl = selectedItemUrl;
-                                });
-                              }
-                            },
-                            
-                            // Show selected Top item image if available
-                            imageUrl: topUrl,
-                          ),
-                        ),
-
-                        // Bottom Item Section
-                        Positioned(
-                          top: screenHeight * 0.25,
-                          right: screenWidth * 0.0,
-                          child: outfitItem(
-                            "Bottom",
-                            screenWidth,
-                            onTap: () async {
-                             
-                             // Navigate to ChooseItemScreen to select Bottom
-                              final selectedItemUrl = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChooseItemScreen(category: "Bottom"),
-                                ),
-                              );
-
-                              // Update bottomUrl if a valid item is selected
-                              if (selectedItemUrl != null) {
-                                setState(() {
-                                  bottomUrl = selectedItemUrl;
-                                });
-                              }
-                            },
-                            
-                            // Show selected Bottom item image if available
-                            imageUrl: bottomUrl,
-                          ),
-                        ),
-
-                        // Shoes Item Section
-                        Positioned(
-                          top: screenHeight * 0.45,
-                          left: screenWidth * 0.0,
-                          child: outfitItem(
-                            "Shoes",
-                            screenWidth,
-                            onTap: () async {
-                             
-                             // Navigate to ChooseItemScreen to select Shoes
-                              final selectedItemUrl = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChooseItemScreen(category: "Shoes"),
-                                ),
-                              );
-
-                              // Update shoesUrl if a valid item is selected
-                              if (selectedItemUrl != null) {
-                                setState(() {
-                                  shoesUrl = selectedItemUrl;
-                                });
-                              }
-                            },
-                            
-                            // Show selected Shoes item image if available
-                            imageUrl: shoesUrl,
-                          ),
-                        ),
-                      ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Outfit items stack
+              SizedBox(
+                height: screenHeight * 0.7,
+                child: Stack(
+                  children: [
+                    // Top item
+                    Positioned(
+                      top: screenHeight * 0.03,
+                      left: 0,
+                      child: outfitItem(
+                        "Top",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Top"),
+                            ),
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              topUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: topUrl,
+                      ),
                     ),
-                  ),
+
+                    // Bottom item
+                    Positioned(
+                      top: screenHeight * 0.25,
+                      right: 0,
+                      child: outfitItem(
+                        "Bottom",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Bottom"),
+                            ),
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              bottomUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: bottomUrl,
+                      ),
+                    ),
+
+                    // Shoes item
+                    Positioned(
+                      top: screenHeight * 0.45,
+                      left: 0,
+                      child: outfitItem(
+                        "Shoes",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Shoes"),
+                            ),
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              shoesUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: shoesUrl,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            // Input field to name the outfit using LabelInputField widget
-            LabelInputField(
-              controller: outfitNameController,
-              hintText: "Add a name for your outfit",
-            ),
+              // Spacing
+              const SizedBox(height: 10),
 
-            // Add spacing between the input field and the next element
-            SizedBox(height: screenHeight * 0.03),
-          ],
+              // Input field
+              LabelInputField(
+                controller: outfitNameController,
+                hintText: "Add a name for your outfit",
+              ),
+
+              // SAVE button
+              CustomButton3(
+                label: "SAVE",
+                onPressed: () {
+                  // TODO: Handle save logic
+                  print("Save pressed: ${outfitNameController.text}");
+                },
+                isActive:
+                    (topUrl != null && bottomUrl != null && shoesUrl != null),
+              ),
+
+              const SizedBox(height: 30), // Extra bottom space
+            ],
+          ),
         ),
       ),
     );
   }
 }
+  /// Widget to display an outfit item with a label and image.
