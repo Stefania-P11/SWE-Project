@@ -19,8 +19,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dressify_app/models/item.dart'; // Needed to use Item.itemList
 import 'package:weather/weather.dart';
 
-
-
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String currentTemp = '';
   String tempRange = '';
 
-
   @override
   void initState() {
     super.initState();
@@ -54,10 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
     //getUserLocation();
 
     //getUserWeather();
- 
+
     // Fetch weather and location data when the screen initializes
     getUserWeatherAndLocation();
-
   }
 
   /*Future<void> getUserWeather() async {
@@ -158,33 +154,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // CHANGED: Count items from local memory for demo (no Firestore)
   Future<void> fetchData() async {
-  // If no items are loaded in the list, fetch them from Firestore  
-  if (!Item.isLoaded) {
-    await Item.fetchItems(kUsername);
-    Item.isLoaded = true;
+    // If no items are loaded in the list, fetch them from Firestore
+    if (!Item.isLoaded) {
+      await Item.fetchItems(kUsername);
+      Item.isLoaded = true;
+    }
+
+    Map<String, int> itemCounts = {
+      'topCount': 0,
+      'bottomCount': 0,
+      'shoeCount': 0,
+    };
+
+    for (final item in Item.itemList) {
+      if (item.category == 'Top')
+        itemCounts['topCount'] = itemCounts['topCount']! + 1;
+      if (item.category == 'Bottom')
+        itemCounts['bottomCount'] = itemCounts['bottomCount']! + 1;
+      if (item.category == 'Shoes')
+        itemCounts['shoeCount'] = itemCounts['shoeCount']! + 1;
+    }
+
+    setState(() {
+      topCount = itemCounts['topCount']!;
+      bottomCount = itemCounts['bottomCount']!;
+      shoeCount = itemCounts['shoeCount']!;
+      isLoading = false;
+    });
   }
-
-  Map<String, int> itemCounts = {
-    'topCount': 0,
-    'bottomCount': 0,
-    'shoeCount': 0,
-  };
-
-  for (final item in Item.itemList) {
-    if (item.category == 'Top') itemCounts['topCount'] = itemCounts['topCount']! + 1;
-    if (item.category == 'Bottom') itemCounts['bottomCount'] = itemCounts['bottomCount']! + 1;
-    if (item.category == 'Shoes') itemCounts['shoeCount'] = itemCounts['shoeCount']! + 1;
-  }
-
-  setState(() {
-    topCount = itemCounts['topCount']!;
-    bottomCount = itemCounts['bottomCount']!;
-    shoeCount = itemCounts['shoeCount']!;
-    isLoading = false;
-  });
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -290,41 +287,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button to play it safe - show favorite outfit
                   CustomButton2(
                     text: 'PLAY IT SAFE',
-                    onPressed: () async {
-                      // Step 1: Fetch all outfits from Firestore for the current user
-                      await Outfit.fetchOutfits(kUsername);
-
-                      // Step 2: Retrieve a random "safe" outfit from the loaded list
+                    onPressed: () {
+                      // ✅ Don't re-fetch from Firestore; use the local outfitList
                       final safeOutfit = PlayItSafeService.getSafeOutfit();
 
-                      // Step 3: Define a helper method to regenerate and replace the current screen
                       void regenerateAndReplace(BuildContext context) {
                         final newOutfit = PlayItSafeService.getSafeOutfit();
-
-                        // If a new outfit is available, replace the current screen with the new one (no page flip animation)
                         if (newOutfit != null) {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      OutfitSuggestionScreen(
-                                showFavorite:
-                                    false, // Don't show favorite icons in play-it-safe mode
-                                outfit:
-                                    newOutfit, // Display the new randomly selected outfit
-                                onRegenerate: () => regenerateAndReplace(
-                                    context), // 👈 Call recursively
-                                showDeleteIcon:
-                                    false, // Hide the delete (trash) icon
+                              pageBuilder: (context, _, __) =>
+                                  OutfitSuggestionScreen(
+                                showFavorite: false,
+                                outfit: newOutfit,
+                                onRegenerate: () =>
+                                    regenerateAndReplace(context),
+                                showDeleteIcon: false,
                               ),
-                              transitionDuration:
-                                  Duration.zero, // Disable transition animation
+                              transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
                           );
                         } else {
-                          // If no new outfit is available, show a snackbar
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text('No more outfits to show!')),
@@ -332,29 +317,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                       }
 
-                      // Step 4: If a safe outfit exists, navigate to OutfitSuggestionScreen
                       if (safeOutfit != null) {
                         Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    OutfitSuggestionScreen(
-                              showFavorite: false, // Don't show favorite icons
-                              outfit:
-                                  safeOutfit, // Display the initial safe outfit
-                              onRegenerate: () => regenerateAndReplace(
-                                  context), // Setup regenerate logic
-                              showDeleteIcon:
-                                  false, // Hide delete icon in play-it-safe mode
+                            pageBuilder: (context, _, __) =>
+                                OutfitSuggestionScreen(
+                              showFavorite: false,
+                              outfit: safeOutfit,
+                              onRegenerate: () => regenerateAndReplace(context),
+                              showDeleteIcon: false,
                             ),
-                            transitionDuration:
-                                Duration.zero, // Disable page flip animation
+                            transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
                         );
                       } else {
-                        // Step 5: If no saved outfits are found, show a snackbar
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('No saved outfits available!')),
@@ -393,49 +371,48 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  
-Future<void> getUserWeatherAndLocation() async {
-  try {
-    Position position = await determinePosition();
+  Future<void> getUserWeatherAndLocation() async {
+    try {
+      Position position = await determinePosition();
 
-    // Get weather
-    WeatherService weatherService = WeatherService();
-    Weather weather = await weatherService.getTheWeather();
+      // Get weather
+      WeatherService weatherService = WeatherService();
+      Weather weather = await weatherService.getTheWeather();
 
-    // Extract weather values
-    double? temp = weather.temperature?.fahrenheit;
-    double? tempMin = weather.tempMin?.fahrenheit;
-    double? tempMax = weather.tempMax?.fahrenheit;
+      // Extract weather values
+      double? temp = weather.temperature?.fahrenheit;
+      double? tempMin = weather.tempMin?.fahrenheit;
+      double? tempMax = weather.tempMax?.fahrenheit;
 
-    // Reverse geocode
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-    String location = placemarks.isNotEmpty && placemarks.first.locality != null
-        ? placemarks.first.locality!
-        : 'Location unknown';
+      // Reverse geocode
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      String location =
+          placemarks.isNotEmpty && placemarks.first.locality != null
+              ? placemarks.first.locality!
+              : 'Location unknown';
 
-    // Update UI all at once
-    setState(() {
-      locationName = location;
-      currentTemp = temp != null ? '${temp.toStringAsFixed(0)}°F' : 'Unavailable';
-      tempRange = (tempMin != null && tempMax != null)
-          ? '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°'
-          : 'Unavailable';
-    });
+      // Update UI all at once
+      setState(() {
+        locationName = location;
+        currentTemp =
+            temp != null ? '${temp.toStringAsFixed(0)}°F' : 'Unavailable';
+        tempRange = (tempMin != null && tempMax != null)
+            ? '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°'
+            : 'Unavailable';
+      });
 
-    print('Location: $locationName');
-    print('Current Temp: $currentTemp');
-    print('Temp Range: $tempRange');
-
-  } catch (e) {
-    setState(() {
-      locationName = 'Location is not available';
-      currentTemp = 'Unavailable';
-      tempRange = 'Unavailable';
-    });
+      print('Location: $locationName');
+      print('Current Temp: $currentTemp');
+      print('Temp Range: $tempRange');
+    } catch (e) {
+      setState(() {
+        locationName = 'Location is not available';
+        currentTemp = 'Unavailable';
+        tempRange = 'Unavailable';
+      });
+    }
   }
-}
-
 }

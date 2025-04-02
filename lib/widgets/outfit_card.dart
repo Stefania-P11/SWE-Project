@@ -23,48 +23,37 @@ Widget build(BuildContext context) {
   final cardWidth = (screenWidth / 2) - 24; // Account for padding and spacing
 
   return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OutfitSuggestionScreen(
-            showFavorite: false,
-            outfit: outfit,
-            showRegenerate: false,
-          ),
-        ),
-      );
-    },
-    child: Container(
-      width: cardWidth, // ✅ Restrict card width
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected ? Colors.blue : Colors.black12,
-          width: isSelected ? 3 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            outfit.label,
-            style: kH2.copyWith(fontSize: 16), // Smaller title for compact card
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          _buildOutfitSection(outfit.topItem.url),
-          const SizedBox(height: 8),
-          _buildOutfitSection(outfit.bottomItem.url),
-          const SizedBox(height: 8),
-          _buildOutfitSection(outfit.shoeItem.url),
-        ],
+  onTap: onTap,
+  child: Container(
+    width: cardWidth,
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isSelected ? Colors.blue : Colors.black12,
+        width: isSelected ? 3 : 1,
       ),
     ),
-  );
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          outfit.label,
+          style: kH2.copyWith(fontSize: 16),
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        _buildOutfitSection(outfit.topItem.url),
+        const SizedBox(height: 8),
+        _buildOutfitSection(outfit.bottomItem.url),
+        const SizedBox(height: 8),
+        _buildOutfitSection(outfit.shoeItem.url),
+      ],
+    ),
+  ),
+);
 }
 
 
