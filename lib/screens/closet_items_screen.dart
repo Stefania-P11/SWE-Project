@@ -57,33 +57,31 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
       });
     } */
 
-    Future<void> _loadItems() async {
-  setState(() => _isLoading = true); // Show loader while checking
+Future<void> _loadItems() async {
+  setState(() => _isLoading = true);
 
-  //CHANGED: Load items from Firestore only if itemList is still empty
   if (Item.itemList.isEmpty) {
     await Item.fetchItems(kUsername);
   }
-  /*method to inactivate filter button */
-  void _applyFilters() {
-    setState(() {
-      _isFilterVisible = false;
-    });
-  }
 
-  /*method to reset filter as default*/
-  void _resetFilters() {
   setState(() {
-    selectedCateg = null; // Reset category selection
-    selectedTemps.clear(); // Clear temperature selection
-    _isFilterVisible = false; // Hide filter UI
+    _items = Item.itemList;
+    _isLoading = false;
   });
 }
 
 
+void _applyFilters() {
   setState(() {
-    _items = Item.itemList; // Now itemList is guaranteed to be populated
-    _isLoading = false;
+    _isFilterVisible = false;
+  });
+}
+
+void _resetFilters() {
+  setState(() {
+    selectedCateg = null;
+    selectedTemps.clear();
+    _isFilterVisible = false;
   });
 }
 
