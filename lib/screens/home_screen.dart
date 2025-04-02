@@ -158,18 +158,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // CHANGED: Count items from local memory for demo (no Firestore)
   Future<void> fetchData() async {
-    int tops = Item.itemList.where((item) => item.category == 'Top').length;
-    int bottoms = Item.itemList.where((item) => item.category == 'Bottom').length;
-    int shoes = Item.itemList.where((item) => item.category == 'Shoes').length;
-
-    // Update state using local-only counts
-    setState(() {
-      topCount = tops;
-      bottomCount = bottoms;
-      shoeCount = shoes;
-      isLoading = false;
-    });
+  // If no items are loaded in the list, fetch them from Firestore  
+  if (!Item.isLoaded) {
+    await Item.fetchItems(kUsername);
+    Item.isLoaded = true;
   }
+
+  Map<String, int> itemCounts = {
+    'topCount': 0,
+    'bottomCount': 0,
+    'shoeCount': 0,
+  };
+
+  for (final item in Item.itemList) {
+    if (item.category == 'Top') itemCounts['topCount'] = itemCounts['topCount']! + 1;
+    if (item.category == 'Bottom') itemCounts['bottomCount'] = itemCounts['bottomCount']! + 1;
+    if (item.category == 'Shoes') itemCounts['shoeCount'] = itemCounts['shoeCount']! + 1;
+  }
+
+  setState(() {
+    topCount = itemCounts['topCount']!;
+    bottomCount = itemCounts['bottomCount']!;
+    shoeCount = itemCounts['shoeCount']!;
+    isLoading = false;
+  });
+}
+
 
 
   @override
