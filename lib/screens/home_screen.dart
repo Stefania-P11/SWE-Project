@@ -48,12 +48,16 @@ class _HomeScreenState extends State<HomeScreen> {
     // Fetch item data and count when the screen initializes
     fetchData();
     //gets the users current location on the screen
-    getUserLocation();
+    //getUserLocation();
 
-    getUserWeather();
+    //getUserWeather();
+ 
+    // Fetch weather and location data when the screen initializes
+    getUserWeatherAndLocation();
+
   }
 
-  Future<void> getUserWeather() async {
+  /*Future<void> getUserWeather() async {
     try {
       WeatherService weatherService = WeatherService();
       Weather weather = await weatherService.getTheWeather();
@@ -85,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+*/
 
-
-  ///Gets the users location and updates location based on: coordinates and reverse geo-encoding
+  /*///Gets the users location and updates location based on: coordinates and reverse geo-encoding
   Future<void> getUserLocation() async {
     try {
       //finds the positions coordinates of the user
@@ -126,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     }
   }
+*/
 
   /// Fetch item data and count items by category using ItemService
   Future<void> fetchData() async {
@@ -296,4 +301,50 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: const CustomNavBar(),
     );
   }
+
+  
+Future<void> getUserWeatherAndLocation() async {
+  try {
+    Position position = await determinePosition();
+
+    // Get weather
+    WeatherService weatherService = WeatherService();
+    Weather weather = await weatherService.getTheWeather();
+
+    // Extract weather values
+    double? temp = weather.temperature?.fahrenheit;
+    double? tempMin = weather.tempMin?.fahrenheit;
+    double? tempMax = weather.tempMax?.fahrenheit;
+
+    // Reverse geocode
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    String location = placemarks.isNotEmpty && placemarks.first.locality != null
+        ? placemarks.first.locality!
+        : 'Location unknown';
+
+    // Update UI all at once
+    setState(() {
+      locationName = location;
+      currentTemp = temp != null ? '${temp.toStringAsFixed(0)}°F' : 'Unavailable';
+      tempRange = (tempMin != null && tempMax != null)
+          ? '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°'
+          : 'Unavailable';
+    });
+
+    print('Location: $locationName');
+    print('Current Temp: $currentTemp');
+    print('Temp Range: $tempRange');
+
+  } catch (e) {
+    setState(() {
+      locationName = 'Location is not available';
+      currentTemp = 'Unavailable';
+      tempRange = 'Unavailable';
+    });
+  }
+}
+
 }
