@@ -70,7 +70,7 @@ class LandingScreen extends StatelessWidget {
           
              /// Button to navigate to the "Log in" screen
           Positioned(
-            left: screenWidth * 0.325, // Position 32% from the left
+            left: screenWidth * 0.326, // Position 32% from the left
             top: screenHeight * 0.73, // Position 81% from the top
             child: CustomButton3(
               label: 'Log in', // Button label
