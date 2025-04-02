@@ -14,6 +14,8 @@ class Item {
   // Static list to store fetched items
   static List<Item> itemList = [];
 
+   static bool isLoaded = false; 
+
   // Static counters to store item counts by category
   static int topCount = 0;      // Count of tops
   static int bottomCount = 0;   // Count of bottoms

@@ -44,6 +44,7 @@ dependencies:
   geocoding: ^2.1.0
   geolocator_android: ^4.6.2
   geolocator_apple: ^2.3.13
+  weather: ^3.1.1
 
 dev_dependencies:
   flutter_test:
