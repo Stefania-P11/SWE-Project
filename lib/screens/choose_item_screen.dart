@@ -25,7 +25,7 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
   // Create an instance of ItemService
   final ItemService _itemService = ItemService();
 
-  @override
+   @override
   void initState() {
     super.initState();
     _loadItems(); // Load items when the screen initializes
@@ -33,21 +33,13 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
 
   /// Fetch items from Firestore using ItemService and filter based on the selected category
   Future<void> _loadItems() async {
-    setState(() {
-      _isLoading = true; // Show loading indicator while data is fetched
-    });
-
-    // Fetch items using the service and filter by category
-    final items = await _itemService.fetchItemsByCategory(
-      widget.category,
-      kUsername, 
-    );
-
-    setState(() {
-      _items = items; // Update item list with fetched and filtered items
-      _isLoading = false; // Hide loading indicator after data is loaded
-    });
-  }
+  setState(() {
+    _items = Item.itemList
+        .where((item) => item.category == widget.category)
+        .toList(); // Local filter only
+    _isLoading = false;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
