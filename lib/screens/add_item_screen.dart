@@ -4,8 +4,7 @@ import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app 
 import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button with active/inactive state
 import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
-import 'package:dressify_app/services/firebase_service.dart'; 
-
+import 'package:dressify_app/services/firebase_service.dart';
 
 /// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
@@ -102,31 +101,31 @@ class _AddItemScreenState extends State<AddItemScreen> {
   }
 
   void _handleDeleteItem() {
-  if (widget.item != null) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Delete Item"),
-        content: Text("Are you sure you want to delete this item?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              FirebaseService.removeLocalItem(widget.item!);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context, true); // Pop with flag to trigger refresh
-            },
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+    if (widget.item != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Delete Item"),
+          content: Text("Are you sure you want to delete this item?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                FirebaseService.removeLocalItem(widget.item!);
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(
+                    context, true); // Pop with flag to trigger refresh
+              },
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -135,14 +134,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
+      backgroundColor: kBackgroundColor,
 
       // Custom App Bar with back button and optional edit/delete icons
       appBar: CustomAppBar(
         showBackButton: true,
         isViewMode: isViewMode,
         onEditPressed: _switchToEditMode, // Pass callback to enable edit mode
-        onDeletePressed: _handleDeleteItem, // 
+        onDeletePressed: _handleDeleteItem, //
       ),
 
       // Body of the Add Item Screen

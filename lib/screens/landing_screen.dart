@@ -33,27 +33,32 @@ class LandingScreen extends StatelessWidget {
           ),
 
           /// Display the logo within an oval shape
-          Positioned(
+          Positioned.fill(
             top: screenHeight * 0.25, // Position 25% from the top
-            left: screenWidth * 0.15, // Position 15% from the left
-            child: Stack(
-              alignment: Alignment.center, // Center the logo inside the oval
-              children: [
-                // Oval background for the logo
-                Container(
-                  width: screenWidth * 0.8, // Oval width is 80% of screen width
-                  height: screenWidth * 0.8, // Oval height is equal to its width
-                  decoration: const ShapeDecoration(
-                    color: Color(0xFFD9D9D9), // Light gray background color
-                    shape: OvalBorder(), // Shape of the container (oval)
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Stack(
+                alignment: Alignment.center, // Center the logo inside the oval
+                children: [
+                  // Oval background for the logo
+                  Container(
+                    width:
+                        screenWidth * 0.8, // Oval width is 80% of screen width
+                    height:
+                        screenWidth * 0.8, // Oval height is equal to its width
+                    decoration: const ShapeDecoration(
+                      color: kOvalShapeColor, // Light gray background color
+                      shape: OvalBorder(), // Shape of the container (oval)
+                    ),
                   ),
-                ),
-                // Logo image (Logo_Mark.png) centered in the oval
-                SvgPicture.asset(
-                  'lib/assets/images/Logo_Mark.svg',
-                  width: screenWidth * 0.4, // Logo width is 40% of screen width
-                ),
-              ],
+                  // Logo image (Logo_Mark.png) centered in the oval
+                  SvgPicture.asset(
+                    'lib/assets/images/Logo_Mark.svg',
+                    width:
+                        screenWidth * 0.4, // Logo width is 40% of screen width
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -73,19 +78,19 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.73, // Position 73% from the top
             child: CustomButton(
               text: 'Create Account', // Button label
-               onPressed: () {
-
+              onPressed: () {
                 //TODO: Implement navigation to Create Account screen
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                HomeScreen(), // Navigate to HomeScreen
-                            transitionDuration: Duration.zero, // No transition animation
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        HomeScreen(), // Navigate to HomeScreen
+                    transitionDuration:
+                        Duration.zero, // No transition animation
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
             ),
           ),
 
@@ -95,18 +100,19 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.81, // Position 81% from the top
             child: CustomButton(
               text: 'Log in', // Button label
-               onPressed: () {
+              onPressed: () {
                 //TODO: Implement navigation to Log in screen
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                HomeScreen(), // Navigate to Home Screen 
-                            transitionDuration: Duration.zero, // No transition animation
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        HomeScreen(), // Navigate to Home Screen
+                    transitionDuration:
+                        Duration.zero, // No transition animation
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
             ),
           ),
         ],

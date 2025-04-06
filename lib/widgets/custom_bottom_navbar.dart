@@ -19,8 +19,10 @@ class CustomNavBar extends StatelessWidget {
       context,
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => screen,
-        transitionDuration: Duration(milliseconds: 0), // No animation when changing screens
-        settings: RouteSettings(name: screen.runtimeType.toString()), // Set route name
+        transitionDuration:
+            Duration(milliseconds: 0), // No animation when changing screens
+        settings: RouteSettings(
+            name: screen.runtimeType.toString()), // Set route name
       ),
     );
   }
@@ -39,7 +41,7 @@ class CustomNavBar extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          backgroundColor: kBackgroundColor,
+          backgroundColor: kappBarColor,
           onTap: (index) {
             switch (index) {
               case 0:
@@ -66,7 +68,8 @@ class CustomNavBar extends StatelessWidget {
               label: 'Wardrobe',
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset("lib/assets/icons/solar_heart-outline.svg"),
+              icon:
+                  SvgPicture.asset("lib/assets/icons/solar_heart-outline.svg"),
               label: 'Favorites',
             ),
             BottomNavigationBarItem(

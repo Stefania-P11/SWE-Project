@@ -39,7 +39,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text("Delete Outfit"),
-          content: const Text("Are you sure you want to remove this outfit from favorites?"),
+          content: const Text(
+              "Are you sure you want to remove this outfit from favorites?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context), // Cancel dialog
@@ -47,7 +48,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             ),
             TextButton(
               onPressed: () {
-                FirebaseService.removeLocalOutfit(widget.outfit!); // Remove from local list
+                FirebaseService.removeLocalOutfit(
+                    widget.outfit!); // Remove from local list
                 // Also remove from the global list just in case
                 Outfit.outfitList.removeWhere((o) => o.id == widget.outfit!.id);
                 Navigator.pop(context); // Close dialog
@@ -64,7 +66,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
-    final screenHeight = MediaQuery.of(context).size.height; // Get screen height
+    final screenHeight =
+        MediaQuery.of(context).size.height; // Get screen height
 
     return Scaffold(
       backgroundColor: kBackgroundColor, // Set background color
@@ -90,7 +93,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
               width: screenWidth,
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.8),
                   child: SizedBox(
                     height: screenHeight * 0.8,
                     child: Stack(
@@ -99,19 +103,22 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         Positioned(
                           top: screenHeight * 0.03,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
+                          child: outfitItem("Top", screenWidth,
+                              imageUrl: widget.outfit?.topItem.url),
                         ),
                         // Display bottom item image
                         Positioned(
                           top: screenHeight * 0.25,
                           right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
+                          child: outfitItem("Bottom", screenWidth,
+                              imageUrl: widget.outfit?.bottomItem.url),
                         ),
                         // Display shoes item image
                         Positioned(
                           top: screenHeight * 0.45,
                           left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),
+                          child: outfitItem("Shoes", screenWidth,
+                              imageUrl: widget.outfit?.shoeItem.url),
                         ),
                       ],
                     ),
@@ -160,9 +167,10 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     IconButton(
                       iconSize: screenWidth * 0.1,
                       icon: const Icon(Icons.autorenew),
-                      onPressed: widget.onRegenerate ?? () {
-                        print("Regenerate pressed");
-                      },
+                      onPressed: widget.onRegenerate ??
+                          () {
+                            print("Regenerate pressed");
+                          },
                     ),
 
                   // Thumbs up (like)
