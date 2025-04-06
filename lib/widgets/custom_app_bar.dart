@@ -51,8 +51,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Padding(
               padding: const EdgeInsets.all(12.0),
-              child: SvgPicture.asset(
-                  'lib/assets/icons/menu.svg'), // Display menu icon
+              child: Icon(Icons.menu), // Display menu icon
             ),
 
       // Right-side icons in the app bar
@@ -85,8 +84,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             // TODO: Handle profile navigation
           },
-          icon:
-              SvgPicture.asset('lib/assets/icons/account.svg'), // Profile icon
+          icon: Icon(Icons.account_circle_rounded), // Profile icon
         ),
       ],
 
