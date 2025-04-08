@@ -18,7 +18,7 @@ class CustomButton extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: screenWidth * 0.25),
       child: Material(
-        color: kButtonColor,
+        color: konPressedColor,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: onPressed,

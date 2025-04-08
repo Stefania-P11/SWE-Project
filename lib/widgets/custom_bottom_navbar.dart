@@ -10,7 +10,7 @@ class CustomNavBar extends StatelessWidget {
   const CustomNavBar({super.key});
 
   void _navigateTo(BuildContext context, Widget screen) {
-    final currentRoute = ModalRoute.of(context)?.settings.name;
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? "HomeScreen";
     // Avoid navigating to the same screen:
     if (screen.runtimeType.toString() == currentRoute) return;
     Navigator.push(
@@ -26,7 +26,8 @@ class CustomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Grab the current route name from the context.
-    final String? currentRoute = ModalRoute.of(context)?.settings.name;
+    final String currentRoute =
+        ModalRoute.of(context)?.settings.name ?? "HomeScreen";
 
     return Column(
       mainAxisSize: MainAxisSize.min,

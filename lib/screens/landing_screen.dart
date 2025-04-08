@@ -84,7 +84,7 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.73, // Position 73% from the top
             child: Container(
               decoration: ShapeDecoration(
-                color: const Color(0xFF302D30),
+                color: konPressedColor,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4)),
                 shadows: [
@@ -120,7 +120,7 @@ class LandingScreen extends StatelessWidget {
             top: screenHeight * 0.81, // Position 81% from the top
             child: Container(
               decoration: ShapeDecoration(
-                color: const Color(0xFF302D30),
+                color: konPressedColor,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4)),
                 shadows: [
@@ -133,6 +133,7 @@ class LandingScreen extends StatelessWidget {
                 ],
               ),
               child: CustomButton(
+                // color: konPressedColor,
                 text: 'Log in', // Button label
                 onPressed: () {
                   //TODO: Implement navigation to Log in screen
