@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
-import '../models/item.dart';
-import '../models/outfit.dart';
+import 'package:dressify_app/models/item.dart';
+import 'package:dressify_app/models/outfit.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 class FirebaseService{
   //Reusable Firestore instance
-  static FirebaseFirestore db = FirebaseFirestore.instance;
-
+  static final FirebaseFirestore db = FirebaseFirestore.instance;
+  static final storage = FirebaseStorage.instance;
   //removes item from firestore
   static removeFirestoreItem(Item item){
     db.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).delete();
