@@ -8,7 +8,7 @@ Widget outfitItem(String label, double screenWidth,
     alignment: const Alignment(0.0, -0.7),
     children: [
       ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: imageUrl != null && imageUrl.isNotEmpty
             ? Image.network(
                 imageUrl,

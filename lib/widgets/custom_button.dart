@@ -24,7 +24,7 @@ class CustomButton extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(4),
           child: Container(
-            width: screenWidth * 0.36,
+            width: screenWidth * 0.40,
             height: MediaQuery.of(context).size.height * 0.06,
             alignment: Alignment.center,
             padding: const EdgeInsets.all(10),

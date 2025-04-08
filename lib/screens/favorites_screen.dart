@@ -24,7 +24,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   void _gridViewOption() {
     setState(() {
       _gridView = _gridView == 2 ? 1 : 2;
-      debugPrint('Grid view updated to $_gridView');
+      // debugPrint('Grid view updated to $_gridView');
     });
   }
 

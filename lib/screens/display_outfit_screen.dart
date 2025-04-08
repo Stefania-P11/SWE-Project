@@ -83,47 +83,72 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
       // Main body layout
       body: Padding(
-        padding: const EdgeInsets.all(8.0), // Screen padding
+        padding: EdgeInsets.only(top: screenHeight * 0.15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            /// Outfit image section (scrollable in case content overflows)
             SizedBox(
-              height: screenHeight * 0.72,
+              height: screenHeight * 0.5, // Scroll area height
               width: screenWidth,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.8),
-                  child: SizedBox(
-                    height: screenHeight * 0.8,
-                    child: Stack(
-                      children: [
-                        // Display top item image
-                        Positioned(
-                          top: screenHeight * 0.03,
-                          left: screenWidth * 0.0,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Left side: Top item (full height)
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Your background color
+                            borderRadius: BorderRadius.circular(
+                                8), // Optional rounded corners
+                          ),
                           child: outfitItem("Top", screenWidth,
                               imageUrl: widget.outfit?.topItem.url),
                         ),
-                        // Display bottom item image
-                        Positioned(
-                          top: screenHeight * 0.25,
-                          right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth,
-                              imageUrl: widget.outfit?.bottomItem.url),
+                      ),
+                      const SizedBox(width: 16),
+                      // Display bottom item image
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Bottom item with flex 2
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white, // Your background color
+                                  borderRadius: BorderRadius.circular(
+                                      8), // Optional rounded corners
+                                ),
+                                child: outfitItem("Bottom", screenWidth,
+                                    imageUrl: widget.outfit?.bottomItem.url),
+                              ),
+                            ),
+                            // Vertical spacing between Bottom and Shoes
+                            const SizedBox(height: 16),
+                            // Display shoes item image
+                            // Shoes item as a square box using AspectRatio
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white, // Your background color
+                                  borderRadius: BorderRadius.circular(
+                                      8), // Optional rounded corners
+                                ),
+                                child: outfitItem("Shoes", screenWidth,
+                                    imageUrl: widget.outfit?.shoeItem.url),
+                              ),
+                            )
+                          ],
                         ),
-                        // Display shoes item image
-                        Positioned(
-                          top: screenHeight * 0.45,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth,
-                              imageUrl: widget.outfit?.shoeItem.url),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                      ),
+                    ]),
               ),
             ),
 
