@@ -9,9 +9,9 @@ import 'package:dressify_app/models/outfit.dart';
 
 ///Convert temperature to a weather category
 String getTempCategory(double temp) {
-  if (temp < 50) return "Cold";
-  if (temp < 70) return "Cool";
-  if (temp < 90) return "Warm";
+  if (temp < 40) return "Cold";
+  if (temp < 60) return "Cool";
+  if (temp < 80) return "Warm";
   return "Hot";
 }
 
@@ -85,11 +85,11 @@ Future<List<Item>> matchTopAndShoe({
 
 
   //debug
-  print('👖 Bottom color detected: $bottomColor');
-  print('🎯 Matching top colors: $topColors');
-  print('🎯 Matching shoe colors: $shoeColors');
-  print('🧺 Wardrobe top candidates: ${wardrobe.where((i) => i.category == "top").length}');
-  print('🧺 Wardrobe shoe candidates: ${wardrobe.where((i) => i.category == "shoe").length}');
+  print('Bottom color detected: $bottomColor');
+  print('Matching top colors: $topColors');
+  print('Matching shoe colors: $shoeColors');
+  print('Wardrobe top candidates: ${wardrobe.where((i) => i.category == "top").length}');
+  print('Wardrobe shoe candidates: ${wardrobe.where((i) => i.category == "shoe").length}');
 
   List<Future<MapEntry<Item, String>>> topColorFutures = wardrobe
     .where((item) => item.category.toLowerCase().contains("top") && item.weather.contains(tempCategory))
@@ -116,8 +116,8 @@ Future<List<Item>> matchTopAndShoe({
   final top = matchedTops.isNotEmpty ? matchedTops[Random().nextInt(matchedTops.length)] : Item(category: 'Top', id: 0, label: 'default', timesWorn: 0, url: 'https://via.placeholder.com/150', weather: [tempCategory]);
   final shoe = matchedShoes.isNotEmpty ? matchedShoes[Random().nextInt(matchedShoes.length)] : Item(category: 'Shoe', id: 0, label: 'default', timesWorn: 0, url: 'https://via.placeholder.com/150', weather: [tempCategory]);
   //debug
-  print('🧠 Top results: ${matchedTops.map((e) => e.label).toList()}');
-  print('🧠 Shoe results: ${matchedShoes.map((e) => e.label).toList()}');
+  print('Top results: ${matchedTops.map((e) => e.label).toList()}');
+  print('Shoe results: ${matchedShoes.map((e) => e.label).toList()}');
   return [top, shoe];
 }
 
@@ -131,13 +131,13 @@ Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = con
   final temp = weather.temperature?.fahrenheit ?? 70.0; // default fallback
   
   final tempCategory = getTempCategory(temp);
-  print('🌡️ Temp Category: $tempCategory');
+  print('Temp Category: $tempCategory');
 
   final validBottoms = wardrobe.where((item) =>
     item.category.toLowerCase().contains("bottom") &&
     item.weather.contains(tempCategory) &&
     !excludeBottomIds.contains(item.id)).toList();
-  print('👖 Bottoms available: ${validBottoms.length}');
+  print('Bottoms available: ${validBottoms.length}');
   
   //if (validBottoms.isEmpty) return null;
 
@@ -148,7 +148,7 @@ Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = con
     : null;
 
   if (bottom == null) {
-    print('❌ No bottom found for temp category $tempCategory');
+    print(' No bottom found for temp category $tempCategory');
     return null;
   }
 
