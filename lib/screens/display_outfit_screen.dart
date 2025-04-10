@@ -31,7 +31,15 @@ class OutfitSuggestionScreen extends StatefulWidget {
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
-
+  
+  ///add debugging to make sure everything loads right
+  @override
+  void initState() {
+    super.initState();
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+  }
   /// Show a confirmation dialog before removing the outfit locally
   void _handleDeleteOutfit() {
     if (widget.outfit != null) {
@@ -66,6 +74,10 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
     final screenHeight = MediaQuery.of(context).size.height; // Get screen height
 
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+
     return Scaffold(
       backgroundColor: kBackgroundColor, // Set background color
 
@@ -85,7 +97,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             /// Outfit image section (scrollable in case content overflows)
-            SizedBox(
+            /*SizedBox(
               height: screenHeight * 0.72,
               width: screenWidth,
               child: SingleChildScrollView(
@@ -100,25 +112,77 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                           top: screenHeight * 0.03,
                           left: screenWidth * 0.0,
                           child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
+                          
                         ),
                         // Display bottom item image
                         Positioned(
                           top: screenHeight * 0.25,
                           right: screenWidth * 0.0,
                           child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
+                          
                         ),
                         // Display shoes item image
                         Positioned(
                           top: screenHeight * 0.45,
                           left: screenWidth * 0.0,
                           child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),
+                          
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
+            ),*/
+            SizedBox(
+            height: screenHeight * 0.72,
+            width: screenWidth,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: SizedBox(
+                  height: screenHeight * 0.8,
+                  child: Stack(
+                    children: [
+                      // 🟦 Top Item
+                      Positioned(
+                        top: screenHeight * 0.03,
+                        left: 0,
+                        child: outfitItem(
+                          "Top",
+                          screenWidth,
+                          imageUrl: widget.outfit?.topItem.url,
+                        ),
+                      ),
+
+                      // 🟨 Bottom Item
+                      Positioned(
+                        top: screenHeight * 0.25,
+                        right: 0,
+                        child: outfitItem(
+                          "Bottom",
+                          screenWidth,
+                          imageUrl: widget.outfit?.bottomItem.url,
+                        ),
+                      ),
+
+                      // 🟩 Shoes Item
+                      Positioned(
+                        top: screenHeight * 0.45,
+                        left: 0,
+                        child: outfitItem(
+                          "Shoe",
+                          screenWidth,
+                          imageUrl: widget.outfit?.shoeItem.url,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
+          ),
+
 
             SizedBox(height: screenHeight * 0.03), // Spacer
 
