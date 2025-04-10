@@ -93,7 +93,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   try {
     String? imageUrl = _imagePath;
 
-    // Upload image if not already a URL
+    // ✅ STEP 1: Upload image if it’s local (not already a URL)
     if (_imagePath != null && !_imagePath!.startsWith('http')) {
       final file = XFile(_imagePath!);
       imageUrl = await CloudService().uploadImageToFirebase(file);
@@ -107,44 +107,37 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
     }
 
+    // ✅ STEP 2: Build Item with Firebase image URL
+    final item = Item(
+      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch,
+      label: _nameController.text,
+      category: selectedCategory,
+      weather: selectedTemperatures,
+      url: imageUrl!,
+      timesWorn: widget.item?.timesWorn ?? 0,
+    );
+
+    // ✅ STEP 3: Save to Firestore
     if (widget.item == null) {
-      // Add new item
-      final newItem = Item(
-        id: DateTime.now().millisecondsSinceEpoch, // Or use UUID
-        label: _nameController.text,
-        category: selectedCategory,
-        weather: selectedTemperatures,
-        url: imageUrl!, timesWorn: 0,
-      );
-
-      await FirebaseService.addFirestoreItem(newItem);
+      await FirebaseService.addFirestoreItem(item);
     } else {
-      // Update existing item
-      final updatedItem = Item(
-        id: widget.item!.id,
-        label: _nameController.text,
-        category: selectedCategory,
-        weather: selectedTemperatures,
-        url: imageUrl!, timesWorn: widget.item!.timesWorn,
-      );
-
       await FirebaseService.editFirestoreItemDetails(
-        updatedItem,
-        updatedItem.label,
-        updatedItem.category,
-        updatedItem.weather,
+        item,
+        item.label,
+        item.category,
+        item.weather,
       );
-
       FirebaseService.editLocalItemDetails(
         widget.item!,
-        updatedItem.label,
-        updatedItem.category,
-        updatedItem.weather,
+        item.label,
+        item.category,
+        item.weather,
       );
     }
 
+    // ✅ STEP 4: Close Dialogs
     Navigator.pop(context); // Close loading dialog
-    Navigator.pop(context, true); // Return to previous screen
+    Navigator.pop(context, true); // Pop back with success flag
 
   } catch (e) {
     Navigator.pop(context);
@@ -153,6 +146,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     );
   }
 }
+
 
 
   /// Switches to Edit Mode when the edit icon is clicked

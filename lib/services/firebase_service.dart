@@ -100,6 +100,7 @@ static Future<void> addFirestoreItem(Item item) async {
     'weather': item.weather,
     'url': item.url,
     'id': item.id,
+    'timesWorn': 0,
   };
 
   await db
