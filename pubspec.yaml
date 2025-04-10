@@ -48,6 +48,8 @@ dependencies:
   geolocator_android: ^4.6.2
   geolocator_apple: ^2.3.13
   weather: ^3.1.1
+  firebase_storage: ^12.4.5
+  firebase_auth: ^5.5.2
 
 dev_dependencies:
   flutter_test:
