@@ -18,6 +18,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dressify_app/models/item.dart'; // Needed to use Item.itemList
 import 'package:weather/weather.dart';
+import 'package:dressify_app/services/surprise_me_service.dart';
 
 /// HomeScreen - Displays weather, wardrobe insights, and action buttons
 class HomeScreen extends StatefulWidget {
@@ -42,6 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String currentTemp = '';
   String tempRange = '';
 
+  Set<int> usedBottomIds = {}; // track used bottoms
+
   @override
   void initState() {
     super.initState();
@@ -56,102 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
     getUserWeatherAndLocation();
   }
 
-  /*Future<void> getUserWeather() async {
-    try {
-      WeatherService weatherService = WeatherService();
-      Weather weather = await weatherService.getTheWeather();
-
-      double? temp = weather.temperature?.fahrenheit;
-      double? tempMin = weather.tempMin?.fahrenheit;
-      double? tempMax = weather.tempMax?.fahrenheit;
-
-      setState(() {
-        if (temp != null) {
-          currentTemp = '${temp.toStringAsFixed(0)}°F';
-        } else {
-          currentTemp = 'Unavailable';
-        }
-
-        if (tempMin != null && tempMax != null) {
-          tempRange = '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°';
-        } else {
-          tempRange = 'Unavailable';
-        }
-
-      });
-      print('Current Temp: $currentTemp');
-      print('Temp Range: $tempRange');
-    } catch (e) {
-      setState(() {
-        currentTemp = 'Unavailable';
-        tempRange = 'Unavailable';
-      });
-    }
-  }
-*/
-
-  /*///Gets the users location and updates location based on: coordinates and reverse geo-encoding
-  Future<void> getUserLocation() async {
-    try {
-      //finds the positions coordinates of the user
-      Position position = await determinePosition();
-
-      //converts the coordinates correctly
-      List<Placemark> cordinate = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      //checks if the coordinate data is there
-      if (cordinate.isNotEmpty) {
-        Placemark address = cordinate[0];
-
-        //checks if the address from the coordinates contains a locailty AKA city name
-        if (address.locality != null) {
-          //the location name gets updated with the city name
-          setState(() {
-            locationName = address.locality!;
-          });
-          print("Location: $locationName");
-        } else {
-          //the location gets updated to unknown since the address does not have a city
-          setState(() {
-            locationName = 'Location is unknown';
-          });
-        }
-        //coordinate data is not there, so the location name is unknown
-      } else {
-        setState(() {
-          locationName = 'Location is unknown';
-        });
-      }
-      //catches any error that doesn't allow access to location
-    } catch (e) {
-      setState(() {
-        locationName = 'Location is not available ';
-      });
-    }
-  }
-*/
+  
 
   /// Fetch item data and count items by category using ItemService
-  /*Future<void> fetchData() async {
-    // Create an instance of ItemService to fetch and count items
-    ItemService itemService = ItemService();
-
-    // Fetch item counts for different categories
-    Map<String, int> itemCounts =
-        await itemService.fetchAndCountItems(kUsername);
-
-    // Update state with the fetched item counts and stop loading indicator
-    setState(() {
-      topCount = itemCounts['topCount'] ?? 0;
-      bottomCount = itemCounts['bottomCount'] ?? 0;
-      shoeCount = itemCounts['shoeCount'] ?? 0;
-      isLoading = false;
-    });
-  }*/
-
   // CHANGED: Count items from local memory for demo (no Firestore)
   Future<void> fetchData() async {
     // If no items are loaded in the list, fetch them from Firestore
@@ -342,21 +252,76 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   // Button to generate a random outfit
+                  
                   CustomButton2(
                     text: 'SURPRISE ME',
-                    onPressed: () {
-                      // TODO: Implement AI feature to generate random outfits
-                      // Retrieve the ID's of the outfit components and pass to OutfitSuggestionScreen
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const OutfitSuggestionScreen(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
+                    onPressed: () async {
+                      setState(() => isLoading = true);
+                      final firstOutfit = await surpriseMe(Item.itemList);
+                      setState(() => isLoading = false);
+
+                      if (firstOutfit != null) {
+                        usedBottomIds = {firstOutfit.bottomItem.id};
+
+                        void handleRegenerate(BuildContext context) async {
+                          final newOutfit = await surpriseMe(
+                            Item.itemList,
+                            excludeBottomIds: usedBottomIds,
+                          );
+
+                          if (newOutfit != null) {
+                            usedBottomIds.add(newOutfit.bottomItem.id);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OutfitSuggestionScreen(
+                                  outfit: newOutfit,
+                                  showFavorite: true,
+                                  showDeleteIcon: false,
+                                  onRegenerate: () => handleRegenerate(context),
+                                ),
+                              ),
+                            );
+                          } else {
+                            usedBottomIds.clear();
+                            final restartOutfit = await surpriseMe(Item.itemList);
+                            if (restartOutfit != null) {
+                              usedBottomIds = {restartOutfit.bottomItem.id};
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OutfitSuggestionScreen(
+                                    outfit: restartOutfit,
+                                    showFavorite: true,
+                                    showDeleteIcon: false,
+                                    onRegenerate: () => handleRegenerate(context),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No outfits available!!')),
+                              );
+                            }
+                          }
+                        }
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OutfitSuggestionScreen(
+                              outfit: firstOutfit,
+                              showFavorite: true,
+                              showDeleteIcon: false,
+                              onRegenerate: () => handleRegenerate(context),
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not generate an outfit.')),
+                        );
+                      }
                     },
                   ),
                 ],
@@ -365,12 +330,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: const CustomNavBar(),
     );
   }
 
+  
   Future<void> getUserWeatherAndLocation() async {
     try {
       Position position = await determinePosition();
@@ -415,4 +379,27 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+  //Ensure having a valid OutfitItem() --> this should return a proper image + label
+  Widget outfitItem(String label, double width, {required String? imageUrl}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      imageUrl != null && imageUrl.isNotEmpty
+          ? Image.network(
+              imageUrl,
+              width: width * 0.35,
+              height: width * 0.35,
+              fit: BoxFit.cover,
+            )
+          : Container(
+              width: width * 0.35,
+              height: width * 0.35,
+              color: Colors.grey[300],
+              child: const Center(child: Text('No Image')),
+            ),
+      const SizedBox(height: 8),
+      Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+    ],
+  );
+}
 }

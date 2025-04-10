@@ -31,7 +31,15 @@ class OutfitSuggestionScreen extends StatefulWidget {
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
-
+  
+  ///add debugging to make sure everything loads right
+  @override
+  void initState() {
+    super.initState();
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+  }
   /// Show a confirmation dialog before removing the outfit locally
   void _handleDeleteOutfit() {
     if (widget.outfit != null) {
@@ -66,8 +74,11 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
-    final screenHeight =
-        MediaQuery.of(context).size.height; // Get screen height
+    final screenHeight = MediaQuery.of(context).size.height; // Get screen height
+
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
 
     return Scaffold(
       backgroundColor: kBackgroundColor, // Set background color
@@ -87,70 +98,90 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            /// Outfit image section (scrollable in case content overflows)
             SizedBox(
-              height: screenHeight * 0.5, // Scroll area height
+              height: screenHeight * 0.72,
               width: screenWidth,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                  child: SizedBox(
+                    height: screenHeight * 0.8,
+                    child: Stack(
+                      children: [
+                        // Display top item image
+                        Positioned(
+                          top: screenHeight * 0.03,
+                          left: screenWidth * 0.0,
+                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
+                        ),
+                        // Display bottom item image
+                        Positioned(
+                          top: screenHeight * 0.25,
+                          right: screenWidth * 0.0,
+                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
+                        ),
+                        // Display shoes item image
+                        Positioned(
+                          top: screenHeight * 0.45,
+                          left: screenWidth * 0.0,
+                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),*/
+            SizedBox(
+            height: screenHeight * 0.72,
+            width: screenWidth,
+            child: SingleChildScrollView(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: SizedBox(
+                  height: screenHeight * 0.8,
+                  child: Stack(
                     children: [
-                      // Left side: Top item (full height)
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white, // Your background color
-                            borderRadius: BorderRadius.circular(
-                                8), // Optional rounded corners
-                          ),
-                          child: outfitItem("Top", screenWidth,
-                              imageUrl: widget.outfit?.topItem.url),
+                      // 🟦 Top Item
+                      Positioned(
+                        top: screenHeight * 0.03,
+                        left: 0,
+                        child: outfitItem(
+                          "Top",
+                          screenWidth,
+                          imageUrl: widget.outfit?.topItem.url,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      // Display bottom item image
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Bottom item with flex 2
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white, // Your background color
-                                  borderRadius: BorderRadius.circular(
-                                      8), // Optional rounded corners
-                                ),
-                                child: outfitItem("Bottom", screenWidth,
-                                    imageUrl: widget.outfit?.bottomItem.url),
-                              ),
-                            ),
-                            // Vertical spacing between Bottom and Shoes
-                            const SizedBox(height: 16),
-                            // Display shoes item image
-                            // Shoes item as a square box using AspectRatio
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white, // Your background color
-                                  borderRadius: BorderRadius.circular(
-                                      8), // Optional rounded corners
-                                ),
-                                child: outfitItem("Shoes", screenWidth,
-                                    imageUrl: widget.outfit?.shoeItem.url),
-                              ),
-                            )
-                          ],
+
+                      // 🟨 Bottom Item
+                      Positioned(
+                        top: screenHeight * 0.25,
+                        right: 0,
+                        child: outfitItem(
+                          "Bottom",
+                          screenWidth,
+                          imageUrl: widget.outfit?.bottomItem.url,
                         ),
                       ),
-                    ]),
+
+                      // 🟩 Shoes Item
+                      Positioned(
+                        top: screenHeight * 0.45,
+                        left: 0,
+                        child: outfitItem(
+                          "Shoe",
+                          screenWidth,
+                          imageUrl: widget.outfit?.shoeItem.url,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
+          ),
+
 
             SizedBox(height: screenHeight * 0.03), // Spacer
 
