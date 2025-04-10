@@ -5,7 +5,8 @@ import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button wit
 import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
 import 'package:dressify_app/services/firebase_service.dart'; 
-
+import 'package:dressify_app/services/cloud_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
   /// Handles saving or updating item details
   /// TODO: Remove this once actual method is implemented in it's own file
-  void _handleSaveOrUpdate() {
+  /*void _handleSaveOrUpdate() {
     if (widget.item == null) {
       // New item being added
       print("New Item:");
@@ -80,7 +81,79 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
     // Return to previous screen after saving/updating
     Navigator.pop(context);
+  }*/
+
+ void _handleSaveOrUpdate() async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => const Center(child: CircularProgressIndicator()),
+  );
+
+  try {
+    String? imageUrl = _imagePath;
+
+    // Upload image if not already a URL
+    if (_imagePath != null && !_imagePath!.startsWith('http')) {
+      final file = XFile(_imagePath!);
+      imageUrl = await CloudService().uploadImageToFirebase(file);
+
+      if (imageUrl == null) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Image upload failed.")),
+        );
+        return;
+      }
+    }
+
+    if (widget.item == null) {
+      // Add new item
+      final newItem = Item(
+        id: DateTime.now().millisecondsSinceEpoch, // Or use UUID
+        label: _nameController.text,
+        category: selectedCategory,
+        weather: selectedTemperatures,
+        url: imageUrl!, timesWorn: 0,
+      );
+
+      await FirebaseService.addFirestoreItem(newItem);
+    } else {
+      // Update existing item
+      final updatedItem = Item(
+        id: widget.item!.id,
+        label: _nameController.text,
+        category: selectedCategory,
+        weather: selectedTemperatures,
+        url: imageUrl!, timesWorn: widget.item!.timesWorn,
+      );
+
+      await FirebaseService.editFirestoreItemDetails(
+        updatedItem,
+        updatedItem.label,
+        updatedItem.category,
+        updatedItem.weather,
+      );
+
+      FirebaseService.editLocalItemDetails(
+        widget.item!,
+        updatedItem.label,
+        updatedItem.category,
+        updatedItem.weather,
+      );
+    }
+
+    Navigator.pop(context); // Close loading dialog
+    Navigator.pop(context, true); // Return to previous screen
+
+  } catch (e) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
   }
+}
+
 
   /// Switches to Edit Mode when the edit icon is clicked
   void _switchToEditMode() {
