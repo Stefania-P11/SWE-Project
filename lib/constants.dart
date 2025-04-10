@@ -9,10 +9,10 @@ const String kUsername = 'dummy';
 
 // COLORS
 
-const Color kBackgroundColor = Color(0xFFE3DDD2);
+const Color kBackgroundColor = Color.fromARGB(255, 255, 255, 255);
 const Color kOvalShapeColor = Colors.white;
 const Color kButtonColor = Color(0xFF302D30);
-const Color kappBarColor = Color(0xFFE3DDD2);
+const Color kappBarColor = Color.fromARGB(255, 255, 255, 255);
 const Color konPressedColor = Color(0xFFD37F59);
 // TEXT STYLES
 

@@ -4,6 +4,7 @@ import 'package:dressify_app/services/firebase_service.dart'; // Import Firebase
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Custom app bar
 import 'package:dressify_app/widgets/item_container.dart'; // Widget to display individual item in the outfit
 import 'package:flutter/material.dart'; // Flutter Material components
+import 'package:dressify_app/services/outfit_service.dart';
 
 /// OutfitSuggestionScreen - Displays a suggested outfit
 /// Features:
@@ -200,9 +201,18 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.black,
                       ),
-                      onPressed: () {
-                        setState(() => isFavorite = !isFavorite);
-                        // TODO: Show popup for naming and saving favorite
+                      // onPressed: () {
+                      //   setState(() => isFavorite = !isFavorite);
+                      //   // TODO: Show popup for naming and saving favorite
+                      // },
+                      onPressed: () async {
+                        await saveNewOutfit(
+                            context: context,
+                            topUrl: widget.outfit?.topItem.url,
+                            bottomUrl: widget.outfit?.bottomItem.url,
+                            shoesUrl: widget.outfit?.shoeItem.url,
+                            //Auto assign the name for new outfit
+                            label: "Outfit ${Outfit.outfitList.length + 1}");
                       },
                     ),
 
@@ -233,75 +243,6 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
           ],
         ),
       ),
-
-      // Padding(
-      //           padding:
-      //               const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-      //           child: Column(children: [
-      //             Row(
-      //               crossAxisAlignment: CrossAxisAlignment.stretch,
-      //               children: [
-      //                 // Left side: Top item (full height)
-      //                 Expanded(
-      //                   flex: 2,
-      //                   child: Container(
-      //                     decoration: BoxDecoration(
-      //                       color: Colors.white, // Your background color
-      //                       borderRadius: BorderRadius.circular(
-      //                           8), // Optional rounded corners
-      //                     ),
-      //                     child: //addTop
-      //                         outfitItem("Top", screenWidth,
-      //                             imageUrl: widget.outfit?.topItem.url),
-      //                   ),
-      //                 ),
-
-      //                 // Horizontal spacing between Top and the right column
-      //                 const SizedBox(width: 16),
-
-      //                 // Right side: Column with Bottom and Shoes
-      //                 Expanded(
-      //                   flex: 1,
-      //                   child: Column(
-      //                     crossAxisAlignment: CrossAxisAlignment.stretch,
-      //                     children: [
-      //                       // Bottom item with flex 2
-      //                       Expanded(
-      //                         flex: 2,
-      //                         child: Container(
-      //                           decoration: BoxDecoration(
-      //                             color: Colors.white, // Your background color
-      //                             borderRadius: BorderRadius.circular(
-      //                                 8), // Optional rounded corners
-      //                           ),
-      //                           child: //add here
-      //                               outfitItem("Bottom", screenWidth,
-      //                                   imageUrl: widget.outfit?.bottomItem.url),
-      //                         ),
-      //                       ),
-
-      //                       // Vertical spacing between Bottom and Shoes
-      //                       const SizedBox(height: 16),
-
-      //                       // Shoes item as a square box using AspectRatio
-      //                       Expanded(
-      //                         flex: 1,
-      //                         child: Container(
-      //                           decoration: BoxDecoration(
-      //                             color: Colors.white, // Your background color
-      //                             borderRadius: BorderRadius.circular(
-      //                                 8), // Optional rounded corners
-      //                           ),
-      //                           child: //add here
-      //                               outfitItem("Shoes", screenWidth,
-      //                                   imageUrl: widget.outfit?.shoeItem.url),
-      //                         ),
-      //                       ),
-      //                     ],
-      //                   ),
-      //                 ),
-      //               ],
-      //             ),
     ); // Spacer
   }
 }
