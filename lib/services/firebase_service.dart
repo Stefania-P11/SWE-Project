@@ -91,4 +91,24 @@ class FirebaseService{
     Outfit.outfitList.removeWhere((o) => o.id == outfit.id);
     return 0;
   }
+
+  // Add new item to Firestore
+static Future<void> addFirestoreItem(Item item) async {
+  final itemMap = {
+    'category': item.category,
+    'label': item.label,
+    'weather': item.weather,
+    'url': item.url,
+    'id': item.id,
+    'timesWorn': 0,
+  };
+
+  await db
+      .collection('users')
+      .doc(kUsername)
+      .collection('Clothes')
+      .doc(item.id.toString())
+      .set(itemMap);
+}
+
 }
