@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -14,7 +13,7 @@ class CloudService {
         imageFile.path,
         minWidth: 800,
         minHeight: 800,
-        quality: 75, // Adjust quality if needed
+        quality: 75, 
       );
 
       if (compressedImage == null) {
