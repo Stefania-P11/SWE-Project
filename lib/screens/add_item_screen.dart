@@ -62,44 +62,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
     _nameController.addListener(_updateButtonState);
   }
 
-  /// Handles saving or updating item details
-  /// TODO: Remove this once actual method is implemented in it's own file
-  /*void _handleSaveOrUpdate() {
-    if (widget.item == null) {
-      // New item being added
-      print("New Item:");
-    } else {
-      // Existing item being updated
-      print("Updating Item ID: ${widget.item!.id}");
-    }
 
-    // Log item details for debugging
-    print("Name: ${_nameController.text}");
-    print("Category: $selectedCategory");
-    print("Temperatures: $selectedTemperatures");
-    print("Image Path: $_imagePath");
-
-    // Return to previous screen after saving/updating
-    Navigator.pop(context);
-  }*/
-
- void _handleSaveOrUpdate() async {
+void _handleSaveOrUpdate() async {
+  // Show a loading spinner while the save process is happening
   showDialog(
     context: context,
-    barrierDismissible: false,
+    barrierDismissible: false, // Prevent dismissing by tapping outside
     builder: (context) => const Center(child: CircularProgressIndicator()),
   );
 
   try {
     String? imageUrl = _imagePath;
 
-    // ✅ STEP 1: Upload image if it’s local (not already a URL)
+    // Upload image to Firebase Storage only if it's not already a URL (i.e., it's a local file)
     if (_imagePath != null && !_imagePath!.startsWith('http')) {
       final file = XFile(_imagePath!);
       imageUrl = await CloudService().uploadImageToFirebase(file);
 
+      // If image upload fails, exit early and show error message
       if (imageUrl == null) {
-        Navigator.pop(context);
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Image upload failed.")),
         );
@@ -107,26 +89,30 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
     }
 
-    // ✅ STEP 2: Build Item with Firebase image URL
+    // Create a new Item object (either a new item or updated one)
     final item = Item(
-      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch, // Use existing ID if editing, or generate a new one
       label: _nameController.text,
       category: selectedCategory,
       weather: selectedTemperatures,
-      url: imageUrl!,
-      timesWorn: widget.item?.timesWorn ?? 0,
+      url: imageUrl!, // Must be non-null at this point
+      timesWorn: widget.item?.timesWorn ?? 0, // Keep original value if editing, or start from 0 if new
     );
 
-    // ✅ STEP 3: Save to Firestore
+    // Save item depending on whether it's new or being updated
     if (widget.item == null) {
+      // Save new item to Firestore
       await FirebaseService.addFirestoreItem(item);
     } else {
+      // Update item in Firestore
       await FirebaseService.editFirestoreItemDetails(
         item,
         item.label,
         item.category,
         item.weather,
       );
+
+      // Also update item locally in the in-memory list
       FirebaseService.editLocalItemDetails(
         widget.item!,
         item.label,
@@ -135,18 +121,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
       );
     }
 
-    // ✅ STEP 4: Close Dialogs
-    Navigator.pop(context); // Close loading dialog
-    Navigator.pop(context, true); // Pop back with success flag
+    // Close loading dialog and pop screen with success flag
+    Navigator.pop(context);
+    Navigator.pop(context, true);
 
   } catch (e) {
+    // On error, close dialog and show error message
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Error: $e")),
     );
   }
 }
-
 
 
   /// Switches to Edit Mode when the edit icon is clicked
