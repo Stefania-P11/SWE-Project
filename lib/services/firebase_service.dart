@@ -109,6 +109,10 @@ static Future<void> addFirestoreItem(Item item) async {
       .collection('Clothes')
       .doc(item.id.toString())
       .set(itemMap);
+
+ // Add the item to the local item list
+ Item.itemList.add(item);
+      
 }
 
 }
