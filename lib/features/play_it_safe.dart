@@ -1,23 +1,22 @@
 import 'package:dressify_app/models/outfit.dart';
+import 'package:dressify_app/models/item.dart';
 
 /// Service to handle logic for the "Play It Safe" feature
 class PlayItSafeService {
-  /// Returns a random outfit from the saved outfit list
+  /// Returns a random valid outfit from the saved outfit list
   static Outfit? getSafeOutfit() {
-    // Check if any outfits have been loaded
-    if (Outfit.outfitList.isNotEmpty) {
-      Outfit.outfitList.shuffle(); // Randomize the list order
+    // Filter out outfits with missing components
+    final validOutfits = Outfit.outfitList.where((outfit) {
+      return Item.itemList.contains(outfit.topItem) &&
+             Item.itemList.contains(outfit.bottomItem) &&
+             Item.itemList.contains(outfit.shoeItem);
+    }).toList();
 
-      // TODO: Implement weather suitability check here
-      // Only return outfits suitable for current weather once weather API is integrated.
-
-      // TODO: Prevent same outfit from showing twice in a row
-      // Store last shown outfit and skip if it's the same.
-
-      return Outfit.outfitList.first; // Return the first (randomized) outfit
+    if (validOutfits.isNotEmpty) {
+      validOutfits.shuffle(); // Randomize the list
+      return validOutfits.first;
     }
 
-    // Return null if no outfits are available
     return null;
   }
 }
