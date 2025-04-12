@@ -32,7 +32,7 @@ class OutfitSuggestionScreen extends StatefulWidget {
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
   
-  ///add debugging to make sure everything loads right
+  /// Debugging to make sure everything loads righ
   @override
   void initState() {
     super.initState();
@@ -40,34 +40,38 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     print('Bottom URL: ${widget.outfit?.bottomItem.url}');
     print('Shoe URL: ${widget.outfit?.shoeItem.url}');
   }
-  /// Show a confirmation dialog before removing the outfit locally
   void _handleDeleteOutfit() {
-    if (widget.outfit != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Delete Outfit"),
-          content: const Text("Are you sure you want to remove this outfit from favorites?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel dialog
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                FirebaseService.removeLocalOutfit(widget.outfit!); // Remove from local list
-                // Also remove from the global list just in case
-                Outfit.outfitList.removeWhere((o) => o.id == widget.outfit!.id);
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context, true); // Return with success result
-              },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-    }
+  if (widget.outfit != null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Outfit"),
+        content: const Text("Are you sure you want to permanently delete this outfit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Remove from Firestore
+              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+
+              // Remove locally
+              FirebaseService.removeLocalOutfit(widget.outfit!);
+
+              // Close dialogs and return to previous screen
+              Navigator.pop(context); // Close confirmation dialog
+              Navigator.pop(context, true); // Return with success flag
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,44 +100,6 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            /// Outfit image section (scrollable in case content overflows)
-            /*SizedBox(
-              height: screenHeight * 0.72,
-              width: screenWidth,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-                  child: SizedBox(
-                    height: screenHeight * 0.8,
-                    child: Stack(
-                      children: [
-                        // Display top item image
-                        Positioned(
-                          top: screenHeight * 0.03,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
-                          
-                        ),
-                        // Display bottom item image
-                        Positioned(
-                          top: screenHeight * 0.25,
-                          right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
-                          
-                        ),
-                        // Display shoes item image
-                        Positioned(
-                          top: screenHeight * 0.45,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),
-                          
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),*/
             SizedBox(
             height: screenHeight * 0.72,
             width: screenWidth,
