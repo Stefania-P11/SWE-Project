@@ -1,5 +1,7 @@
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/screens/choose_item_screen.dart';
+import 'package:dressify_app/services/firebase_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart';
@@ -20,11 +22,59 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
   String? bottomUrl;
   String? shoesUrl;
 
+  // List of weather conditions for the outfit
+  List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
+  // Selected temperatures for the outfit
+  List<String> selectedTemperatures = [];
+
   // Controller to handle text input for the outfit name
   final TextEditingController outfitNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    Future<void> handleSave({
+      required BuildContext context,
+      required String label,
+      required List<String> weather,
+      required String topUrl,
+      required String bottomUrl,
+      required String shoesUrl,
+    }) async {
+      // Get selected items from URLs
+      final topItem = Item.itemList.firstWhere((item) => item.url == topUrl);
+      final bottomItem =
+          Item.itemList.firstWhere((item) => item.url == bottomUrl);
+      final shoesItem =
+          Item.itemList.firstWhere((item) => item.url == shoesUrl);
+
+      final id = DateTime.now().millisecondsSinceEpoch;
+
+      // Save to Firestore
+      await FirebaseService.addFirestoreOutfit(
+        label,
+        id,
+        topItem,
+        bottomItem,
+        shoesItem,
+        0,
+        weather,
+      );
+
+      // Save locally
+      FirebaseService.addLocalOutfit(
+        label,
+        id,
+        topItem,
+        bottomItem,
+        shoesItem,
+        0,
+        weather,
+      );
+
+      // Return to previous screen with success flag
+      Navigator.pop(context, true);
+    }
+
     // Get screen width and height for responsive UI
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -137,15 +187,60 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
                 hintText: "Add a name for your outfit",
               ),
 
+              // Temperature selection
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 5),
+                  Text("Temperature", style: kH3),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: temperatures.map((temp) {
+                      final isSelected = selectedTemperatures.contains(temp);
+                      return ChoiceChip(
+                        label: Text(temp,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                            )),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedTemperatures.add(temp);
+                            } else {
+                              selectedTemperatures.remove(temp);
+                            }
+                          });
+                        },
+                        selectedColor: Colors.black,
+                        backgroundColor: Colors.white,
+                        showCheckmark: false,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 15),
+
               // SAVE button
               CustomButton3(
                 label: "SAVE",
                 onPressed: () {
-                  // TODO: Handle save logic
-                  print("Save pressed: ${outfitNameController.text}");
+                  handleSave(
+                    context: context,
+                    label: outfitNameController.text,
+                    weather: selectedTemperatures,
+                    topUrl: topUrl!,
+                    bottomUrl: bottomUrl!,
+                    shoesUrl: shoesUrl!,
+                  );
                 },
-                isActive:
-                    (topUrl != null && bottomUrl != null && shoesUrl != null),
+                isActive: (topUrl != null &&
+                    bottomUrl != null &&
+                    shoesUrl != null &&
+                    selectedTemperatures.isNotEmpty),
               ),
 
               const SizedBox(height: 30), // Extra bottom space
