@@ -31,6 +31,53 @@ class OutfitSuggestionScreen extends StatefulWidget {
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
+
+  Future<void> _toggleFavorite() async {
+  final outfit = widget.outfit!;
+  setState(() => isFavorite = !isFavorite);
+
+  if (isFavorite) {
+    // Add to favorites (Firestore + local)
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    FirebaseService.addLocalOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit added to favorites!"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  } else {
+    // Remove from favorites (Firestore + local)
+    FirebaseService.removeFirestoreOutfit(outfit);
+    FirebaseService.removeLocalOutfit(outfit);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit removed from favorites."),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
   
   /// Debugging to make sure everything loads righ
   @override
@@ -180,9 +227,10 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         color: isFavorite ? Colors.red : Colors.black,
                       ),
                       onPressed: () {
-                        setState(() => isFavorite = !isFavorite);
-                        // TODO: Show popup for naming and saving favorite
-                      },
+  if (widget.outfit != null) {
+    _toggleFavorite();
+  }
+},
                     ),
 
                   // Regenerate button

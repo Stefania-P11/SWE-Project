@@ -29,9 +29,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       await Item.fetchItems(kUsername); // Fetch user's items from Firestore
     }
 
-    if (Outfit.outfitList.isEmpty) {
-      await Outfit.fetchOutfits(kUsername); // Fetch user's outfits from Firestore
-    }
+    await Outfit.fetchOutfits(kUsername); // Fetch user's outfits from Firestore
 
     setState(() {}); // Trigger UI rebuild
   }
