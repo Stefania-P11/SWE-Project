@@ -1,190 +1,256 @@
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
-import 'package:dressify_app/models/outfit.dart';
-import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar widget
-import 'package:dressify_app/widgets/item_container.dart'; // Import custom item container for outfit items
-import 'package:flutter/material.dart'; // Import Flutter Material Design package
+import 'package:dressify_app/models/outfit.dart'; // Import Outfit model
+import 'package:dressify_app/services/firebase_service.dart'; // Import FirebaseService for local/firestore actions
+import 'package:dressify_app/widgets/custom_app_bar.dart'; // Custom app bar
+import 'package:dressify_app/widgets/item_container.dart'; // Widget to display individual item in the outfit
+import 'package:flutter/material.dart'; // Flutter Material components
 
-// NOTE: I DO NOT THINK WE NEED THE NAME YOUR OUTFIT FIELD HERE BECAUSE WE WILL ONLY NAME IT WHEN
-// WE SAVE IT TO FAVORITES. IN WHICH CASE-- WHEN THE HEART IS TAPPED, WE CAN BRING A POP-UP FIELD
-// THAT ASKS FOR A NAME.
-
-/// OutfitSuggestionScreen - Displays an outfit suggestion
-/// Allows users to:
-/// - View suggested outfit components (Top, Bottom, Shoes)
-/// - Add the outfit to favorites
-/// - Regenerate a new outfit
-
+/// OutfitSuggestionScreen - Displays a suggested outfit
+/// Features:
+/// - Shows the top, bottom, and shoes of the outfit
+/// - Optionally displays buttons for saving, deleting, or regenerating the outfit
 class OutfitSuggestionScreen extends StatefulWidget {
-  // Optional parameter to control the visibility of the favorite icon
-  final bool showFavorite;
+  final bool showFavorite; // Whether to show the heart icon
+  final bool showRegenerate; // Whether to show the regenerate icon
+  final bool showDeleteIcon; // Whether to show the trash icon
+  final Outfit? outfit; // The outfit to display
+  final VoidCallback? onRegenerate; // Optional regenerate callback
 
-  // Optional parameter to control the visibility of the regenerate button
-  final bool showRegenerate;
-
-  // Optional parameter to control the visibility of the delete icon
-  final bool showDeleteIcon;
-
-  // Outfit object to display the suggested outfit
-  final Outfit? outfit;
-
-  final VoidCallback? onRegenerate;
-
-  const OutfitSuggestionScreen(
-      {super.key,
-      this.showFavorite = true,
-      this.showRegenerate = true,
-      this.outfit,
-      this.onRegenerate,
-      this.showDeleteIcon = true});
+  const OutfitSuggestionScreen({
+    super.key,
+    this.showFavorite = true,
+    this.showRegenerate = true,
+    this.outfit,
+    this.onRegenerate,
+    this.showDeleteIcon = true,
+  });
 
   @override
-  State<OutfitSuggestionScreen> createState() =>
-      _OutfitSuggestionScreenState(); // Create state for the screen
+  State<OutfitSuggestionScreen> createState() => _OutfitSuggestionScreenState();
 }
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
-  // Boolean to track if the outfit is marked as a favorite
-  bool isFavorite = false;
+  bool isFavorite = false; // Track favorite state for UI
+
+  Future<void> _toggleFavorite() async {
+  final outfit = widget.outfit!;
+  setState(() => isFavorite = !isFavorite);
+
+  if (isFavorite) {
+    // Add to favorites (Firestore + local)
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    FirebaseService.addLocalOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit added to favorites!"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  } else {
+    // Remove from favorites (Firestore + local)
+    FirebaseService.removeFirestoreOutfit(outfit);
+    FirebaseService.removeLocalOutfit(outfit);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit removed from favorites."),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
+  
+  /// Debugging to make sure everything loads righ
+  @override
+  void initState() {
+    super.initState();
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+  }
+  void _handleDeleteOutfit() {
+  if (widget.outfit != null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Outfit"),
+        content: const Text("Are you sure you want to permanently delete this outfit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Remove from Firestore
+              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+
+              // Remove locally
+              FirebaseService.removeLocalOutfit(widget.outfit!);
+
+              // Close dialogs and return to previous screen
+              Navigator.pop(context); // Close confirmation dialog
+              Navigator.pop(context, true); // Return with success flag
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
-    // Get screen dimensions for responsive layout
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width; // Get screen width
+    final screenHeight = MediaQuery.of(context).size.height; // Get screen height
+
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
 
     return Scaffold(
-      // Set background color using the value defined in constants.dart
-      backgroundColor: kBackgroundColor,
+      backgroundColor: kBackgroundColor, // Set background color
 
-      // Custom app bar with a back button enabled to allow the user to navigate back
+      // Top app bar with optional delete button
       appBar: CustomAppBar(
         showBackButton: true,
         isViewMode: true,
         showEditIcon: false,
         showDeleteIcon: widget.showDeleteIcon,
+        onDeletePressed: _handleDeleteOutfit, // Hook up delete callback
       ),
 
-      // Main body content
+      // Main body layout
       body: Padding(
-        padding: const EdgeInsets.all(8.0), // Add padding around the content
+        padding: const EdgeInsets.all(8.0), // Screen padding
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Scrollable Outfit Image Section
             SizedBox(
-              height: screenHeight * 0.72, // Height of the scrollable section
-              width: screenWidth, // Full width of the screen
-              child: SingleChildScrollView(
-                // Enables scrolling when the content is larger than the viewable area
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.8), // Add padding
-                  child: SizedBox(
-                    height: screenHeight * 0.8, // Height for outfit container
-                    child: Stack(
-                      children: [
-                        // Display Top item at the top
-                        Positioned(
-                          top: screenHeight * 0.03,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth,
-                              imageUrl: widget.outfit?.topItem.url),
+            height: screenHeight * 0.72,
+            width: screenWidth,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: SizedBox(
+                  height: screenHeight * 0.8,
+                  child: Stack(
+                    children: [
+                      // 🟦 Top Item
+                      Positioned(
+                        top: screenHeight * 0.03,
+                        left: 0,
+                        child: outfitItem(
+                          "Top",
+                          screenWidth,
+                          imageUrl: widget.outfit?.topItem.url,
                         ),
-                        // Display Bottom item below Top
-                        Positioned(
-                          top: screenHeight * 0.25,
-                          right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth,
-                              imageUrl: widget.outfit?.bottomItem.url),
+                      ),
+
+                      // 🟨 Bottom Item
+                      Positioned(
+                        top: screenHeight * 0.25,
+                        right: 0,
+                        child: outfitItem(
+                          "Bottom",
+                          screenWidth,
+                          imageUrl: widget.outfit?.bottomItem.url,
                         ),
-                        // Display Shoes item at the bottom
-                        Positioned(
-                          top: screenHeight * 0.45,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth,
-                              imageUrl: widget.outfit?.shoeItem.url),
+                      ),
+
+                      // 🟩 Shoes Item
+                      Positioned(
+                        top: screenHeight * 0.45,
+                        left: 0,
+                        child: outfitItem(
+                          "Shoe",
+                          screenWidth,
+                          imageUrl: widget.outfit?.shoeItem.url,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
+          ),
 
-            // Add spacing between outfit display and buttons
-            SizedBox(height: screenHeight * 0.03),
 
-            // Buttons Row for Favorite and Regenerate actions (plus thumbs up/down if applicable)
+            SizedBox(height: screenHeight * 0.03), // Spacer
+
+            /// Action buttons (favorite, regenerate, thumbs)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
                 mainAxisAlignment: widget.showFavorite
                     ? MainAxisAlignment.spaceBetween
-                    : MainAxisAlignment.spaceEvenly, // Adjust alignment
+                    : MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Show thumbs down icon if showFavorite is true
+                  // Thumbs down (dislike)
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth *
-                          0.08, // Icon size relative to screen width
-                      icon: const Icon(
-                        Icons.thumb_down,
-                        color: Colors.black,
-                      ),
+                      iconSize: screenWidth * 0.08,
+                      icon: const Icon(Icons.thumb_down, color: Colors.black),
                       onPressed: () {
-                        // TODO: Add dislike logic here
                         print("Thumbs down pressed");
+                        // TODO: Add dislike logic
                       },
                     ),
 
-                  // Heart icon to mark/unmark outfit as a favorite
+                  // Heart icon (toggle favorite)
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth *
-                          0.1, // Icon size relative to screen width
+                      iconSize: screenWidth * 0.1,
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite
-                            ? Colors.red
-                            : Colors
-                                .black, // Change color based on favorite status
+                        color: isFavorite ? Colors.red : Colors.black,
                       ),
                       onPressed: () {
-                        setState(() {
-                          // Toggle the favorite state
-                          isFavorite = !isFavorite;
-                        });
-
-                        // TODO: Add favorite logic here
-                        // Add logic to save/remove the outfit from favorites
-                        // Display a pop-up asking for a name when the outfit is added to favorites
-                      },
+  if (widget.outfit != null) {
+    _toggleFavorite();
+  }
+},
                     ),
 
-                  // Regenerate outfit button to suggest a new outfit
+                  // Regenerate button
                   if (widget.showRegenerate)
                     IconButton(
                       iconSize: screenWidth * 0.1,
                       icon: const Icon(Icons.autorenew),
-                      onPressed: widget.onRegenerate ??
-                          () {
-                            // Default behavior if onRegenerate isn't passed
-                            print("Regenerate pressed");
-                          },
+                      onPressed: widget.onRegenerate ?? () {
+                        print("Regenerate pressed");
+                      },
                     ),
 
-                  // Show thumbs up icon if showFavorite is true
+                  // Thumbs up (like)
                   if (widget.showFavorite)
                     IconButton(
-                      iconSize: screenWidth *
-                          0.08, // Icon size relative to screen width
-                      icon: const Icon(
-                        Icons.thumb_up,
-                        color: Colors.black,
-                      ),
+                      iconSize: screenWidth * 0.08,
+                      icon: const Icon(Icons.thumb_up, color: Colors.black),
                       onPressed: () {
-                        // TODO: Add like logic here
                         print("Thumbs up pressed");
+                        // TODO: Add like logic
                       },
                     ),
                 ],
