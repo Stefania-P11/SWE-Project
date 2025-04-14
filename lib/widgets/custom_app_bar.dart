@@ -65,19 +65,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           // Delete button to remove item
 
           if (showDeleteIcon)
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                // TODO: Add delete functionality later
-              },
-            ),
-
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red), // Trash icon (red)
             onPressed: onDeletePressed, // Trigger delete
           ),
         ],
-        if(showDeleteIcon)
+      
         // Profile button on the right side
         IconButton(
           onPressed: () {
