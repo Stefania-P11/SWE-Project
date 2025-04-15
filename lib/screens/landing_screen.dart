@@ -37,36 +37,6 @@ class LandingScreen extends StatelessWidget {
           ),
         ),
 
-        // /// Display the logo within an oval shape
-        // Positioned.fill(
-        //   top: screenHeight * 0.25, // Position 25% from the top
-        //   child: Align(
-        //     alignment: Alignment.topCenter,
-        //     child: Stack(
-        //       alignment: Alignment.center, // Center the logo inside the oval
-        //       children: [
-        //         // Oval background for the logo
-        //         Container(
-        //           width:
-        //               screenWidth * 0.8, // Oval width is 80% of screen width
-        //           height:
-        //               screenWidth * 0.8, // Oval height is equal to its width
-        //           decoration: const ShapeDecoration(
-        //             color: kOvalShapeColor, // Light gray background color
-        //             shape: OvalBorder(), // Shape of the container (oval)
-        //           ),
-        //         ),
-        //         // Logo image (Logo_Mark.png) centered in the oval
-        //         SvgPicture.asset(
-        //           'lib/assets/images/Logo_Mark.svg',
-        //           width:
-        //               screenWidth * 0.4, // Logo width is 40% of screen width
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-
         /// Display the logo text (Logo_Type.png) below the logo
         Positioned(
           top: screenHeight * 0.40, // Position 55% from the top
