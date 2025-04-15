@@ -1,3 +1,4 @@
+import 'package:dressify_app/screens/authentication.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
@@ -74,7 +75,9 @@ class LandingScreen extends StatelessWidget {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          HomeScreen(), // Navigate to HomeScreen
+                          AuthScreen(
+                        isLogin: false,
+                      ), // Navigate to HomeScreen
                       transitionDuration:
                           Duration.zero, // No transition animation
                       reverseTransitionDuration: Duration.zero,
@@ -111,7 +114,9 @@ class LandingScreen extends StatelessWidget {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          HomeScreen(), // Navigate to Home Screen
+                          AuthScreen(
+                        isLogin: true,
+                      ), // Navigate to Home Screen
                       transitionDuration:
                           Duration.zero, // No transition animation
                       reverseTransitionDuration: Duration.zero,
