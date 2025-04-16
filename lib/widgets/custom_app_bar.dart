@@ -15,6 +15,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showDeleteIcon; // Flag to show/hide the delete button
   final VoidCallback? onDeletePressed;
 
+
   /// Constructor to initialize [showBackButton], [isViewMode], and [onEditPressed].
   /// Defaults:
   /// - [showBackButton] is false by default.
@@ -62,6 +63,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onEditPressed, // Trigger edit mode when pressed
             ),
           // Delete button to remove item
+
+
           if (showDeleteIcon)
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red), // Trash icon (red)

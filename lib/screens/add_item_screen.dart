@@ -154,29 +154,46 @@ void _handleSaveOrUpdate() async {
     });
   }
 
-  void _handleDeleteItem() {
+  void _handleDeleteItem() async {
   if (widget.item != null) {
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Delete Item"),
-        content: Text("Are you sure you want to delete this item?"),
+        title: const Text("Delete Item"),
+        content: const Text("Are you sure you want to delete this item?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              FirebaseService.removeLocalItem(widget.item!);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context, true); // Pop with flag to trigger refresh
-            },
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
+
+    if (confirmed == true) {
+      try {
+        // Step 1: Delete from Firestore (using existing method)
+        await FirebaseService.removeFirestoreItem(widget.item!);
+        
+        // Step 2: Delete locally (using existing method)
+        FirebaseService.removeLocalItem(widget.item!);
+        
+        // Step 3: (Optional) Add storage cleanup if needed
+        // await FirebaseStorage.instance.refFromURL(widget.item!.url).delete();
+        
+        if (mounted) Navigator.pop(context, true); // Close screen + refresh parent
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Deletion failed: ${e.toString()}")),
+          );
+        }
+      }
+    }
   }
 }
 
