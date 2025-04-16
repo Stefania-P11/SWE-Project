@@ -10,25 +10,23 @@ class CustomNavBar extends StatelessWidget {
   const CustomNavBar({super.key});
 
   void _navigateTo(BuildContext context, Widget screen) {
-    final currentRoute = ModalRoute.of(context)?.settings.name ?? "HomeScreen";
-    // Avoid navigating to the same screen:
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
+    // Avoid navigating to the same screen (if pressing the home icon from the home screen nothign should happen)
     if (screen.runtimeType.toString() == currentRoute) return;
+
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => screen,
-        transitionDuration: const Duration(milliseconds: 0),
-        settings: RouteSettings(name: screen.runtimeType.toString()),
+        transitionDuration: Duration(milliseconds: 0), // No animation when changing screens
+        settings: RouteSettings(name: screen.runtimeType.toString()), // Set route name
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Grab the current route name from the context.
-    final String currentRoute =
-        ModalRoute.of(context)?.settings.name ?? "HomeScreen";
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -41,7 +39,7 @@ class CustomNavBar extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          backgroundColor: kappBarColor,
+          backgroundColor: kBackgroundColor,
           onTap: (index) {
             switch (index) {
               case 0:
@@ -60,39 +58,20 @@ class CustomNavBar extends StatelessWidget {
           },
           items: [
             BottomNavigationBarItem(
-              // If the current route is "HomeScreen", change color to orange.
-              icon: SvgPicture.asset(
-                "lib/assets/icons/heroicons_home.svg",
-                color: currentRoute == "HomeScreen"
-                    ? konPressedColor
-                    : kButtonColor,
-              ),
+              icon: SvgPicture.asset("lib/assets/icons/heroicons_home.svg"),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(
-                "lib/assets/icons/solar_hanger-bold.svg",
-                color: currentRoute == "ClosetItemsScreen"
-                    ? konPressedColor
-                    : kButtonColor,
-              ),
+              icon: SvgPicture.asset("lib/assets/icons/solar_hanger-bold.svg"),
               label: 'Wardrobe',
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(
-                "lib/assets/icons/solar_heart-outline.svg",
-                color: currentRoute == "FavoritesScreen"
-                    ? konPressedColor
-                    : kButtonColor,
-              ),
+              icon: SvgPicture.asset("lib/assets/icons/solar_heart-outline.svg"),
               label: 'Favorites',
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(
                 "lib/assets/icons/material-symbols-light_search-insights-rounded.svg",
-                color: currentRoute == "InsightsScreen"
-                    ? konPressedColor
-                    : kButtonColor,
               ),
               label: 'Insights',
             ),

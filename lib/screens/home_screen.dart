@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       // Background color for the entire screen
-      backgroundColor: kBackgroundColor,
+      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
 
       // Custom App Bar at the top
       appBar: CustomAppBar(),
