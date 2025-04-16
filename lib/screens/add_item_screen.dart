@@ -8,6 +8,7 @@ import 'package:dressify_app/services/firebase_service.dart';
 import 'package:dressify_app/services/cloud_service.dart';
 import 'package:image_picker/image_picker.dart';
 
+
 /// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
   final Item? item; // If an item is passed, screen opens in view mode
@@ -193,10 +194,9 @@ void _handleSaveOrUpdate() async {
           );
         }
       }
+
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -205,14 +205,14 @@ void _handleSaveOrUpdate() async {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
+      backgroundColor: kBackgroundColor,
 
       // Custom App Bar with back button and optional edit/delete icons
       appBar: CustomAppBar(
         showBackButton: true,
         isViewMode: isViewMode,
         onEditPressed: _switchToEditMode, // Pass callback to enable edit mode
-        onDeletePressed: _handleDeleteItem, // 
+        onDeletePressed: _handleDeleteItem, //
       ),
 
       // Body of the Add Item Screen

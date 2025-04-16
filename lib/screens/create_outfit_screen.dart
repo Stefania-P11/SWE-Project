@@ -7,6 +7,11 @@ import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart';
 import 'package:dressify_app/widgets/label_input_field.dart';
 import 'package:flutter/material.dart';
+import 'package:dressify_app/widgets/custom_button.dart';
+import 'package:dressify_app/services/firebase_service.dart';
+import 'package:dressify_app/models/outfit.dart';
+import 'package:dressify_app/models/item.dart';
+import 'package:dressify_app/services/outfit_service.dart';
 
 /// Screen for creating an outfit where users can select items and name their outfit.
 class CreateOutfitScreen extends StatefulWidget {
@@ -27,11 +32,12 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
   // Selected temperatures for the outfit
   List<String> selectedTemperatures = [];
 
+
   // Controller to handle text input for the outfit name
   final TextEditingController outfitNameController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
+
     Future<void> handleSave({
       required BuildContext context,
       required String label,
@@ -75,6 +81,7 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
       Navigator.pop(context, true);
     }
 
+
     // Get screen width and height for responsive UI
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -89,6 +96,7 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
       ), // Replaces the hamburger menu icon with a back arrow to allow the user to go back
 
       // Main body content
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -246,6 +254,7 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
               const SizedBox(height: 30), // Extra bottom space
             ],
           ),
+
         ),
       ),
     );

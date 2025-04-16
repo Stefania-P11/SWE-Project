@@ -18,62 +18,88 @@ class OutfitCard extends StatelessWidget {
   });
 
   @override
-Widget build(BuildContext context) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final cardWidth = (screenWidth / 2) - 24; // Account for padding and spacing
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = (screenWidth / 2) - 24; // Account for padding and spacing
 
-  return GestureDetector(
-  onTap: onTap,
-  child: Container(
-    width: cardWidth,
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: isSelected ? Colors.blue : Colors.black12,
-        width: isSelected ? 3 : 1,
-      ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          outfit.label,
-          style: kH2.copyWith(fontSize: 16),
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.black12,
+            width: isSelected ? 3 : 1,
+          ),
         ),
-        const SizedBox(height: 8),
-        _buildOutfitSection(outfit.topItem.url),
-        const SizedBox(height: 8),
-        _buildOutfitSection(outfit.bottomItem.url),
-        const SizedBox(height: 8),
-        _buildOutfitSection(outfit.shoeItem.url),
-      ],
-    ),
-  ),
-);
-}
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              //Left side
+              Expanded(
+                flex: 2, // Give more space to the left side
+                child: Container(
+                  // color: Colors.white, // Dark background
+                  child: Column(
+                    children: [
+                      // Label at the top
+                      _buildOutfitSection(outfit.topItem.url)
+                    ],
+                  ),
+                ),
+              ),
+              // Right side: Two vertical sections for "Bottom" and "Shoes"
+              Expanded(
+                flex: 1, // Less space for the right side
+                child: Column(
+                  children: [
+                    // Upper half: "Bottom"
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        // color: const Color(0xFF302D30),
+                        child: Column(
+                          children: [
+                            _buildOutfitSection(outfit.bottomItem.url)
+                          ],
+                        ),
+                      ),
+                    ),
 
+                    // Lower half: "Shoes"
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        // color: const Color(0xFF302D30),
+                        child: Column(
+                          children: [_buildOutfitSection(outfit.shoeItem.url)],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ]),
+      ),
+    );
+  }
 
   /// Helper method to build a section with an image and label
   Widget _buildOutfitSection(String url) {
-  return SizedBox(
-    height: 80,
-    width: double.infinity,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        url,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+    return Expanded(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          url,
+          fit: BoxFit.fitWidth,
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+        ),
       ),
-    ),
-  );
-
-}
-
-  
+    );
+  }
 }

@@ -104,8 +104,8 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor:
-          const Color.fromARGB(255, 239, 240, 240), // Background color
+
+      backgroundColor: kBackgroundColor, // Background color
       appBar: CustomAppBar(), // Display the custom app bar
 
       // Main body of the screen
@@ -143,6 +143,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                     IconButton(
                       icon: const Icon(Icons.add,
                           size: 28), // Add icon for adding items
+
                       onPressed: () async {
                         final result = await Navigator.push(
                           context,
@@ -151,6 +152,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                                 (context, animation, secondaryAnimation) =>
                                     AddItemScreen(),
                             transitionDuration: Duration.zero,
+
                             reverseTransitionDuration: Duration.zero,
                           ),
                         );
