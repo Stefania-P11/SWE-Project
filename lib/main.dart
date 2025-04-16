@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/landing_screen.dart';
@@ -16,6 +17,10 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // ✅ Sign in anonymously to avoid PERMISSION_DENIED errors
+  await FirebaseAuth.instance.signInAnonymously();
+  
   runApp(const MyApp());
 }
 

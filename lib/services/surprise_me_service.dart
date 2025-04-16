@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:typed_data';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 ///Convert temperature to a weather category
 String getTempCategory(double temp) {
@@ -44,6 +47,25 @@ const colorMatchMap = {
 
 ///Using backend function to do color recognition
 Future<String> getColorFromImage(String imageUrl) async {
+  final user = FirebaseAuth.instance.currentUser;
+  print("👤 Current Firebase UID: ${user?.uid}");
+  print("🔐 Is Signed In: ${user != null}");
+  
+  try {
+    final callable = FirebaseFunctions.instance.httpsCallable('detectKMeansColors');
+    final response = await callable.call({'imageUrl': imageUrl});
+
+    final data = response.data;
+    final dominantColor = data['dominant_color'] ?? 'unknown';
+
+    print("🎨 KMeans color result: $dominantColor");
+    return dominantColor;
+  } catch (e) {
+    print("❌ Error calling KMeans function: $e");
+    return 'unknown';
+  }
+}
+/*Future<String> getColorFromImage(String imageUrl) async {
   final response = await http.post(
     Uri.parse("https://us-central1-dressify-47e6a.cloudfunctions.net/detectDominantColor"),
     headers: {"Content-Type": "application/json"},
@@ -56,7 +78,7 @@ Future<String> getColorFromImage(String imageUrl) async {
   } else {
     return "unknown";
   }
-}
+}*/
 
 ///Randomly select a bottom and recognize its color
 Future<Item?> getRandomBottom(String tempCategory, List<Item> wardrobe) async {

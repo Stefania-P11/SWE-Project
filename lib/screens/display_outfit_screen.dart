@@ -58,24 +58,112 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       outfit.weather,
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Outfit added to favorites!"),
-        duration: Duration(seconds: 2),
+    _showTopSnackbarStatic("Outfit added to favorites!");
+    /*ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("Outfit added to favorites!"),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.zero, // Remove all padding
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        backgroundColor: Colors.green[600],
+        elevation: 6,
       ),
-    );
+      /*SnackBar(
+        content: const Text("Outfit added to favorites!"),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(
+          top: 60, // Pushes the SnackBar down from top
+          left: 16,
+          right: 16,
+        ),
+      ),*/
+    );*/
   } else {
     // Remove from favorites (Firestore + local)
     FirebaseService.removeFirestoreOutfit(outfit);
     FirebaseService.removeLocalOutfit(outfit);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Outfit removed from favorites."),
-        duration: Duration(seconds: 2),
+    _showTopSnackbarStatic("Outfit removed from favorites.");
+    /*ScaffoldMessenger.of(context).showSnackBar(
+      
+      SnackBar(
+        content: const Text("Outfit removed from favorites."),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        backgroundColor: Colors.red[600],
+        elevation: 6,
       ),
-    );
+      /*SnackBar(
+        content: const Text("Outfit removed from favorites."),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(
+          top: 60,
+          left: 16,
+          right: 16,
+        ),
+      ),*/
+    );*/
   }
+}
+void _showTopSnackbarStatic(String message) {
+  final overlay = Overlay.of(context);
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  late OverlayEntry overlayEntry;
+
+  overlayEntry = OverlayEntry(
+    builder: (context) => Positioned(
+      top: screenHeight * 0.5, // Around 30% from the top
+      left: 20,
+      right: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[300], // Light gray background
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.black87, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(overlayEntry);
+
+  // Remove after 3 seconds
+  Future.delayed(const Duration(seconds: 3)).then((_) {
+    overlayEntry.remove();
+  });
 }
 
   

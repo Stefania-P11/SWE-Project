@@ -45,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Set<int> usedBottomIds = {}; // track used bottoms
 
+  bool _weatherLoaded = false;//ensure weather is fetched only once per app run, even if the screen is reloaded
+
   @override
   void initState() {
     super.initState();
@@ -257,13 +259,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     text: 'SURPRISE ME',
                     onPressed: () async {
                       setState(() => isLoading = true);
+
+                      //ensure the items are loaded before generated outfit
+                      if (!Item.isLoaded) {
+                        await Item.fetchItems(kUsername);
+                        Item.isLoaded = true;
+                      }
+
                       final firstOutfit = await surpriseMe(Item.itemList);
                       setState(() => isLoading = false);
 
                       if (firstOutfit != null) {
                         usedBottomIds = {firstOutfit.bottomItem.id};
-
+                        //generated logic with no animation
                         void handleRegenerate(BuildContext context) async {
+                          // Ensure items are still loaded
+                          if (!Item.isLoaded) {
+                            await Item.fetchItems(kUsername);
+                            Item.isLoaded = true;
+                          }
+                          
                           final newOutfit = await surpriseMe(
                             Item.itemList,
                             excludeBottomIds: usedBottomIds,
@@ -273,13 +288,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             usedBottomIds.add(newOutfit.bottomItem.id);
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => OutfitSuggestionScreen(
+                              PageRouteBuilder(
+                                pageBuilder: (context,animation, secondaryAnimation) => OutfitSuggestionScreen(
                                   outfit: newOutfit,
                                   showFavorite: true,
                                   showDeleteIcon: false,
                                   onRegenerate: () => handleRegenerate(context),
                                 ),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
                               ),
                             );
                           } else {
@@ -289,13 +306,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               usedBottomIds = {restartOutfit.bottomItem.id};
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => OutfitSuggestionScreen(
+                                PageRouteBuilder(
+                                  pageBuilder: (context,animation, secondaryAnimation) => OutfitSuggestionScreen(
                                     outfit: restartOutfit,
                                     showFavorite: true,
                                     showDeleteIcon: false,
                                     onRegenerate: () => handleRegenerate(context),
                                   ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
                                 ),
                               );
                             } else {
@@ -305,16 +324,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                           }
                         }
-
+                        //show first generated outfit
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => OutfitSuggestionScreen(
+                          PageRouteBuilder(
+                            pageBuilder: (context,animation, secondaryAnimation) => OutfitSuggestionScreen(
                               outfit: firstOutfit,
                               showFavorite: true,
                               showDeleteIcon: false,
                               onRegenerate: () => handleRegenerate(context),
                             ),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
                           ),
                         );
                       } else {
@@ -334,14 +355,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  
+  ///
   Future<void> getUserWeatherAndLocation() async {
+    //check if the weather is loaded
+    if (_weatherLoaded) {
+      print('[HomeScreen] Weather already loaded, skipping fetch');
+      return;
+    }
+    //
     try {
       Position position = await determinePosition();
 
       // Get weather
-      WeatherService weatherService = WeatherService();
-      Weather weather = await weatherService.getTheWeather();
+      //WeatherService weatherService = WeatherService();
+      Weather weather = await WeatherService().getTheWeather();
 
       // Extract weather values
       double? temp = weather.temperature?.fahrenheit;
@@ -366,17 +393,21 @@ class _HomeScreenState extends State<HomeScreen> {
         tempRange = (tempMin != null && tempMax != null)
             ? '${tempMin.toStringAsFixed(0)}° - ${tempMax.toStringAsFixed(0)}°'
             : 'Unavailable';
+        _weatherLoaded = true; // Mark as loaded
       });
 
       print('Location: $locationName');
       print('Current Temp: $currentTemp');
       print('Temp Range: $tempRange');
+
+    print('[HomeScreen] Weather successfully updated');
     } catch (e) {
       setState(() {
         locationName = 'Location is not available';
         currentTemp = 'Unavailable';
         tempRange = 'Unavailable';
       });
+      print('[HomeScreen] Failed to fetch weather or location: $e');
     }
   }
   //Ensure having a valid OutfitItem() --> this should return a proper image + label
