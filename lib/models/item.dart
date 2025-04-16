@@ -53,13 +53,13 @@ class Item {
     });
     // Create and return an Item with data from Firestore
     return Item(
-      category: data['category'],   // Assign category from Firestore
-      id: data['id'],               // Assign item ID from Firestore
-      label: data['label'],         // Assign label from Firestore
-      timesWorn: data['timesWorn'] ?? 0,// Assign times worn from Firestore
-      url: data['url'],             // Assign URL from Firestore
-      weather: weatherList          // Assign weather array from Firestore
-    );
+        category: data['category'], // Assign category from Firestore
+        id: data['id'], // Assign item ID from Firestore
+        label: data['label'], // Assign label from Firestore
+        timesWorn: data['timesWorn'] ?? 0, // Assign times worn from Firestore
+        url: data['url'], // Assign URL from Firestore
+        weather: weatherList // Assign weather array from Firestore
+        );
   }
 
   // Fetch items from Firestore and populate itemList

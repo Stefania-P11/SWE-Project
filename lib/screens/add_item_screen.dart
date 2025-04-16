@@ -4,10 +4,7 @@ import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app 
 import 'package:dressify_app/widgets/custom_button_3.dart'; // Import button with active/inactive state
 import 'package:dressify_app/widgets/image_picker.dart'; // Import custom image picker widget
 import 'package:flutter/material.dart';
-import 'package:dressify_app/services/firebase_service.dart'; 
-import 'package:dressify_app/services/cloud_service.dart';
-import 'package:image_picker/image_picker.dart';
-
+import 'package:dressify_app/services/firebase_service.dart';
 
 /// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
@@ -63,78 +60,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
     _nameController.addListener(_updateButtonState);
   }
 
-
-void _handleSaveOrUpdate() async {
-  // Show a loading spinner while the save process is happening
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Prevent dismissing by tapping outside
-    builder: (context) => const Center(child: CircularProgressIndicator()),
-  );
-
-  try {
-    String? imageUrl = _imagePath;
-
-    // Upload image to Firebase Storage only if it's not already a URL (i.e., it's a local file)
-    if (_imagePath != null && !_imagePath!.startsWith('http')) {
-      final file = XFile(_imagePath!);
-      imageUrl = await CloudService().uploadImageToFirebase(file);
-
-      // If image upload fails, exit early and show error message
-      if (imageUrl == null) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Image upload failed.")),
-        );
-        return;
-      }
-    }
-
-    // Create a new Item object (either a new item or updated one)
-    final item = Item(
-      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch, // Use existing ID if editing, or generate a new one
-      label: _nameController.text,
-      category: selectedCategory,
-      weather: selectedTemperatures,
-      url: imageUrl!, // Must be non-null at this point
-      timesWorn: widget.item?.timesWorn ?? 0, // Keep original value if editing, or start from 0 if new
-    );
-
-    // Save item depending on whether it's new or being updated
+  /// Handles saving or updating item details
+  /// TODO: Remove this once actual method is implemented in it's own file
+  void _handleSaveOrUpdate() {
     if (widget.item == null) {
-      // Save new item to Firestore
-      await FirebaseService.addFirestoreItem(item);
+      // New item being added
+      print("New Item:");
     } else {
-      // Update item in Firestore
-      await FirebaseService.editFirestoreItemDetails(
-        item,
-        item.label,
-        item.category,
-        item.weather,
-      );
-
-      // Also update item locally in the in-memory list
-      FirebaseService.editLocalItemDetails(
-        widget.item!,
-        item.label,
-        item.category,
-        item.weather,
-      );
+      // Existing item being updated
+      print("Updating Item ID: ${widget.item!.id}");
     }
 
-    // Close loading dialog and pop screen with success flag
-    Navigator.pop(context);
-    Navigator.pop(context, true);
+    // Log item details for debugging
+    print("Name: ${_nameController.text}");
+    print("Category: $selectedCategory");
+    print("Temperatures: $selectedTemperatures");
+    print("Image Path: $_imagePath");
 
-  } catch (e) {
-    // On error, close dialog and show error message
+    // Return to previous screen after saving/updating
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e")),
-    );
   }
-}
-
 
   /// Switches to Edit Mode when the edit icon is clicked
   void _switchToEditMode() {
@@ -155,46 +100,30 @@ void _handleSaveOrUpdate() async {
     });
   }
 
-  void _handleDeleteItem() async {
-  if (widget.item != null) {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Item"),
-        content: const Text("Are you sure you want to delete this item?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        // Step 1: Delete from Firestore (using existing method)
-        await FirebaseService.removeFirestoreItem(widget.item!);
-        
-        // Step 2: Delete locally (using existing method)
-        FirebaseService.removeLocalItem(widget.item!);
-        
-        // Step 3: (Optional) Add storage cleanup if needed
-        // await FirebaseStorage.instance.refFromURL(widget.item!.url).delete();
-        
-        if (mounted) Navigator.pop(context, true); // Close screen + refresh parent
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Deletion failed: ${e.toString()}")),
-          );
-        }
-      }
-
+  void _handleDeleteItem() {
+    if (widget.item != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Delete Item"),
+          content: Text("Are you sure you want to delete this item?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                FirebaseService.removeLocalItem(widget.item!);
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(
+                    context, true); // Pop with flag to trigger refresh
+              },
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
     }
   }
 

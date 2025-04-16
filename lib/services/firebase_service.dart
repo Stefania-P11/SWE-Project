@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
-import 'package:dressify_app/models/item.dart';
-import 'package:dressify_app/models/outfit.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
+import '../models/item.dart';
+import '../models/outfit.dart';
 class FirebaseService{
   //Reusable Firestore instance
-  static final FirebaseFirestore db = FirebaseFirestore.instance;
-  static final storage = FirebaseStorage.instance;
+  static FirebaseFirestore db = FirebaseFirestore.instance;
+
   //removes item from firestore
   static removeFirestoreItem(Item item){
     db.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).delete();
@@ -47,23 +45,18 @@ class FirebaseService{
   }
 
   //add outfit to Firestore
-  static addFirestoreOutfit(String label, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
+  static addFirestoreOutfit(String category, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
     final outfitStorage = {
-      'label' : label,
+      'category' : category,
       'id' : id,
-      'topID' : top.id, // updated to topID to match what Outfit.fromFirestore expects
-      'bottomID' : bottom.id, // updated to bottomID to match what Outfit.fromFirestore expects
-      'shoesID' : shoes.id, // updated to shoesID to match what Outfit.fromFirestore expects
-      'timesWorn' : timesWorn,
+      'top' : top.id,
+      'bottom' : bottom.id,
+      'shoes' : shoes.id,
+      'number of times worn' : timesWorn,
       'weather' : weather,
     };
 
-      db.collection('users')
-    .doc(kUsername)
-    .collection('Outfits')
-    .doc(id.toString())
-    .set(outfitStorage);
-
+    db.collection('users').doc(kUsername).collection('Outfits').doc(id.toString()).set(outfitStorage);
     return 0;
   }
 
@@ -96,28 +89,4 @@ class FirebaseService{
     Outfit.outfitList.removeWhere((o) => o.id == outfit.id);
     return 0;
   }
-
-  // Add new item to Firestore
-static Future<void> addFirestoreItem(Item item) async {
-  final itemMap = {
-    'category': item.category,
-    'label': item.label,
-    'weather': item.weather,
-    'url': item.url,
-    'id': item.id,
-    'timesWorn': 0,
-  };
-
-  await db
-      .collection('users')
-      .doc(kUsername)
-      .collection('Clothes')
-      .doc(item.id.toString())
-      .set(itemMap);
-
- // Add the item to the local item list
- Item.itemList.add(item);
-      
-}
-
 }

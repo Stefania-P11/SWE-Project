@@ -104,7 +104,6 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-
       backgroundColor: kBackgroundColor, // Background color
       appBar: CustomAppBar(), // Display the custom app bar
 
@@ -131,7 +130,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                         'lib/assets/icons/filter-icon.svg',
                         width: 24,
                         height: 24,
-                        color: Colors.black, // Color of the filter icon
+                        color: Colors.black, // Optional color tint
                       ),
                       onPressed: () {
                         setState(() {
@@ -143,28 +142,18 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                     IconButton(
                       icon: const Icon(Icons.add,
                           size: 28), // Add icon for adding items
-
-                      onPressed: () async {
-                        final result = await Navigator.push(
+                      onPressed: () {
+                        Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    AddItemScreen(),
-                            transitionDuration: Duration.zero,
-
+                            pageBuilder: (context, animation,
+                                    secondaryAnimation) =>
+                                AddItemScreen(), // Navigate to AddItemScreen for adding a new item
+                            transitionDuration:
+                                Duration.zero, // No transition animation
                             reverseTransitionDuration: Duration.zero,
                           ),
                         );
-
-                        // Only reload if a new item was successfully added
-                        if (result == true) {
-                          await Item.fetchItems(
-                              kUsername); // Re-fetch from Firestore
-                          setState(() {
-                            _items = Item.itemList;
-                          });
-                        }
                       },
                     ),
                   ],

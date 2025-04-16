@@ -205,57 +205,29 @@ class Outfit {
 
   /// Create an Outfit from a list of Items returned by surpriseMe()
   factory Outfit.fromItemList(List<Item> items) {
-  final top = items.firstWhere(
-    (i) => i.category.toLowerCase().contains('top'),
-    orElse: () => Item(
-      id: -1,
-      category: 'Top',
-      label: 'Unknown Top',
-      timesWorn: 0,
-      url: '',
-      weather: [],
-    ),
-  );
+    final top = items.firstWhere(
+      (i) => i.category.toLowerCase().contains('top'),
+      orElse: () => Item(
+        id: -1,
+        category: 'Top',
+        label: 'Unknown Top',
+        timesWorn: 0,
+        url: '',
+        weather: [],
+      ),
+    );
 
-  final bottom = items.firstWhere(
-    (i) => i.category.toLowerCase().contains('bottom'),
-    orElse: () => Item(
-      id: -1,
-      category: 'Bottom',
-      label: 'Unknown Bottom',
-      timesWorn: 0,
-      url: '',
-      weather: [],
-    ),
-  );
-
-  final shoe = items.firstWhere(
-    (i) => i.category.toLowerCase().contains('shoe'),
-    orElse: () => Item(
-      id: -1,
-      category: 'Shoe',
-      label: 'Unknown Shoe',
-      timesWorn: 0,
-      url: '',
-      weather: [],
-    ),
-  );
-
-  return Outfit(
-    id: DateTime.now().millisecondsSinceEpoch,
-    label: 'Surprise Me Outfit',
-    topItem: top,
-    bottomItem: bottom,
-    shoeItem: shoe,
-    timesWorn: 0,
-    weather: top.weather.toSet()
-        .intersection(bottom.weather.toSet())
-        .intersection(shoe.weather.toSet())
-        .toList(),
-  );
-}
-}
-
+    final bottom = items.firstWhere(
+      (i) => i.category.toLowerCase().contains('bottom'),
+      orElse: () => Item(
+        id: -1,
+        category: 'Bottom',
+        label: 'Unknown Bottom',
+        timesWorn: 0,
+        url: '',
+        weather: [],
+      ),
+    );
 
     final shoe = items.firstWhere(
       (i) => i.category.toLowerCase().contains('shoe'),
