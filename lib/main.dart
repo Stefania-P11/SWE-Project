@@ -1,6 +1,6 @@
-
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/landing_screen.dart';
+import 'package:dressify_app/screens/authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -8,10 +8,9 @@ import 'firebase_options.dart';
 import 'package:dressify_app/screens/closet_items_screen.dart';
 import 'models/item.dart';
 
-
 // Import the pages you want to see in the app here. home will throw an error if the page is not imported here.
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -31,10 +30,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
 
-
-      home: const LandingScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
-
-
+      home:
+          const LandingScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
     );
   }
 }

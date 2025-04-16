@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 /// a [hintText] to provide placeholder guidance to the user.
 
 class LabelInputField extends StatelessWidget {
-  
   // Controller to manage the value of the text field
   final TextEditingController controller;
 
@@ -22,13 +21,11 @@ class LabelInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      
       // Add padding around the input field
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
 
       // The actual text input field
       child: TextField(
-        
         // Attach the controller to the TextField
         controller: controller,
 
@@ -37,7 +34,6 @@ class LabelInputField extends StatelessWidget {
 
         // Define the appearance and behavior of the input field
         decoration: InputDecoration(
-         
           // Use the passed hintText or the default one
           hintText: hintText,
 

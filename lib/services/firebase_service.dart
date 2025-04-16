@@ -47,18 +47,23 @@ class FirebaseService{
   }
 
   //add outfit to Firestore
-  static addFirestoreOutfit(String category, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
+  static addFirestoreOutfit(String label, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
     final outfitStorage = {
-      'category' : category,
+      'label' : label,
       'id' : id,
-      'top' : top.id,
-      'bottom' : bottom.id,
-      'shoes' : shoes.id,
-      'number of times worn' : timesWorn,
+      'topID' : top.id, // updated to topID to match what Outfit.fromFirestore expects
+      'bottomID' : bottom.id, // updated to bottomID to match what Outfit.fromFirestore expects
+      'shoesID' : shoes.id, // updated to shoesID to match what Outfit.fromFirestore expects
+      'timesWorn' : timesWorn,
       'weather' : weather,
     };
 
-    db.collection('users').doc(kUsername).collection('Outfits').doc(id.toString()).set(outfitStorage);
+      db.collection('users')
+    .doc(kUsername)
+    .collection('Outfits')
+    .doc(id.toString())
+    .set(outfitStorage);
+
     return 0;
   }
 
@@ -91,4 +96,28 @@ class FirebaseService{
     Outfit.outfitList.removeWhere((o) => o.id == outfit.id);
     return 0;
   }
+
+  // Add new item to Firestore
+static Future<void> addFirestoreItem(Item item) async {
+  final itemMap = {
+    'category': item.category,
+    'label': item.label,
+    'weather': item.weather,
+    'url': item.url,
+    'id': item.id,
+    'timesWorn': 0,
+  };
+
+  await db
+      .collection('users')
+      .doc(kUsername)
+      .collection('Clothes')
+      .doc(item.id.toString())
+      .set(itemMap);
+
+ // Add the item to the local item list
+ Item.itemList.add(item);
+      
+}
+
 }

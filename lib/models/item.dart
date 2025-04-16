@@ -4,22 +4,22 @@ import 'package:dressify_app/constants.dart';
 // Item class to model clothing items
 class Item {
   // Properties to store item details
-  late String category;        // Category of the item (e.g., Top, Bottom, Shoes)
-  late final int id;            // Unique ID for the item
-  late String label;           // Label or name of the item
-  int timesWorn;                // Number of times the item has been worn
-  late final String url;        // URL for the item's image
-  late List<String> weather;    // Weather conditions suited for the item
+  late String category; // Category of the item (e.g., Top, Bottom, Shoes)
+  late final int id; // Unique ID for the item
+  late String label; // Label or name of the item
+  int timesWorn; // Number of times the item has been worn
+  late final String url; // URL for the item's image
+  late List<String> weather; // Weather conditions suited for the item
 
   // Static list to store fetched items
   static List<Item> itemList = [];
 
-   static bool isLoaded = false; 
+  static bool isLoaded = false;
 
   // Static counters to store item counts by category
-  static int topCount = 0;      // Count of tops
-  static int bottomCount = 0;   // Count of bottoms
-  static int shoeCount = 0;     // Count of shoes
+  static int topCount = 0; // Count of tops
+  static int bottomCount = 0; // Count of bottoms
+  static int shoeCount = 0; // Count of shoes
 
   // Constructor to initialize an Item
   Item({
@@ -31,12 +31,23 @@ class Item {
     required this.weather,
   });
 
+  //Helper method to get an item by its URL
+  // Returns the first Item in itemList whose URL matches the given url.
+  // Returns null if none is found.
+  static Item? getItemByUrl(String url) {
+    try {
+      return itemList.firstWhere((element) => element.url == url);
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Factory constructor to create an Item from Firestore data
   factory Item.fromFirestore(DocumentSnapshot doc) {
     // Map Firestore document data to a Map
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     List<String> weatherList = [];
-    List.from(data['weather']).forEach((element){
+    List.from(data['weather']).forEach((element) {
       String weatherCategory = element;
       weatherList.add(weatherCategory);
     });
@@ -45,7 +56,7 @@ class Item {
       category: data['category'],   // Assign category from Firestore
       id: data['id'],               // Assign item ID from Firestore
       label: data['label'],         // Assign label from Firestore
-      timesWorn: data['timesWorn'], // Assign times worn from Firestore
+      timesWorn: data['timesWorn'] ?? 0,// Assign times worn from Firestore
       url: data['url'],             // Assign URL from Firestore
       weather: weatherList          // Assign weather array from Firestore
     );
@@ -56,14 +67,12 @@ class Item {
     FirebaseFirestore db = FirebaseFirestore.instance;
 
     // Query to get items from the "Clothes" collection of the user
-    QuerySnapshot querySnapshot = await db
-        .collection('users')
-        .doc(kUsername)
-        .collection("Clothes")
-        .get();
+    QuerySnapshot querySnapshot =
+        await db.collection('users').doc(kUsername).collection("Clothes").get();
 
     // Map each document to an Item and populate itemList
-    itemList = querySnapshot.docs.map((doc) => Item.fromFirestore(doc)).toList();
+    itemList =
+        querySnapshot.docs.map((doc) => Item.fromFirestore(doc)).toList();
   }
 
   // Count items per category (Top, Bottom, Shoes)

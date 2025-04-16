@@ -4,6 +4,7 @@ import 'package:dressify_app/services/firebase_service.dart'; // Import Firebase
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Custom app bar
 import 'package:dressify_app/widgets/item_container.dart'; // Widget to display individual item in the outfit
 import 'package:flutter/material.dart'; // Flutter Material components
+import 'package:dressify_app/services/outfit_service.dart';
 
 /// OutfitSuggestionScreen - Displays a suggested outfit
 /// Features:
@@ -32,39 +33,110 @@ class OutfitSuggestionScreen extends StatefulWidget {
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
 
-  /// Show a confirmation dialog before removing the outfit locally
-  void _handleDeleteOutfit() {
-    if (widget.outfit != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Delete Outfit"),
-          content: const Text("Are you sure you want to remove this outfit from favorites?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel dialog
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                FirebaseService.removeLocalOutfit(widget.outfit!); // Remove from local list
-                // Also remove from the global list just in case
-                Outfit.outfitList.removeWhere((o) => o.id == widget.outfit!.id);
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context, true); // Return with success result
-              },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-    }
+
+  Future<void> _toggleFavorite() async {
+  final outfit = widget.outfit!;
+  setState(() => isFavorite = !isFavorite);
+
+  if (isFavorite) {
+    // Add to favorites (Firestore + local)
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    FirebaseService.addLocalOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit added to favorites!"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  } else {
+    // Remove from favorites (Firestore + local)
+    FirebaseService.removeFirestoreOutfit(outfit);
+    FirebaseService.removeLocalOutfit(outfit);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit removed from favorites."),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+}
+
+  
+  /// Debugging to make sure everything loads righ
+  @override
+  void initState() {
+    super.initState();
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+  }
+
+  void _handleDeleteOutfit() {
+  if (widget.outfit != null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Outfit"),
+        content: const Text("Are you sure you want to permanently delete this outfit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Remove from Firestore
+              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+
+              // Remove locally
+              FirebaseService.removeLocalOutfit(widget.outfit!);
+
+              // Close dialogs and return to previous screen
+              Navigator.pop(context); // Close confirmation dialog
+              Navigator.pop(context, true); // Return with success flag
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
-    final screenHeight = MediaQuery.of(context).size.height; // Get screen height
+    final screenHeight =
+        MediaQuery.of(context).size.height; // Get screen height
+
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
 
     return Scaffold(
       backgroundColor: kBackgroundColor, // Set background color
@@ -80,51 +152,89 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
       // Main body layout
       body: Padding(
-        padding: const EdgeInsets.all(8.0), // Screen padding
+        padding: EdgeInsets.only(top: screenHeight * 0.1),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            /// Outfit image section (scrollable in case content overflows)
             SizedBox(
-              height: screenHeight * 0.72,
+
+              height: screenHeight * 0.5, // Scroll area height
               width: screenWidth,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-                  child: SizedBox(
-                    height: screenHeight * 0.8,
-                    child: Stack(
-                      children: [
-                        // Display top item image
-                        Positioned(
-                          top: screenHeight * 0.03,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Top", screenWidth, imageUrl: widget.outfit?.topItem.url),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Left side: Top item (full height)
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Your background color
+                          borderRadius: BorderRadius.circular(
+                              8), // Optional rounded corners
                         ),
-                        // Display bottom item image
-                        Positioned(
-                          top: screenHeight * 0.25,
-                          right: screenWidth * 0.0,
-                          child: outfitItem("Bottom", screenWidth, imageUrl: widget.outfit?.bottomItem.url),
-                        ),
-                        // Display shoes item image
-                        Positioned(
-                          top: screenHeight * 0.45,
-                          left: screenWidth * 0.0,
-                          child: outfitItem("Shoes", screenWidth, imageUrl: widget.outfit?.shoeItem.url),
-                        ),
-                      ],
+                        child: outfitItem("Top", screenWidth,
+                            imageUrl: widget.outfit?.topItem.url),
+                      ),
                     ),
-                  ),
+
+                    // Horizontal spacing between Top and the right column
+                    const SizedBox(width: 16),
+
+                    // Right side: Column with Bottom and Shoes
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Bottom item with flex 2
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white, // Your background color
+                                borderRadius: BorderRadius.circular(
+                                    8), // Optional rounded corners
+                              ),
+                              child: outfitItem("Bottom", screenWidth,
+                                  imageUrl: widget.outfit?.bottomItem.url),
+                            ),
+                          ),
+
+                          // Vertical spacing between Bottom and Shoes
+                          const SizedBox(height: 16),
+
+                          // Shoes item as a square box using AspectRatio
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white, // Your background color
+                                borderRadius: BorderRadius.circular(
+                                    8), // Optional rounded corners
+                              ),
+                              child: outfitItem("Shoes", screenWidth,
+                                  imageUrl: widget.outfit?.shoeItem.url),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
+            const SizedBox(height: 40),
 
-            SizedBox(height: screenHeight * 0.03), // Spacer
+           
 
-            /// Action buttons (favorite, regenerate, thumbs)
+            // Add spacing between the input field and the next element
+            SizedBox(height: screenHeight * 0.03),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              padding: EdgeInsets.all(20),
+              //  Action buttons (favorite, regenerate, thumbs)
               child: Row(
                 mainAxisAlignment: widget.showFavorite
                     ? MainAxisAlignment.spaceBetween
@@ -149,10 +259,13 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.black,
                       ),
+
                       onPressed: () {
-                        setState(() => isFavorite = !isFavorite);
-                        // TODO: Show popup for naming and saving favorite
-                      },
+  if (widget.outfit != null) {
+    _toggleFavorite();
+  }
+},
+
                     ),
 
                   // Regenerate button
@@ -160,9 +273,10 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     IconButton(
                       iconSize: screenWidth * 0.1,
                       icon: const Icon(Icons.autorenew),
-                      onPressed: widget.onRegenerate ?? () {
-                        print("Regenerate pressed");
-                      },
+                      onPressed: widget.onRegenerate ??
+                          () {
+                            print("Regenerate pressed");
+                          },
                     ),
 
                   // Thumbs up (like)
@@ -177,10 +291,12 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
-    );
+    ); // Spacer
   }
 }
+
+// outfitItem("Top", screenWidth,imageUrl: widget.outfit?.bottomItem.url),

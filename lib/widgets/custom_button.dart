@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
 
-
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
@@ -19,13 +18,13 @@ class CustomButton extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: screenWidth * 0.25),
       child: Material(
-        color: kButtonColor, 
+        color: konPressedColor,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(4),
           child: Container(
-            width: screenWidth * 0.36,
+            width: screenWidth * 0.40,
             height: MediaQuery.of(context).size.height * 0.06,
             alignment: Alignment.center,
             padding: const EdgeInsets.all(10),

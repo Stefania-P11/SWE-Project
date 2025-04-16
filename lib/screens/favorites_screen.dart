@@ -16,6 +16,18 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  /// This variable will control how many columns are shown in the GridView
+  int _gridView = 2;
+
+  late bool isViewMode = true; // Start in view mode by default
+
+  void _gridViewOption() {
+    setState(() {
+      _gridView = _gridView == 2 ? 1 : 2;
+      // debugPrint('Grid view updated to $_gridView');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +41,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       await Item.fetchItems(kUsername); // Fetch user's items from Firestore
     }
 
-    if (Outfit.outfitList.isEmpty) {
-      await Outfit.fetchOutfits(kUsername); // Fetch user's outfits from Firestore
-    }
+
+    await Outfit.fetchOutfits(kUsername); // Fetch user's outfits from Firestore
+
 
     setState(() {}); // Trigger UI rebuild
   }
@@ -39,7 +51,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(), // Top app bar
+      backgroundColor: kBackgroundColor,
+      appBar: CustomAppBar(
+        isViewMode: true,
+        showGridViewIcon: true,
+        showDeleteIcon: false,
+        showEditIcon: false,
+        onGridViewPressed: _gridViewOption,
+      ), // Top app bar
 
       body: _buildOutfitGrid(), // Display filtered outfits
 
@@ -52,8 +71,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     // Filter outfits to exclude those referencing missing items
     final filteredOutfits = Outfit.outfitList.where((outfit) {
       return Item.itemList.contains(outfit.topItem) &&
-             Item.itemList.contains(outfit.bottomItem) &&
-             Item.itemList.contains(outfit.shoeItem);
+          Item.itemList.contains(outfit.bottomItem) &&
+          Item.itemList.contains(outfit.shoeItem);
     }).toList();
 
     // If no valid outfits, show a message
@@ -70,11 +89,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       itemCount: filteredOutfits.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Two cards per row
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridView, // Two cards per row
         crossAxisSpacing: 16, // Space between columns
         mainAxisSpacing: 16, // Space between rows
-        childAspectRatio: 0.55, // Card aspect ratio
+        childAspectRatio: 1, // Card aspect ratio
       ),
       itemBuilder: (context, index) {
         final outfit = filteredOutfits[index];
