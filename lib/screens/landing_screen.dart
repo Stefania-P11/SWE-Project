@@ -70,7 +70,6 @@ class LandingScreen extends StatelessWidget {
               child: CustomButton(
                 text: 'Create Account', // Button label
                 onPressed: () {
-                  //TODO: Implement navigation to Create Account screen
                   Navigator.push(
                     context,
                     PageRouteBuilder(
@@ -109,7 +108,6 @@ class LandingScreen extends StatelessWidget {
                 // color: konPressedColor,
                 text: 'Log in', // Button label
                 onPressed: () {
-                  //TODO: Implement navigation to Log in screen
                   Navigator.push(
                     context,
                     PageRouteBuilder(
