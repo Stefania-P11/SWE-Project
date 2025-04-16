@@ -1,5 +1,6 @@
 import 'package:dressify_app/screens/authentication.dart';
 import 'package:dressify_app/screens/home_screen.dart';
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
@@ -47,6 +48,7 @@ class LandingScreen extends StatelessWidget {
             "lib/assets/images/Logo_type_color.svg",
             width: screenWidth * 0.85, // Logo width is 85% of screen width
           ),
+
         ),
 
         /// Button to navigate to the "Create Account" screen
@@ -126,6 +128,7 @@ class LandingScreen extends StatelessWidget {
               ),
             )),
       ]),
+
     );
   }
 }

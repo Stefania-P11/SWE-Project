@@ -33,7 +33,55 @@ class OutfitSuggestionScreen extends StatefulWidget {
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
 
-  ///add debugging to make sure everything loads right
+
+  Future<void> _toggleFavorite() async {
+  final outfit = widget.outfit!;
+  setState(() => isFavorite = !isFavorite);
+
+  if (isFavorite) {
+    // Add to favorites (Firestore + local)
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    FirebaseService.addLocalOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit added to favorites!"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  } else {
+    // Remove from favorites (Firestore + local)
+    FirebaseService.removeFirestoreOutfit(outfit);
+    FirebaseService.removeLocalOutfit(outfit);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Outfit removed from favorites."),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
+  
+  /// Debugging to make sure everything loads righ
   @override
   void initState() {
     super.initState();
@@ -42,42 +90,49 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     print('Shoe URL: ${widget.outfit?.shoeItem.url}');
   }
 
-  /// Show a confirmation dialog before removing the outfit locally
   void _handleDeleteOutfit() {
-    if (widget.outfit != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Delete Outfit"),
-          content: const Text(
-              "Are you sure you want to remove this outfit from favorites?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel dialog
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                FirebaseService.removeLocalOutfit(
-                    widget.outfit!); // Remove from local list
-                // Also remove from the global list just in case
-                Outfit.outfitList.removeWhere((o) => o.id == widget.outfit!.id);
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context, true); // Return with success result
-              },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-    }
+  if (widget.outfit != null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Outfit"),
+        content: const Text("Are you sure you want to permanently delete this outfit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Remove from Firestore
+              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+
+              // Remove locally
+              FirebaseService.removeLocalOutfit(widget.outfit!);
+
+              // Close dialogs and return to previous screen
+              Navigator.pop(context); // Close confirmation dialog
+              Navigator.pop(context, true); // Return with success flag
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
     final screenHeight =
         MediaQuery.of(context).size.height; // Get screen height
+
+    print('Top URL: ${widget.outfit?.topItem.url}');
+    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
+    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
 
     print('Top URL: ${widget.outfit?.topItem.url}');
     print('Bottom URL: ${widget.outfit?.bottomItem.url}');
@@ -102,6 +157,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(
+
               height: screenHeight * 0.5, // Scroll area height
               width: screenWidth,
               child: Padding(
@@ -172,6 +228,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             ),
             const SizedBox(height: 40),
 
+           
+
             // Add spacing between the input field and the next element
             SizedBox(height: screenHeight * 0.03),
             Padding(
@@ -201,19 +259,13 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.black,
                       ),
-                      // onPressed: () {
-                      //   setState(() => isFavorite = !isFavorite);
-                      //   // TODO: Show popup for naming and saving favorite
-                      // },
-                      onPressed: () async {
-                        await saveNewOutfit(
-                            context: context,
-                            topUrl: widget.outfit?.topItem.url,
-                            bottomUrl: widget.outfit?.bottomItem.url,
-                            shoesUrl: widget.outfit?.shoeItem.url,
-                            //Auto assign the name for new outfit
-                            label: "Outfit ${Outfit.outfitList.length + 1}");
-                      },
+
+                      onPressed: () {
+  if (widget.outfit != null) {
+    _toggleFavorite();
+  }
+},
+
                     ),
 
                   // Regenerate button

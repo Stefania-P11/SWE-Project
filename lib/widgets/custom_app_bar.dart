@@ -17,6 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showGridViewIcon; // Flag to show/hide the Grid View button
   final VoidCallback? onGridViewPressed;
 
+
   /// Constructor to initialize [showBackButton], [isViewMode], and [onEditPressed].
   /// Defaults:
   /// - [showBackButton] is false by default.
@@ -71,6 +72,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onEditPressed, // Trigger edit mode when pressed
             ),
           // Delete button to remove item
+
+
           if (showDeleteIcon)
             IconButton(
               icon: const Icon(Icons.delete,
