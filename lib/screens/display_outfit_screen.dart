@@ -1,3 +1,4 @@
+// Import necessary packages and components
 import 'package:dressify_app/constants.dart'; // Import global constants and styles
 import 'package:dressify_app/models/outfit.dart'; // Import Outfit model
 import 'package:dressify_app/services/firebase_service.dart'; // Import FirebaseService for local/firestore actions
@@ -32,54 +33,54 @@ class OutfitSuggestionScreen extends StatefulWidget {
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
 
+  // Function to toggle favorite state and update Firestore/local state accordingly
   Future<void> _toggleFavorite() async {
-  final outfit = widget.outfit!;
-  setState(() => isFavorite = !isFavorite);
+    final outfit = widget.outfit!;
+    setState(() => isFavorite = !isFavorite);
 
-  if (isFavorite) {
-    // Add to favorites (Firestore + local)
-    await FirebaseService.addFirestoreOutfit(
-      outfit.label,
-      outfit.id,
-      outfit.topItem,
-      outfit.bottomItem,
-      outfit.shoeItem,
-      outfit.timesWorn,
-      outfit.weather,
-    );
+    if (isFavorite) {
+      // Add to favorites (Firestore + local)
+      await FirebaseService.addFirestoreOutfit(
+        outfit.label,
+        outfit.id,
+        outfit.topItem,
+        outfit.bottomItem,
+        outfit.shoeItem,
+        outfit.timesWorn,
+        outfit.weather,
+      );
 
-    FirebaseService.addLocalOutfit(
-      outfit.label,
-      outfit.id,
-      outfit.topItem,
-      outfit.bottomItem,
-      outfit.shoeItem,
-      outfit.timesWorn,
-      outfit.weather,
-    );
+      FirebaseService.addLocalOutfit(
+        outfit.label,
+        outfit.id,
+        outfit.topItem,
+        outfit.bottomItem,
+        outfit.shoeItem,
+        outfit.timesWorn,
+        outfit.weather,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Outfit added to favorites!"),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  } else {
-    // Remove from favorites (Firestore + local)
-    FirebaseService.removeFirestoreOutfit(outfit);
-    FirebaseService.removeLocalOutfit(outfit);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Outfit added to favorites!"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      // Remove from favorites (Firestore + local)
+      FirebaseService.removeFirestoreOutfit(outfit);
+      FirebaseService.removeLocalOutfit(outfit);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Outfit removed from favorites."),
-        duration: Duration(seconds: 2),
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Outfit removed from favorites."),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
-}
 
-  
-  /// Debugging to make sure everything loads righ
+  // Print image URLs for debugging
   @override
   void initState() {
     super.initState();
@@ -87,44 +88,48 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     print('Bottom URL: ${widget.outfit?.bottomItem.url}');
     print('Shoe URL: ${widget.outfit?.shoeItem.url}');
   }
+
+  // Handle outfit deletion with confirmation dialog
   void _handleDeleteOutfit() {
-  if (widget.outfit != null) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Outfit"),
-        content: const Text("Are you sure you want to permanently delete this outfit?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async {
-              // Remove from Firestore
-              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+    if (widget.outfit != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Delete Outfit"),
+          content: const Text(
+              "Are you sure you want to permanently delete this outfit?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Remove from Firestore
+                FirebaseService.removeFirestoreOutfit(widget.outfit!);
 
-              // Remove locally
-              FirebaseService.removeLocalOutfit(widget.outfit!);
+                // Remove locally
+                FirebaseService.removeLocalOutfit(widget.outfit!);
 
-              // Close dialogs and return to previous screen
-              Navigator.pop(context); // Close confirmation dialog
-              Navigator.pop(context, true); // Return with success flag
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+                // Close dialogs and return to previous screen
+                Navigator.pop(context); // Close confirmation dialog
+                Navigator.pop(context, true); // Return with success flag
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // Get screen width
-    final screenHeight = MediaQuery.of(context).size.height; // Get screen height
+    final screenHeight =
+        MediaQuery.of(context).size.height; // Get screen height
 
+    // Print image URLs to console for debugging
     print('Top URL: ${widget.outfit?.topItem.url}');
     print('Bottom URL: ${widget.outfit?.bottomItem.url}');
     print('Shoe URL: ${widget.outfit?.shoeItem.url}');
@@ -132,74 +137,51 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor, // Set background color
 
-      // Top app bar with optional delete button
+      // Custom app bar with optional delete button
       appBar: CustomAppBar(
         showBackButton: true,
         isViewMode: true,
         showEditIcon: false,
         showDeleteIcon: widget.showDeleteIcon,
-        onDeletePressed: _handleDeleteOutfit, // Hook up delete callback
+        onDeletePressed: _handleDeleteOutfit,
       ),
 
-      // Main body layout
-      body: Padding(
-        padding: const EdgeInsets.all(8.0), // Screen padding
+      // Main body content inside scroll view
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-            height: screenHeight * 0.72,
-            width: screenWidth,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-                child: SizedBox(
-                  height: screenHeight * 0.8,
-                  child: Stack(
-                    children: [
-                      // 🟦 Top Item
-                      Positioned(
-                        top: screenHeight * 0.03,
-                        left: 0,
-                        child: outfitItem(
-                          "Top",
-                          screenWidth,
-                          imageUrl: widget.outfit?.topItem.url,
-                        ),
-                      ),
-
-                      // 🟨 Bottom Item
-                      Positioned(
-                        top: screenHeight * 0.25,
-                        right: 0,
-                        child: outfitItem(
-                          "Bottom",
-                          screenWidth,
-                          imageUrl: widget.outfit?.bottomItem.url,
-                        ),
-                      ),
-
-                      // 🟩 Shoes Item
-                      Positioned(
-                        top: screenHeight * 0.45,
-                        left: 0,
-                        child: outfitItem(
-                          "Shoe",
-                          screenWidth,
-                          imageUrl: widget.outfit?.shoeItem.url,
-                        ),
-                      ),
-                    ],
+            // Outfit display section (Top, Bottom, Shoes)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  outfitItem(
+                    "Top",
+                    screenWidth,
+                    imageUrl: widget.outfit?.topItem.url,
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  outfitItem(
+                    "Bottom",
+                    screenWidth,
+                    imageUrl: widget.outfit?.bottomItem.url,
+                  ),
+                  const SizedBox(height: 16),
+                  outfitItem(
+                    "Shoe",
+                    screenWidth,
+                    imageUrl: widget.outfit?.shoeItem.url,
+                  ),
+                ],
               ),
             ),
-          ),
 
+            const SizedBox(height: 24), // Spacer between outfit and buttons
 
-            SizedBox(height: screenHeight * 0.03), // Spacer
-
-            /// Action buttons (favorite, regenerate, thumbs)
+            // Action buttons row (favorite, regenerate, like/dislike)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
@@ -207,18 +189,17 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     ? MainAxisAlignment.spaceBetween
                     : MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Thumbs down (dislike)
+                  // Thumbs down button
                   if (widget.showFavorite)
                     IconButton(
                       iconSize: screenWidth * 0.08,
                       icon: const Icon(Icons.thumb_down, color: Colors.black),
                       onPressed: () {
                         print("Thumbs down pressed");
-                        // TODO: Add dislike logic
                       },
                     ),
 
-                  // Heart icon (toggle favorite)
+                  // Favorite (heart) toggle button
                   if (widget.showFavorite)
                     IconButton(
                       iconSize: screenWidth * 0.1,
@@ -227,35 +208,37 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         color: isFavorite ? Colors.red : Colors.black,
                       ),
                       onPressed: () {
-  if (widget.outfit != null) {
-    _toggleFavorite();
-  }
-},
+                        if (widget.outfit != null) {
+                          _toggleFavorite();
+                        }
+                      },
                     ),
 
-                  // Regenerate button
+                  // Regenerate outfit button
                   if (widget.showRegenerate)
                     IconButton(
                       iconSize: screenWidth * 0.1,
                       icon: const Icon(Icons.autorenew),
-                      onPressed: widget.onRegenerate ?? () {
-                        print("Regenerate pressed");
-                      },
+                      onPressed: widget.onRegenerate ??
+                          () {
+                            print("Regenerate pressed");
+                          },
                     ),
 
-                  // Thumbs up (like)
+                  // Thumbs up button
                   if (widget.showFavorite)
                     IconButton(
                       iconSize: screenWidth * 0.08,
                       icon: const Icon(Icons.thumb_up, color: Colors.black),
                       onPressed: () {
                         print("Thumbs up pressed");
-                        // TODO: Add like logic
                       },
                     ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 24), // Extra space at bottom
           ],
         ),
       ),

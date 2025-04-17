@@ -115,11 +115,11 @@ class _ImagePickerContainerState extends State<ImagePickerContainer> {
                 ? (_imagePath!.startsWith('http') // Check if the path is a URL
                     ? DecorationImage(
                         image: NetworkImage(_imagePath!), // Load image from network URL
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       )
                     : DecorationImage(
                         image: FileImage(File(_imagePath!)), // Load image from local file
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       ))
                 : null, // No image displayed if no path is available
           ),
