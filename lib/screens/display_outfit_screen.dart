@@ -3,6 +3,7 @@ import 'package:dressify_app/constants.dart'; // Import global constants and sty
 import 'package:dressify_app/models/outfit.dart'; // Import Outfit model
 import 'package:dressify_app/services/firebase_service.dart'; // Import FirebaseService for local/firestore actions
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Custom app bar
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart'; // Widget to display individual item in the outfit
 import 'package:flutter/material.dart'; // Flutter Material components
 
@@ -80,7 +81,31 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     }
   }
 
-  // Print image URLs for debugging
+  Future<void> _handleWearOutfit(Outfit outfit) async {
+    // Increment outfit wear count
+    outfit.timesWorn++;
+    await FirebaseService.editFirestoreItemDetails(outfit.topItem, outfit.topItem.label, outfit.topItem.category, outfit.topItem.weather);
+    await FirebaseService.editFirestoreItemDetails(outfit.bottomItem, outfit.bottomItem.label, outfit.bottomItem.category, outfit.bottomItem.weather);
+    await FirebaseService.editFirestoreItemDetails(outfit.shoeItem, outfit.shoeItem.label, outfit.shoeItem.category, outfit.shoeItem.weather);
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    setState(() {});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Wear recorded!")),
+    );
+  }
+
+  
+  /// Debugging to make sure everything loads righ
   @override
   void initState() {
     super.initState();
@@ -181,7 +206,9 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
             const SizedBox(height: 24), // Spacer between outfit and buttons
 
-            // Action buttons row (favorite, regenerate, like/dislike)
+            //SizedBox(height: screenHeight * 0.03), // Spacer
+
+            /// Action buttons (favorite, regenerate, thumbs)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
@@ -213,16 +240,28 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         }
                       },
                     ),
-
-                  // Regenerate outfit button
-                  if (widget.showRegenerate)
-                    IconButton(
-                      iconSize: screenWidth * 0.1,
-                      icon: const Icon(Icons.autorenew),
-                      onPressed: widget.onRegenerate ??
-                          () {
-                            print("Regenerate pressed");
+              
+                  // Regenerate button
+                     if (widget.showRegenerate)
+                    Row(
+                      
+                      children: [
+                        IconButton(
+                          iconSize: screenWidth * 0.1,
+                          icon: const Icon(Icons.autorenew),
+                          onPressed: widget.onRegenerate ?? () {},
+                        ),
+                        SizedBox(width: screenWidth * 0.05), // Spacer
+                        IconButton(
+                          iconSize: screenWidth * 0.1,
+                          icon: const Icon(Icons.checkroom),
+                          onPressed: () {
+                            if (widget.outfit != null) {
+                              _handleWearOutfit(widget.outfit!);
+                            }
                           },
+                        ),
+                      ],
                     ),
 
                   // Thumbs up button
@@ -239,6 +278,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             ),
 
             const SizedBox(height: 24), // Extra space at bottom
+              
+           
           ],
         ),
       ),
