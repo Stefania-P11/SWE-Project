@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       ),
 
 
-      home: const LandingScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const InsightsScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
 
 
     );
