@@ -1,4 +1,5 @@
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/screens/closet_insights_screen.dart';
 import 'package:dressify_app/screens/closet_items_screen.dart';
 import 'package:dressify_app/screens/favorites_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
