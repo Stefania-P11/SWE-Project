@@ -56,17 +56,18 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       return;
     }
 
-    // Add to favorites
+// Save the outfit to Firestore (cloud database) with the provided name and item details
     await FirebaseService.addFirestoreOutfit(
-      outfitName,
-      outfit.id,
-      outfit.topItem,
-      outfit.bottomItem,
-      outfit.shoeItem,
-      outfit.timesWorn,
-      outfit.weather,
+      outfitName, // User-defined name for the outfit
+      outfit.id, // Unique ID of the outfit
+      outfit.topItem, // Top clothing item
+      outfit.bottomItem, // Bottom clothing item
+      outfit.shoeItem, // Shoe item
+      outfit.timesWorn, // Number of times the outfit has been worn
+      outfit.weather, // Weather tags associated with this outfit
     );
 
+// Save the same outfit locally (e.g., cached or stored for offline use)
     FirebaseService.addLocalOutfit(
       outfitName,
       outfit.id,
@@ -77,94 +78,116 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       outfit.weather,
     );
 
+// Update UI state to reflect that the outfit is now marked as a favorite
     setState(() => isFavorite = true);
+
+// Show a snackbar message at the top of the screen to confirm the action
     _showTopSnackbarStatic("Outfit added to favorites!");
   }
 
-  //handle dislike
+// Handle user disliking an outfit
   Future<void> handleDislike() async {
     final user = FirebaseAuth.instance.currentUser;
     final outfit = widget.outfit;
 
+    // Check if the user is signed in and an outfit is available
     if (user == null || outfit == null) {
       print('No user or outfit to dislike.');
       return;
     }
 
     try {
+      // Save the disliked outfit to the user's 'DislikedOutfits' subcollection in Firestore
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('DislikedOutfits')
-          .doc(outfit.id.toString())
-          .set(outfit.toJson());
+          .collection('users') // Top-level users collection
+          .doc(user.uid) // Document for the current user
+          .collection('DislikedOutfits') // Subcollection for disliked outfits
+          .doc(outfit.id.toString()) // Use outfit ID as document ID
+          .set(outfit.toJson()); // Store the outfit as a JSON map
 
+      // Show a confirmation message to the user
       _showTopSnackbarStatic("We'll skip this outfit in the future!");
     } catch (e) {
+      // Log any error that occurred during the Firestore operation
       print('Error disliking outfit: $e');
     }
   }
 
-  //handle like
+// Handle user liking an outfit
   Future<void> handleLike() async {
     final user = FirebaseAuth.instance.currentUser;
     final outfit = widget.outfit;
 
+    // Check if the user is signed in and an outfit is available
     if (user == null || outfit == null) {
       print('No user or outfit to like.');
       return;
     }
 
     try {
+      // Save the liked outfit to the user's 'LikedOutfits' subcollection in Firestore
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('LikedOutfits')
-          .doc(outfit.id.toString())
-          .set(outfit.toJson());
+          .collection('users') // Top-level users collection
+          .doc(user.uid) // Document for the current user
+          .collection('LikedOutfits') // Subcollection for liked outfits
+          .doc(outfit.id.toString()) // Use outfit ID as document ID
+          .set(outfit.toJson()); // Store the outfit as a JSON map
 
+      // Show a confirmation message to the user
       _showTopSnackbarStatic("We'll show you more outfits like this!");
     } catch (e) {
+      // Log any error that occurred during the Firestore operation
       print('Error liking outfit: $e');
     }
   }
 
-  //Name outfit box
+// Displays a dialog box prompting the user to name their outfit
+// Returns the entered name as a String, or null if the user cancels
   Future<String?> _showNameInputDialog(BuildContext context) async {
-    TextEditingController controller = TextEditingController();
-    String inputName = '';
-    bool isButtonEnabled = false;
+    TextEditingController controller =
+        TextEditingController(); // Controls the text input field
+    String inputName = ''; // Stores the current input from the user
+    bool isButtonEnabled =
+        false; // Tracks if the "Save" button should be active
 
+    // Show a dialog and return the result as a Future<String?>
     return showDialog<String>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: Colors.grey[300], // Unified background
-              title: const Text('Name your Outfit'),
+              backgroundColor: Colors
+                  .grey[300], // Set a light gray background for the dialog
+              title: const Text('Name your Outfit'), // Dialog title
               content: TextField(
-                controller: controller,
-                autofocus: true,
+                controller:
+                    controller, // Binds the controller to the input field
+                autofocus:
+                    true, // Automatically focuses on the text field when dialog opens
                 onChanged: (value) {
-                  inputName = value;
+                  inputName = value; // Update inputName with current value
+                  // Enable the "Save" button only if the input is not empty
                   setState(() {
                     isButtonEnabled = value.trim().isNotEmpty;
                   });
                 },
-                decoration:
-                    const InputDecoration(hintText: 'Enter outfit name'),
+                decoration: const InputDecoration(
+                  hintText: 'Enter outfit name', // Placeholder text
+                ),
               ),
               actions: [
+                // Cancel button: closes dialog and returns null
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context, null), // Cancel = null
+                  onPressed: () => Navigator.pop(context, null),
                   child: const Text("Cancel"),
                 ),
+                // Save button: only enabled when input is not empty
                 TextButton(
                   onPressed: isButtonEnabled
-                      ? () => Navigator.pop(context, inputName)
-                      : null,
+                      ? () => Navigator.pop(
+                          context, inputName) // Return the name entered
+                      : null, // Disabled if input is empty
                   child: const Text("Save"),
                 ),
               ],
@@ -175,115 +198,99 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     );
   }
 
-/*Future<void> _toggleFavorite() async {
-  final outfit = widget.outfit!;
-  setState(() => isFavorite = !isFavorite);
-
-    if (isFavorite) {
-      // Add to favorites (Firestore + local)
-      await FirebaseService.addFirestoreOutfit(
-        outfit.label,
-        outfit.id,
-        outfit.topItem,
-        outfit.bottomItem,
-        outfit.shoeItem,
-        outfit.timesWorn,
-        outfit.weather,
-      );
-
-      FirebaseService.addLocalOutfit(
-        outfit.label,
-        outfit.id,
-        outfit.topItem,
-        outfit.bottomItem,
-        outfit.shoeItem,
-        outfit.timesWorn,
-        outfit.weather,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Outfit added to favorites!"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } else {
-      // Remove from favorites (Firestore + local)
-      FirebaseService.removeFirestoreOutfit(outfit);
-      FirebaseService.removeLocalOutfit(outfit);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Outfit removed from favorites."),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }*/
-
+// Handles the action of "wearing" an outfit by updating item and outfit data
   Future<void> _handleWearOutfit(Outfit outfit) async {
-    // Increment outfit wear count
+    // Increment the outfit's wear count locally
     outfit.timesWorn++;
-    await FirebaseService.editFirestoreItemDetails(outfit.topItem,
-        outfit.topItem.label, outfit.topItem.category, outfit.topItem.weather);
+
+    // Update Firestore record for the top item to reflect potential wear-related changes
     await FirebaseService.editFirestoreItemDetails(
-        outfit.bottomItem,
-        outfit.bottomItem.label,
-        outfit.bottomItem.category,
-        outfit.bottomItem.weather);
-    await FirebaseService.editFirestoreItemDetails(
-        outfit.shoeItem,
-        outfit.shoeItem.label,
-        outfit.shoeItem.category,
-        outfit.shoeItem.weather);
-    await FirebaseService.addFirestoreOutfit(
-      outfit.label,
-      outfit.id,
       outfit.topItem,
-      outfit.bottomItem,
-      outfit.shoeItem,
-      outfit.timesWorn,
-      outfit.weather,
+      outfit.topItem.label,
+      outfit.topItem.category,
+      outfit.topItem.weather,
     );
 
+    // Update Firestore record for the bottom item
+    await FirebaseService.editFirestoreItemDetails(
+      outfit.bottomItem,
+      outfit.bottomItem.label,
+      outfit.bottomItem.category,
+      outfit.bottomItem.weather,
+    );
+
+    // Update Firestore record for the shoe item
+    await FirebaseService.editFirestoreItemDetails(
+      outfit.shoeItem,
+      outfit.shoeItem.label,
+      outfit.shoeItem.category,
+      outfit.shoeItem.weather,
+    );
+
+    // Save the updated outfit back to Firestore with the new wear count
+    await FirebaseService.addFirestoreOutfit(
+      outfit.label, // Outfit name
+      outfit.id, // Unique outfit ID
+      outfit.topItem, // Updated top item
+      outfit.bottomItem, // Updated bottom item
+      outfit.shoeItem, // Updated shoe item
+      outfit.timesWorn, // Incremented wear count
+      outfit.weather, // Associated weather data
+    );
+
+    // Refresh the UI to reflect any updates
     setState(() {});
+
+    // Show a confirmation message at the top of the screen
     _showTopSnackbarStatic("Wear Recorded!");
   }
 
+// Displays a custom snackbar with a success message
   void _showTopSnackbarStatic(String message) {
-    final overlay = Overlay.of(context);
-    final screenHeight = MediaQuery.of(context).size.height;
+    final overlay =
+        Overlay.of(context); // Get the overlay from the current context
+    final screenHeight =
+        MediaQuery.of(context).size.height; // Get screen height for positioning
 
-    late OverlayEntry overlayEntry;
+    late OverlayEntry
+        overlayEntry; // Declare the overlay entry to insert and later remove
 
+    // Create the overlay entry
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: screenHeight * 0.5, // Around 30% from the top
+        // Position the snackbar about halfway down the screen
+        top: screenHeight * 0.5,
         left: 20,
         right: 20,
         child: Material(
-          color: Colors.transparent,
+          color: Colors
+              .transparent, // Allow rounded corners and shadows to show naturally
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[300], // Light gray background
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey[300], // Light gray background color
+              borderRadius: BorderRadius.circular(12), // Rounded corners
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black12,
+                  color: Colors.black12, // Soft shadow
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 14), // Internal spacing
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle, color: Colors.black87, size: 24),
-                const SizedBox(width: 10),
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.black87,
+                  size: 24,
+                ), // Icon to visually indicate success
+                const SizedBox(width: 10), // Spacing between icon and text
                 Expanded(
                   child: Text(
-                    message,
+                    message, // The custom message to display
                     style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 16,
@@ -298,50 +305,64 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       ),
     );
 
+    // Insert the snackbar overlay into the current screen
     overlay.insert(overlayEntry);
 
-    // Remove after 3 seconds
+    // Automatically remove the snackbar after 2 seconds
     Future.delayed(const Duration(seconds: 2)).then((_) {
       overlayEntry.remove();
     });
   }
 
-  /// Debugging to make sure everything loads righ
+  /// Called when the widget is first inserted into the widget tree
+  /// Used here for debugging to verify image URLs load correctly
   @override
   void initState() {
     super.initState();
+
+    // Print item image URLs to the console for debugging purposes
     print('Top URL: ${widget.outfit?.topItem.url}');
     print('Bottom URL: ${widget.outfit?.bottomItem.url}');
     print('Shoe URL: ${widget.outfit?.shoeItem.url}');
   }
 
+  /// Handles the deletion of an outfit, including confirmation prompt and cleanup
   void _handleDeleteOutfit() {
     if (widget.outfit != null) {
+      // Show a confirmation dialog before deleting the outfit
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[300], // Unified background
-          title: const Text("Delete Outfit"),
+          backgroundColor: Colors.grey[300], // Consistent dialog background
+          title: const Text("Delete Outfit"), // Dialog title
           content: const Text(
-              "Are you sure you want to permanently delete this outfit?"),
+            "Are you sure you want to permanently delete this outfit?",
+          ), // Warning message
           actions: [
+            // Cancel button: just closes the dialog
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
+            // Delete button: confirms deletion and performs cleanup
             TextButton(
               onPressed: () async {
-                // Remove from Firestore
+                // Remove outfit from Firestore (cloud database)
                 FirebaseService.removeFirestoreOutfit(widget.outfit!);
 
-                // Remove locally
+                // Remove outfit from local storage/cache
                 FirebaseService.removeLocalOutfit(widget.outfit!);
 
-                // Close dialogs and return to previous screen
-                Navigator.pop(context); // Close confirmation dialog
-                Navigator.pop(context, true); // Return with success flag
+                // Close both the confirmation dialog and the current screen,
+                // returning a success flag (true) to the previous screen
+                Navigator.pop(context); // Close the alert dialog
+                Navigator.pop(context, true); // Pop this screen with result
               },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              child: const Text(
+                "Delete",
+                style: TextStyle(
+                    color: Colors.red), // Highlight destructive action
+              ),
             ),
           ],
         ),
@@ -351,33 +372,33 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // Get screen width
+    final screenWidth =
+        MediaQuery.of(context).size.width; // Get the full screen width
     final screenHeight =
-        MediaQuery.of(context).size.height; // Get screen height
-
-    print('Top URL: ${widget.outfit?.topItem.url}');
-    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
-    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+        MediaQuery.of(context).size.height; // Get the full screen height
 
     return Scaffold(
-      backgroundColor: kBackgroundColor, // Set background color
+      backgroundColor:
+          kBackgroundColor, // Use the app's global background color
 
-      // Top app bar with optional delete button
+      // Custom app bar with back button and optional delete icon
       appBar: CustomAppBar(
-        showBackButton: true,
-        isViewMode: true,
-        showEditIcon: false,
-        showDeleteIcon: widget.showDeleteIcon,
-        onDeletePressed: _handleDeleteOutfit, // Hook up delete callback
+        showBackButton: true, // Always show the back button
+        isViewMode: true, // Disables editing mode in app bar
+        showEditIcon: false, // Hides edit icon in view mode
+        showDeleteIcon: widget.showDeleteIcon, // Conditionally show delete icon
+        onDeletePressed:
+            _handleDeleteOutfit, // Trigger deletion flow when pressed
       ),
 
-      // Main body layout
+      // Main scrollable body
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(8.0), // Screen padding
+          padding: const EdgeInsets.all(8.0), // Page padding
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Visual display of outfit items (top, bottom, shoe)
               SizedBox(
                 height: screenHeight * 0.72,
                 width: screenWidth,
@@ -389,7 +410,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                       height: screenHeight * 0.8,
                       child: Stack(
                         children: [
-                          // Top Item
+                          // Top item display
                           Positioned(
                             left: 0,
                             child: outfitItem(
@@ -399,7 +420,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                             ),
                           ),
 
-                          // Bottom Item
+                          // Bottom item display
                           Positioned(
                             top: screenHeight * 0.235,
                             right: 0,
@@ -410,7 +431,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                             ),
                           ),
 
-                          // Shoes Item
+                          // Shoe item display
                           Positioned(
                             top: screenHeight * 0.45,
                             left: 0,
@@ -426,9 +447,11 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03), // Spacer
 
-              /// Action buttons (favorite, regenerate, thumbs)
+              // Spacer between outfit display and buttons
+              SizedBox(height: screenHeight * 0.03),
+
+              // Action button row (favorite, dislike, like, regenerate, wear)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Row(
@@ -436,6 +459,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                       ? MainAxisAlignment.spaceBetween
                       : MainAxisAlignment.spaceEvenly,
                   children: [
+                    // Thumbs down (dislike) icon
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.08,
@@ -444,10 +468,12 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                           print("Thumbs down pressed");
                           await handleDislike();
                           if (widget.onRegenerate != null)
-                            widget.onRegenerate!();
+                            widget
+                                .onRegenerate!(); // Trigger regenerate if provided
                         },
                       ),
 
+                    // Favorite toggle (heart icon)
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.1,
@@ -457,15 +483,16 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         ),
                         onPressed: () {
                           if (widget.outfit != null) {
-                            _toggleFavorite();
+                            _toggleFavorite(); // Save outfit to favorites
                           }
                         },
                       ),
 
-                    // Regenerate + Wear buttons
+                    // Regenerate and wear icons
                     if (widget.showRegenerate)
                       Row(
                         children: [
+                          // Regenerate outfit suggestion
                           IconButton(
                             iconSize: screenWidth * 0.1,
                             icon: const Icon(Icons.autorenew),
@@ -474,11 +501,14 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                                   print("Regenerate pressed");
                                 },
                           ),
-                          SizedBox(width: screenWidth * 0.05), // Spacer
+                          SizedBox(
+                              width: screenWidth *
+                                  0.05), // Small gap between buttons
+
+                          // Mark outfit as worn
                           IconButton(
                             iconSize: screenWidth * 0.1,
-                            icon: const Icon(
-                                Icons.checkroom), // 
+                            icon: const Icon(Icons.checkroom),
                             onPressed: () {
                               if (widget.outfit != null) {
                                 _handleWearOutfit(widget.outfit!);
@@ -488,13 +518,14 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         ],
                       ),
 
+                    // Thumbs up (like) icon
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.08,
                         icon: const Icon(Icons.thumb_up, color: Colors.black),
                         onPressed: () async {
                           print("Thumbs up pressed");
-                          await handleLike();
+                          await handleLike(); // Save outfit as liked
                         },
                       ),
                   ],
@@ -507,3 +538,6 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     );
   }
 }
+
+//TODO: This code might need refactoring to be more readable and maintainable.
+//      Some widgets can be extracte and methods can be simplified to do one thing only.
