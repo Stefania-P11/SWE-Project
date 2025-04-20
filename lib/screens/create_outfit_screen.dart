@@ -71,7 +71,16 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
         weather,
       );
 
-      // Return to previous screen with success flag
+      //Show and store the message box entry
+      final overlayEntry = _showTopSnackbarStatic("Outfit saved successfully!");
+
+      //Wait ~1 second so user sees the message
+      await Future.delayed(const Duration(seconds: 2));
+
+      //Remove message BEFORE screen pops
+      overlayEntry.remove();
+
+      //Now pop back
       Navigator.pop(context, true);
     }
 
@@ -250,5 +259,57 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
       ),
     );
   }
+
+OverlayEntry _showTopSnackbarStatic(String message) {
+  final overlay = Overlay.of(context);
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  final overlayEntry = OverlayEntry(
+    builder: (context) => Positioned(
+      top: screenHeight * 0.5,
+      left: 20,
+      right: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.black87, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(overlayEntry);
+  return overlayEntry;
+}
+
+
 }
   /// Widget to display an outfit item with a label and image.

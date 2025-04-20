@@ -5,6 +5,8 @@ import 'package:dressify_app/widgets/custom_app_bar.dart'; // Custom app bar
 import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart'; // Widget to display individual item in the outfit
 import 'package:flutter/material.dart'; // Flutter Material components
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// OutfitSuggestionScreen - Displays a suggested outfit
 /// Features:
@@ -32,10 +34,149 @@ class OutfitSuggestionScreen extends StatefulWidget {
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
-
+  
   Future<void> _toggleFavorite() async {
     final outfit = widget.outfit!;
-    setState(() => isFavorite = !isFavorite);
+    
+    // Prompt user for name
+    String? outfitName = await _showNameInputDialog(context);
+
+    // If user cancels dialog, stop everything
+    if (outfitName == null) return;
+
+    // Check if the outfit already exists
+    final existing = await FirebaseService.isOutfitFavorited(
+      outfit.topItem.id,
+      outfit.bottomItem.id,
+      outfit.shoeItem.id,
+    );
+
+    if (existing) {
+      _showTopSnackbarStatic("The Outfit is already in Favorite!");
+      return;
+    }
+
+    // Add to favorites
+    await FirebaseService.addFirestoreOutfit(
+      outfitName,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    FirebaseService.addLocalOutfit(
+      outfitName,
+      outfit.id,
+      outfit.topItem,
+      outfit.bottomItem,
+      outfit.shoeItem,
+      outfit.timesWorn,
+      outfit.weather,
+    );
+
+    setState(() => isFavorite = true);
+    _showTopSnackbarStatic("Outfit added to favorites!");
+  }
+  //handle dislike
+  Future<void> handleDislike() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final outfit = widget.outfit;
+
+    if (user == null || outfit == null) {
+      print('No user or outfit to dislike.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('DislikedOutfits')
+          .doc(outfit.id.toString())
+          .set(outfit.toJson());
+
+      _showTopSnackbarStatic("We'll skip this outfit in the future!");
+    } catch (e) {
+      print('Error disliking outfit: $e');
+    }
+  }
+  //handle like
+  Future<void> handleLike() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final outfit = widget.outfit;
+
+    if (user == null || outfit == null) {
+      print('No user or outfit to like.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('LikedOutfits')
+          .doc(outfit.id.toString())
+          .set(outfit.toJson());
+
+      _showTopSnackbarStatic("We'll show you more outfits like this!");
+    } catch (e) {
+      print('Error liking outfit: $e');
+    }
+  }
+
+  //Name outfit box
+  Future<String?> _showNameInputDialog(BuildContext context) async {
+    TextEditingController controller = TextEditingController();
+    String inputName = '';
+    bool isButtonEnabled = false;
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[300], // Unified background
+              title: const Text('Name your Outfit'),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                onChanged: (value) {
+                  inputName = value;
+                  setState(() {
+                    isButtonEnabled = value.trim().isNotEmpty;
+                  });
+                },
+                decoration: const InputDecoration(hintText: 'Enter outfit name'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, null), // Cancel = null
+                  child: const Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: isButtonEnabled
+                      ? () => Navigator.pop(context, inputName)
+                      : null,
+                  child: const Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+
+
+/*Future<void> _toggleFavorite() async {
+  final outfit = widget.outfit!;
+  setState(() => isFavorite = !isFavorite);
 
     if (isFavorite) {
       // Add to favorites (Firestore + local)
@@ -77,7 +218,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         ),
       );
     }
-  }
+  }*/
 
   Future<void> _handleWearOutfit(Outfit outfit) async {
     // Increment outfit wear count
@@ -105,10 +246,64 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     );
 
     setState(() {});
+    _showTopSnackbarStatic("Wear Recorded!");
+    
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Wear recorded!")),
+  void _showTopSnackbarStatic(String message) {
+    final overlay = Overlay.of(context);
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: screenHeight * 0.5, // Around 30% from the top
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Light gray background
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.black87, size: 24),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+
+    overlay.insert(overlayEntry);
+
+    // Remove after 3 seconds
+    Future.delayed(const Duration(seconds: 2)).then((_) {
+      overlayEntry.remove();
+    });
   }
 
   /// Debugging to make sure everything loads righ
@@ -121,22 +316,22 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   }
 
   void _handleDeleteOutfit() {
-    if (widget.outfit != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Delete Outfit"),
-          content: const Text(
-              "Are you sure you want to permanently delete this outfit?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Remove from Firestore
-                FirebaseService.removeFirestoreOutfit(widget.outfit!);
+  if (widget.outfit != null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[300], // Unified background
+        title: const Text("Delete Outfit"),
+        content: const Text("Are you sure you want to permanently delete this outfit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Remove from Firestore
+              FirebaseService.removeFirestoreOutfit(widget.outfit!);
 
                 // Remove locally
                 FirebaseService.removeLocalOutfit(widget.outfit!);
@@ -189,13 +384,12 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.8),
-                    child: SizedBox(
+                                        child: SizedBox(
                       height: screenHeight * 0.8,
                       child: Stack(
                         children: [
-                          // 🟦 Top Item
+                          // Top Item
                           Positioned(
-                            //top: screenHeight * 0.0,
                             left: 0,
                             child: outfitItem(
                               "Top",
@@ -203,8 +397,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                               imageUrl: widget.outfit?.topItem.url,
                             ),
                           ),
-        
-                          // 🟨 Bottom Item
+
+                          // Bottom Item
                           Positioned(
                             top: screenHeight * 0.235,
                             right: 0,
@@ -214,8 +408,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                               imageUrl: widget.outfit?.bottomItem.url,
                             ),
                           ),
-        
-                          // 🟩 Shoes Item
+
+                          // Shoes Item
                           Positioned(
                             top: screenHeight * 0.45,
                             left: 0,
@@ -231,9 +425,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   ),
                 ),
               ),
-        
-              //SizedBox(height: screenHeight * 0.03), // Spacer
-        
+              SizedBox(height: screenHeight * 0.03), // Spacer
+
               /// Action buttons (favorite, regenerate, thumbs)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -242,18 +435,17 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                       ? MainAxisAlignment.spaceBetween
                       : MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Thumbs down (dislike)
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.08,
                         icon: const Icon(Icons.thumb_down, color: Colors.black),
-                        onPressed: () {
+                        onPressed: () async {
                           print("Thumbs down pressed");
-                          // TODO: Add dislike logic
+                          await handleDislike();
+                          if (widget.onRegenerate != null) widget.onRegenerate!();
                         },
                       ),
-        
-                    // Heart icon (toggle favorite)
+
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.1,
@@ -267,37 +459,23 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                           }
                         },
                       ),
-        
-                    // Regenerate button
+
                     if (widget.showRegenerate)
-                      Row(
-                        children: [
-                          IconButton(
-                            iconSize: screenWidth * 0.1,
-                            icon: const Icon(Icons.autorenew),
-                            onPressed: widget.onRegenerate ?? () {},
-                          ),
-                          SizedBox(width: screenWidth * 0.05), // Spacer
-                          IconButton(
-                            iconSize: screenWidth * 0.1,
-                            icon: const Icon(Icons.checkroom),
-                            onPressed: () {
-                              if (widget.outfit != null) {
-                                _handleWearOutfit(widget.outfit!);
-                              }
-                            },
-                          ),
-                        ],
+                      IconButton(
+                        iconSize: screenWidth * 0.1,
+                        icon: const Icon(Icons.autorenew),
+                        onPressed: widget.onRegenerate ?? () {
+                          print("Regenerate pressed");
+                        },
                       ),
-        
-                    // Thumbs up (like)
+
                     if (widget.showFavorite)
                       IconButton(
                         iconSize: screenWidth * 0.08,
                         icon: const Icon(Icons.thumb_up, color: Colors.black),
-                        onPressed: () {
+                        onPressed: () async {
                           print("Thumbs up pressed");
-                          // TODO: Add like logic
+                          await handleLike();
                         },
                       ),
                   ],

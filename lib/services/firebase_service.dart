@@ -98,26 +98,38 @@ class FirebaseService{
   }
 
   // Add new item to Firestore
-static Future<void> addFirestoreItem(Item item) async {
-  final itemMap = {
-    'category': item.category,
-    'label': item.label,
-    'weather': item.weather,
-    'url': item.url,
-    'id': item.id,
-    'timesWorn': 0,
-  };
+  static Future<void> addFirestoreItem(Item item) async {
+    final itemMap = {
+      'category': item.category,
+      'label': item.label,
+      'weather': item.weather,
+      'url': item.url,
+      'id': item.id,
+      'timesWorn': 0,
+    };
 
-  await db
-      .collection('users')
-      .doc(kUsername)
-      .collection('Clothes')
-      .doc(item.id.toString())
-      .set(itemMap);
+    await db
+        .collection('users')
+        .doc(kUsername)
+        .collection('Clothes')
+        .doc(item.id.toString())
+        .set(itemMap);
 
- // Add the item to the local item list
- Item.itemList.add(item);
-      
-}
+  // Add the item to the local item list
+  Item.itemList.add(item);
+        
+  }
+
+  //check if Outfit is in Favorite
+  static Future<bool> isOutfitFavorited(int topID, int bottomID, int shoeID) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(kUsername);
+    final favorites = await userDoc.collection('FavoriteOutfits')
+        .where('topID', isEqualTo: topID)
+        .where('bottomID', isEqualTo: bottomID)
+        .where('shoeID', isEqualTo: shoeID)
+        .get();
+
+    return favorites.docs.isNotEmpty;
+  }
 
 }
