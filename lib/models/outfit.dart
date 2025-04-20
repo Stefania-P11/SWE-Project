@@ -207,6 +207,24 @@ class Outfit {
   }
 
   /// Create an Outfit from a list of Items returned by surpriseMe()
+  factory Outfit.fromSurpriseMe({
+    required Item top,
+    required Item bottom,
+    required Item shoe,
+    required String tempCategory,
+  }) {
+    return Outfit(
+      id: DateTime.now().millisecondsSinceEpoch,
+      label: 'Surprise Me Outfit',
+      topItem: top,
+      bottomItem: bottom,
+      shoeItem: shoe,
+      timesWorn: 0,
+      weather: [tempCategory], // ✅ Use actual temperature category
+    );
+  }
+
+  
   factory Outfit.fromItemList(List<Item> items) {
     final top = items.firstWhere(
       (i) => i.category.toLowerCase().contains('top'),
