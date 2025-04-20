@@ -34,10 +34,10 @@ class OutfitSuggestionScreen extends StatefulWidget {
 
 class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   bool isFavorite = false; // Track favorite state for UI
-  
+
   Future<void> _toggleFavorite() async {
     final outfit = widget.outfit!;
-    
+
     // Prompt user for name
     String? outfitName = await _showNameInputDialog(context);
 
@@ -80,6 +80,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     setState(() => isFavorite = true);
     _showTopSnackbarStatic("Outfit added to favorites!");
   }
+
   //handle dislike
   Future<void> handleDislike() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -103,6 +104,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       print('Error disliking outfit: $e');
     }
   }
+
   //handle like
   Future<void> handleLike() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -150,11 +152,13 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     isButtonEnabled = value.trim().isNotEmpty;
                   });
                 },
-                decoration: const InputDecoration(hintText: 'Enter outfit name'),
+                decoration:
+                    const InputDecoration(hintText: 'Enter outfit name'),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context, null), // Cancel = null
+                  onPressed: () =>
+                      Navigator.pop(context, null), // Cancel = null
                   child: const Text("Cancel"),
                 ),
                 TextButton(
@@ -170,9 +174,6 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       },
     );
   }
-
-
-
 
 /*Future<void> _toggleFavorite() async {
   final outfit = widget.outfit!;
@@ -247,7 +248,6 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     setState(() {});
     _showTopSnackbarStatic("Wear Recorded!");
-    
   }
 
   void _showTopSnackbarStatic(String message) {
@@ -316,22 +316,23 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   }
 
   void _handleDeleteOutfit() {
-  if (widget.outfit != null) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[300], // Unified background
-        title: const Text("Delete Outfit"),
-        content: const Text("Are you sure you want to permanently delete this outfit?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async {
-              // Remove from Firestore
-              FirebaseService.removeFirestoreOutfit(widget.outfit!);
+    if (widget.outfit != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.grey[300], // Unified background
+          title: const Text("Delete Outfit"),
+          content: const Text(
+              "Are you sure you want to permanently delete this outfit?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Remove from Firestore
+                FirebaseService.removeFirestoreOutfit(widget.outfit!);
 
                 // Remove locally
                 FirebaseService.removeLocalOutfit(widget.outfit!);
@@ -384,7 +385,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.8),
-                                        child: SizedBox(
+                    child: SizedBox(
                       height: screenHeight * 0.8,
                       child: Stack(
                         children: [
@@ -442,7 +443,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         onPressed: () async {
                           print("Thumbs down pressed");
                           await handleDislike();
-                          if (widget.onRegenerate != null) widget.onRegenerate!();
+                          if (widget.onRegenerate != null)
+                            widget.onRegenerate!();
                         },
                       ),
 
@@ -460,13 +462,30 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         },
                       ),
 
+                    // Regenerate + Wear buttons
                     if (widget.showRegenerate)
-                      IconButton(
-                        iconSize: screenWidth * 0.1,
-                        icon: const Icon(Icons.autorenew),
-                        onPressed: widget.onRegenerate ?? () {
-                          print("Regenerate pressed");
-                        },
+                      Row(
+                        children: [
+                          IconButton(
+                            iconSize: screenWidth * 0.1,
+                            icon: const Icon(Icons.autorenew),
+                            onPressed: widget.onRegenerate ??
+                                () {
+                                  print("Regenerate pressed");
+                                },
+                          ),
+                          SizedBox(width: screenWidth * 0.05), // Spacer
+                          IconButton(
+                            iconSize: screenWidth * 0.1,
+                            icon: const Icon(
+                                Icons.checkroom), // 
+                            onPressed: () {
+                              if (widget.outfit != null) {
+                                _handleWearOutfit(widget.outfit!);
+                              }
+                            },
+                          ),
+                        ],
                       ),
 
                     if (widget.showFavorite)
