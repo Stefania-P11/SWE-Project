@@ -199,12 +199,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Button to play it safe - show favorite outfit
                   CustomButton2(
                     text: 'PLAY IT SAFE',
-                    onPressed: () {
+                    onPressed: () async {
                       // ✅ Don't re-fetch from Firestore; use the local outfitList
-                      final safeOutfit = PlayItSafeService.getSafeOutfit();
+                      final safeOutfit = await PlayItSafeService.getSafeOutfit();
 
-                      void regenerateAndReplace(BuildContext context) {
-                        final newOutfit = PlayItSafeService.getSafeOutfit();
+                      void regenerateAndReplace(BuildContext context) async {
+                        final newOutfit = await PlayItSafeService.getSafeOutfit();
                         if (newOutfit != null) {
                           Navigator.pushReplacement(
                             context,
