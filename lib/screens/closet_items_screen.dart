@@ -375,7 +375,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                                                 12), // Rounded corners for image
                                             child: Image.network(
                                               item.url, // Display item image from URL
-                                              fit: BoxFit.cover,
+                                              fit: BoxFit.contain,
                                             ),
                                           ),
                                         ),

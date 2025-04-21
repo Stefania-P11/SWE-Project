@@ -1,5 +1,5 @@
 
-//import 'package:dressify_app/screens/closet_insights_screen.dart';
+
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/insights_screen.dart';
 import 'package:dressify_app/screens/landing_screen.dart';

@@ -42,7 +42,7 @@ class ItemCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12), // Applies rounded corners to the image
                 child: Image.network(
                   item.url, // URL of the image
-                  fit: BoxFit.cover, // Ensures the image covers the container
+                  fit: BoxFit.contain, 
                   errorBuilder: (context, error, stackTrace) =>
                       const Icon(Icons.broken_image, size: 50, color: Colors.grey),
                   // Shows a fallback icon if the image fails to load
