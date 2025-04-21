@@ -52,48 +52,54 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Fetch item data and count when the screen initializes
     fetchData();
-    //gets the users current location on the screen
-    //getUserLocation();
-
-    //getUserWeather();
 
     // Fetch weather and location data when the screen initializes
     getUserWeatherAndLocation();
   }
 
   
-
-  /// Fetch item data and count items by category using ItemService
-  // CHANGED: Count items from local memory for demo (no Firestore)
-  Future<void> fetchData() async {
-    // If no items are loaded in the list, fetch them from Firestore
-    if (!Item.isLoaded) {
-      await Item.fetchItems(kUsername);
-      Item.isLoaded = true;
-    }
-
-    Map<String, int> itemCounts = {
-      'topCount': 0,
-      'bottomCount': 0,
-      'shoeCount': 0,
-    };
-
-    for (final item in Item.itemList) {
-      if (item.category == 'Top')
-        itemCounts['topCount'] = itemCounts['topCount']! + 1;
-      if (item.category == 'Bottom')
-        itemCounts['bottomCount'] = itemCounts['bottomCount']! + 1;
-      if (item.category == 'Shoes')
-        itemCounts['shoeCount'] = itemCounts['shoeCount']! + 1;
-    }
-
-    setState(() {
-      topCount = itemCounts['topCount']!;
-      bottomCount = itemCounts['bottomCount']!;
-      shoeCount = itemCounts['shoeCount']!;
-      isLoading = false;
-    });
+/// Fetches items and outfits from Firestore and updates local counters.
+Future<void> fetchData() async {
+  // Load items from Firestore if they haven't been loaded yet
+  if (!Item.isLoaded) {
+    await Item.fetchItems(kUsername);
+    Item.isLoaded = true;
   }
+
+  // Load outfits from Firestore if the list is currently empty
+  if (Outfit.outfitList.isEmpty) {
+    await Outfit.fetchOutfits(kUsername);
+  }
+
+  // Initialize counters for each category
+  Map<String, int> itemCounts = {
+    'topCount': 0,
+    'bottomCount': 0,
+    'shoeCount': 0,
+  };
+
+  // Tally items by category
+  for (final item in Item.itemList) {
+    if (item.category == 'Top') {
+      itemCounts['topCount'] = itemCounts['topCount']! + 1;
+    }
+    if (item.category == 'Bottom') {
+      itemCounts['bottomCount'] = itemCounts['bottomCount']! + 1;
+    }
+    if (item.category == 'Shoes') {
+      itemCounts['shoeCount'] = itemCounts['shoeCount']! + 1;
+    }
+  }
+
+  // Update the UI with the latest counts
+  setState(() {
+    topCount = itemCounts['topCount']!;
+    bottomCount = itemCounts['bottomCount']!;
+    shoeCount = itemCounts['shoeCount']!;
+    isLoading = false;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
