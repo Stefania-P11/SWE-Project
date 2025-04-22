@@ -400,47 +400,45 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             children: [
               // Visual display of outfit items (top, bottom, shoe)
               SizedBox(
-                height: screenHeight * 0.72,
+                height: screenHeight * 0.70,
                 width: screenWidth,
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.8),
                     child: SizedBox(
-                      height: screenHeight * 0.8,
-                      child: Stack(
+                      height: screenHeight * 0.7,
+                      child: Column(
                         children: [
                           // Top item display
-                          Positioned(
-                            left: screenWidth * 0.15,
+                          Container(
                             child: outfitItem(
                               "Top",
-                              screenWidth,
+                              screenWidth * 0.85,
                               imageUrl: widget.outfit?.topItem.url,
                             ),
                           ),
 
                           // Bottom item display
-                          Positioned(
-                            top: screenHeight * 0.235,
-                            left: screenWidth * 0.15,
+                          Container(
                             child: outfitItem(
                               "Bottom",
-                              screenWidth,
+                              screenWidth * 0.85,
                               imageUrl: widget.outfit?.bottomItem.url,
                             ),
                           ),
 
                           // Shoe item display
-                          Positioned(
-                            top: screenHeight * 0.45,
-                            left: screenWidth * 0.15,
+                          Container(
                             child: outfitItem(
                               "Shoe",
-                              screenWidth,
+                              screenWidth * 0.85,
                               imageUrl: widget.outfit?.shoeItem.url,
                             ),
                           ),
+
+                          //Label
+                          Text(widget.outfit!.label, style: kH3),
                         ],
                       ),
                     ),
