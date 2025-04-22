@@ -412,7 +412,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         children: [
                           // Top item display
                           Positioned(
-                            left: 0,
+                            left: screenWidth * 0.15,
                             child: outfitItem(
                               "Top",
                               screenWidth,
@@ -423,7 +423,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                           // Bottom item display
                           Positioned(
                             top: screenHeight * 0.235,
-                            right: 0,
+                            left: screenWidth * 0.15,
                             child: outfitItem(
                               "Bottom",
                               screenWidth,
@@ -434,7 +434,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                           // Shoe item display
                           Positioned(
                             top: screenHeight * 0.45,
-                            left: 0,
+                            left: screenWidth * 0.15,
                             child: outfitItem(
                               "Shoe",
                               screenWidth,
