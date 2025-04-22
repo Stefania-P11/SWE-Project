@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Constant for the username used in Firestore
-const String kUsername = 'dummy';
+const String kUsername = 'stefania';
 
 // COLORS
 
