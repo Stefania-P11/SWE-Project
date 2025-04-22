@@ -1,4 +1,4 @@
-import 'package:dressify_app/screens/authentication.dart';
+import 'package:dressify_app/screens/authentication_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:flutter/material.dart'; // Import Flutter Material Design package
 import 'package:dressify_app/widgets/custom_button.dart'; // Import the custom button widget
