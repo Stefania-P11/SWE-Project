@@ -14,7 +14,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showEditIcon; // Flag to show/hide the edit button
   final bool showDeleteIcon; // Flag to show/hide the delete button
   final VoidCallback? onDeletePressed;
-
+  final bool showGridViewIcon; // Flag to show/hide the Grid View button
+  final VoidCallback? onGridViewPressed;
 
   /// Constructor to initialize [showBackButton], [isViewMode], and [onEditPressed].
   /// Defaults:
@@ -28,13 +29,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onEditPressed,
     this.showEditIcon = true,
     this.showDeleteIcon = true,
-    this.onDeletePressed, 
+    this.onDeletePressed,
+    this.showGridViewIcon = false,
+    this.onGridViewPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: kBackgroundColor, // Set app bar background color
+      backgroundColor: kappBarColor, // Set app bar background color
       title: SvgPicture.asset(
           "lib/assets/icons/Logo_type.svg"), // Display the logo in the center
 
@@ -48,14 +51,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Padding(
               padding: const EdgeInsets.all(12.0),
-              child: SvgPicture.asset(
-                  'lib/assets/icons/menu.svg'), // Display menu icon
+              child: Icon(Icons.menu), // Display menu icon
             ),
 
       // Right-side icons in the app bar
       actions: [
         // Show edit and delete icons only when [isViewMode] is true
         if (isViewMode) ...[
+          if (showGridViewIcon)
+            IconButton(
+              icon: const Icon(Icons.grid_view,
+                  color: Colors.black), // Trash icon (red)
+              onPressed: onGridViewPressed, // Trigger delete
+            ),
           if (showEditIcon)
             // Edit button to switch to edit mode
             IconButton(
@@ -63,22 +71,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onEditPressed, // Trigger edit mode when pressed
             ),
           // Delete button to remove item
-
-
           if (showDeleteIcon)
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red), // Trash icon (red)
-            onPressed: onDeletePressed, // Trigger delete
-          ),
+            IconButton(
+              icon: const Icon(Icons.delete,
+                  color: Colors.red), // Trash icon (red)
+              onPressed: onDeletePressed, // Trigger delete
+            ),
         ],
-      
+
         // Profile button on the right side
         IconButton(
           onPressed: () {
             // TODO: Handle profile navigation
           },
-          icon:
-              SvgPicture.asset('lib/assets/icons/account.svg'), // Profile icon
+          icon: Icon(Icons.account_circle_rounded), // Profile icon
         ),
       ],
 
