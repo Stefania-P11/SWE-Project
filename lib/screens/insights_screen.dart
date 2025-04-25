@@ -16,73 +16,78 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  // List of top 5 most worn outfits
+  // List to store top outfits based on wear count
   List<Outfit> topOutfits = [];
   
-  // Map of top 3 items by category (Tops, Bottoms, Shoes)
+  // Map to store top items by category (Top, Bottom, Shoes)
   Map<String, List<Item>> topItemsByCategory = {
     'Top': [],
     'Bottom': [],
     'Shoes': [],
   };
   
-  // List of items that have never been worn
+  // List to store items that have never been worn
   List<Item> neverWornItems = [];
   
   // Loading state flag
   bool isLoading = true;
   
-  // Tracks how many times each item has been worn
+  // Map to track how many times each item has been worn
   final Map<String, int> itemWearCounts = {};
 
   @override
   void initState() {
     super.initState();
-    _loadInsightsData(); // Load data when screen initializes
+    // Load insights data when the widget initializes
+    _loadInsightsData();
   }
 
-  // Fetches and processes outfit and item data
+  /// Loads all the insights data including:
+  /// - Top outfits by wear count
+  /// - Top items by category
+  /// - Never worn items
   Future<void> _loadInsightsData() async {
     setState(() => isLoading = true);
-
-    // Fetch data if not already loaded
+    
+    // Fetch outfits and items if they haven't been loaded yet
     if (Outfit.outfitList.isEmpty) await Outfit.fetchOutfits(kUsername);
     if (Item.itemList.isEmpty) await Item.fetchItems(kUsername);
 
-    itemWearCounts.clear(); // Reset wear counts
-
-    // Count appearances of each item in all outfits
+    // Clear previous wear counts
+    itemWearCounts.clear();
+    
+    // Count how many times each item appears in outfits
     for (final outfit in Outfit.outfitList) {
       _countItemAppearances(outfit.topItem);
       _countItemAppearances(outfit.bottomItem);
       _countItemAppearances(outfit.shoeItem);
     }
 
-    // Sort and get top 5 most worn outfits
+    // Sort outfits by times worn and take top 5
     topOutfits = List.from(Outfit.outfitList)
       ..sort((a, b) => b.timesWorn.compareTo(a.timesWorn));
     topOutfits = topOutfits.take(5).toList();
 
-    // Get top 3 items for each category
+    // For each category, sort items by wear count and take top 3
     for (var category in topItemsByCategory.keys) {
       var items = Item.itemList.where((i) => i.category == category).toList();
       items.sort((a, b) {
         final countA = itemWearCounts[a.id.toString()] ?? 0;
         final countB = itemWearCounts[b.id.toString()] ?? 0;
-        return countB.compareTo(countA); // Sort by wear count descending
+        return countB.compareTo(countA);
       });
       topItemsByCategory[category] = items.take(3).toList();
     }
 
-    // Find never-worn items (wear count = 0)
+    // Find items that have never been worn (wear count = 0)
     neverWornItems = Item.itemList.where((i) =>
       (itemWearCounts[i.id.toString()] ?? 0) == 0
     ).toList();
 
-    setState(() => isLoading = false); // Done loading
+    setState(() => isLoading = false);
   }
 
-  // Helper to increment wear count for an item
+  /// Increments the wear count for a specific item
   void _countItemAppearances(Item item) {
     final itemId = item.id.toString();
     itemWearCounts[itemId] = (itemWearCounts[itemId] ?? 0) + 1;
@@ -90,7 +95,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate card width based on screen size
+    // Calculate card width based on screen width
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = (screenWidth / 2) - 24;
 
@@ -99,16 +104,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
       backgroundColor: kBackgroundColor,
       bottomNavigationBar: const CustomNavBar(),
       body: SafeArea(
-        // Show loading indicator or content
         child: isLoading ? _buildLoading() : _buildContent(cardWidth),
       ),
     );
   }
 
-  // Loading indicator widget
+  /// Builds a loading indicator
   Widget _buildLoading() => const Center(child: CircularProgressIndicator());
 
-  // Main content widget when data is loaded
+  /// Builds the main content of the insights screen
   Widget _buildContent(double cardWidth) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
@@ -120,10 +124,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Most Worn Outfits section
           _sectionTitle('Most Worn Outfits'),
           SizedBox(
-            height: 382,
+            height: 330,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: topOutfits.length,
@@ -136,8 +139,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     width: cardWidth,
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200], // Gray background
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(2),
                       boxShadow: const [
                         BoxShadow(
                           color: Colors.black12,
@@ -148,13 +151,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     ),
                     child: Column(
                       children: [
-                        // White container for outfit images
+                        // Outfit preview container with white background
                         Container(
-                          height: 305,
-                          margin: const EdgeInsets.all(8),
+                          height: 260,
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(2),
                             border: Border.all(
                               color: Colors.black12,
                               width: 1,
@@ -170,7 +174,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             ],
                           ),
                         ),
-                        // Outfit name and wear count
                         Padding(
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                           child: Column(
@@ -186,7 +189,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Worn ${outfit.timesWorn} ${outfit.timesWorn == 1 ? 'time' : 'times'}',
+                                '${outfit.timesWorn} ${outfit.timesWorn == 1 ? 'time' : 'Wears'}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[700],
@@ -203,13 +206,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // Generate sections for each clothing category
+          // Display top items for each category
           for (var entry in topItemsByCategory.entries) ...[
             _sectionTitle('Most Worn ${entry.key}s'),
             _itemList(entry.value),
             const SizedBox(height: 24),
           ],
-          // Never Worn Items section
+          // Display never worn items section
           _sectionTitle('Never Worn Items'),
           _itemList(neverWornItems, isNeverWorn: true),
           const SizedBox(height: 16),
@@ -218,34 +221,37 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  // Builds an individual outfit item image widget
+  /// Builds an individual outfit item image
   Widget _buildOutfitItem(String url) {
     return Expanded(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: url.isNotEmpty
-            ? Image.network( // Display network image if URL exists
+            ? Image.network(
                 url,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const Center(
                   child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
                 ),
               )
-            : const Center( // Fallback icon if no image
+            : const Center(
                 child: Icon(Icons.checkroom, size: 40, color: Colors.grey),
               ),
       ),
     );
   }
 
-  // Section title widget with consistent styling
+  /// Builds a section title with consistent styling
   Widget _sectionTitle(String title) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(title, style: kH2),
       );
 
-  // Horizontal list widget for items (tops/bottoms/shoes)
+  /// Builds a horizontal list of items
+  /// [items] - List of items to display
+  /// [isNeverWorn] - Flag to indicate if these are never worn items
   Widget _itemList(List<Item> items, {bool isNeverWorn = false}) {
+    // Show message if no items are available
     if (items.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
@@ -266,10 +272,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
           return Container(
             width: 120,
             decoration: BoxDecoration(
-              color: Colors.grey[200], // Gray background
+              color: Colors.grey[200],
               borderRadius: BorderRadius.circular(8),
               boxShadow: const [
-                BoxShadow( // Subtle shadow
+                BoxShadow(
                   color: Colors.black12,
                   blurRadius: 4,
                   offset: Offset(0, 2),
@@ -285,9 +291,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                   ),
                   child: item.url.isNotEmpty
-                      ? ClipRRect( // Display item image
+                      ? ClipRRect(
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(8)),
+                            top: Radius.circular(8),
+                          ),
                           child: Image.network(
                             item.url,
                             fit: BoxFit.cover,
@@ -301,7 +308,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             ),
                           ),
                         )
-                      : const Center( // Fallback icon
+                      : const Center(
                           child: Icon(
                             Icons.checkroom,
                             size: 40,
@@ -323,7 +330,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (!isNeverWorn) ...[ // Only show wear count if item has been worn
+                      if (!isNeverWorn) ...[
                         const SizedBox(height: 4),
                         Text(
                           '$wearCount ${wearCount == 1 ? 'wear' : 'wears'}',
@@ -344,7 +351,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  // Navigates to outfit details screen
+  /// Navigates to the outfit details screen
   Future<void> _navigateToOutfitDetails(Outfit outfit) async {
     final result = await Navigator.push(
       context,
@@ -357,6 +364,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         ),
       ),
     );
-    if (result == true) _loadInsightsData(); // Refresh if changes were made
+    // Reload data if there were changes
+    if (result == true) _loadInsightsData();
   }
 }
