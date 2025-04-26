@@ -85,16 +85,13 @@ class Item {
     }
   }
 
-
-  Future<void> incrementTimesWorn() async {
-    timesWorn++;
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(kUsername)
-        .collection("Clothes")
-        .doc(id.toString())
-        .update({'timesWorn': timesWorn});
-  }
+Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
+  timesWorn++;
+  (firestore ?? FirebaseFirestore.instance)
+      .collection('users')
+      .doc(kUsername)
+      .collection("Clothes")
+      .doc(id.toString())
+      .update({'timesWorn': timesWorn});
 }
-
-
+}
