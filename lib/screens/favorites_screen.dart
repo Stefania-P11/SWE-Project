@@ -37,6 +37,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor, // Set background color
+
       appBar: CustomAppBar(), // Top app bar
 
       body: _buildOutfitGrid(), // Display filtered outfits
