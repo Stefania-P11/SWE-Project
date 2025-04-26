@@ -1,4 +1,4 @@
-import 'package:dressify_app/models/item.dart';
+/*import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/screens/add_item_screen.dart';
 import 'package:dressify_app/widgets/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -860,3 +860,4 @@ void main() {
 
   });
 }
+*/

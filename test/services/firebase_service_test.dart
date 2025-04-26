@@ -1,4 +1,4 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/services/firebase_service.dart';
 import 'package:dressify_app/models/item.dart';
