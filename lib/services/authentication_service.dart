@@ -134,20 +134,25 @@ class AuthenticationService{
   }
 
   ///Sets a new password for the current user 
-  Future<void> setNewPassword(String password) async {
+  Future<bool> setNewPassword(String currPassword, String newPassword) async {
     try {
       //gets the current user
       User? user = getCurrentUser();
-      if (user != null) {
-        //password gets updated if the user is signed-in
-        await user.updatePassword(password);
-        print("The new password has been set.");
-      } else {
-        //user is not signed in
-        print("User is not signed in.");
-      }
+      if (user == null) {print("The user is not signed-in currently."); return false;}
+
+       //the current password gets re-authenticated 
+      final authCred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currPassword,
+      );
+      await user.reauthenticateWithCredential(authCred);
+      //password gets updated to a new password if the re-authentication is correct
+      await user.updatePassword(newPassword);
+      print("The new password has been set.");
+      return true;
     } catch (e) {
-      print("The new has failed to update: $e");
+      print("The new password has failed to update: $e");
+      return false;
     }
   }
 }
