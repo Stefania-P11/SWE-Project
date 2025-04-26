@@ -132,6 +132,29 @@ class AuthenticationService{
   bool validatePassword(String password) {
     return passwordLength(password) && passwordUpperCase(password) && passwordDigit(password);
   }
+
+  ///Sets a new password for the current user 
+  Future<bool> setNewPassword(String currPassword, String newPassword) async {
+    try {
+      //gets the current user
+      User? user = getCurrentUser();
+      if (user == null) {print("The user is not signed-in currently."); return false;}
+
+       //the current password gets re-authenticated 
+      final authCred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currPassword,
+      );
+      await user.reauthenticateWithCredential(authCred);
+      //password gets updated to a new password if the re-authentication is correct
+      await user.updatePassword(newPassword);
+      print("The new password has been set.");
+      return true;
+    } catch (e) {
+      print("The new password has failed to update: $e");
+      return false;
+    }
+  }
 }
 
 Future<bool> isUsernameAvailable(String username) async {
@@ -161,3 +184,4 @@ Future<bool> isUsernameAvailable(String username) async {
   if (doc.docs.isEmpty) return null;
   return doc.docs.first.id; // The document ID is the username
 }
+
