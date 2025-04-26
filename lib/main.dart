@@ -6,6 +6,7 @@ import 'package:dressify_app/screens/change_password_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/insights_screen.dart';
 import 'package:dressify_app/screens/landing_screen.dart';
+import 'package:dressify_app/screens/profile_settings_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
       ),
 
 
-      home: const ChangePasswordScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const ProfileSettingsScreen(username:'stefania'), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
 
 
     );
