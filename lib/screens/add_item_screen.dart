@@ -205,7 +205,7 @@ void _handleSaveOrUpdate() async {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
+      backgroundColor: kBackgroundColor,
 
       // Custom App Bar with back button and optional edit/delete icons
       appBar: CustomAppBar(
@@ -216,221 +216,235 @@ void _handleSaveOrUpdate() async {
       ),
 
       // Body of the Add Item Screen
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: SingleChildScrollView(
-                // Allows scrolling if the content overflows
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Add spacing at the top
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Show different titles based on mode
-                    SizedBox(
-                      child: !isViewMode
-                          ? (widget.item != null
-                              ? Text(
-                                  "Update Item", // Show this title when in edit mode
-                                  style: kH2,
-                                )
-                              : Text(
-                                  "Adding New Item", // Show this title when adding a new item
-                                  style: kH2,
-                                ))
-                          : Text(
-                              "Item Details", // Show this title when viewing an item
-                              style: kH2,
-                            ),
-                    ),
-
-                    // Add spacing below the title
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Image Picker container that opens a prompt for choosing from camera/gallery
-                    Center(
-                      child: GestureDetector(
-                        onTap: isViewMode
-                            ? null // Disable image selection in View Mode
-                            : () => _updateImage(_imagePath),
-                        child: ImagePickerContainer(
-                          onImageSelected: _updateImage,
-                          initialImagePath: _imagePath,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                child: SingleChildScrollView(
+                  // Allows scrolling if the content overflows
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Add spacing at the top
+                      SizedBox(height: screenHeight * 0.02),
+        
+                      // Show different titles based on mode
+                      SizedBox(
+                        child: !isViewMode
+                            ? (widget.item != null
+                                ? Text(
+                                    "Update Item", // Show this title when in edit mode
+                                    style: kH2.copyWith(color: Colors.black),
+                                  )
+                                : Text(
+                                    "Adding New Item", // Show this title when adding a new item
+                                    style: kH2.copyWith(color: Colors.black),
+                                  ))
+                            : Text(
+                                "Item Details", // Show this title when viewing an item
+                                style: kH2.copyWith(color: Colors.black),
+                              ),
+                      ),
+        
+                      // Add spacing below the title
+                      SizedBox(height: screenHeight * 0.02),
+        
+                      // Image Picker container that opens a prompt for choosing from camera/gallery
+                      Center(
+                        child: GestureDetector(
+                          onTap: isViewMode
+                              ? null // Disable image selection in View Mode
+                              : () => _updateImage(_imagePath),
+                          child: ImagePickerContainer(
+                            onImageSelected: _updateImage,
+                            initialImagePath: _imagePath,
+                          ),
                         ),
                       ),
-                    ),
-
-                    // Add spacing below image picker
-                    SizedBox(height: screenHeight * 0.01),
-
-                    // Label for name input
-                    Text("Name", style: kH2),
-
-                    // TextField for entering item name (max length: 15 characters)
-                    TextField(
-                      controller: _nameController,
-                      maxLength: 15,
-                      enabled: !isViewMode, // Disable in View Mode
-                      decoration: const InputDecoration(
-                        hintText: "e.g. Old Navy Crewneck",
-                        border: OutlineInputBorder(),
+        
+                      // Add spacing below image picker
+                      SizedBox(height: screenHeight * 0.01),
+        
+                      // Label for name input
+                      Text("Name", style: kH3.copyWith(color: Colors.black)),
+        
+                      SizedBox(height: screenHeight * 0.01),
+        
+                      // TextField for entering item name (max length: 15 characters)
+                      TextField(
+                        controller: _nameController,
+                        maxLength: 15,
+                        enabled: !isViewMode, // Disable in View Mode
+                        decoration: const InputDecoration(
+                          hintText: "e.g. Old Navy Crewneck",
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-
-                    // Add spacing below name input
-                    SizedBox(height: screenHeight * 0.01),
-
-                    // Label for category selection
-                    Text("Category", style: kH2),
-
-                    // Wrap to display category selection buttons horizontally
-                    Wrap(
-                      spacing: 6, // Space between buttons
-                      children: categories
-                          .map(
-                            (category) => IntrinsicWidth(
-                              child: ChoiceChip(
-                                label: Center(
-                                  child: Text(
-                                    category,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: selectedCategory == category
-                                          ? Colors.white
-                                          : Colors.black,
+        
+              
+        
+                      // Label for category selection
+                      Text("Category", style: kH3.copyWith(color: Colors.black)),
+        
+                      SizedBox(height: screenHeight * 0.01),
+        
+                      // Wrap to display category selection buttons horizontally
+                      Wrap(
+                        spacing: 6, // Space between buttons
+                        children: categories
+                            .map(
+                              (category) => IntrinsicWidth(
+                                child: Opacity(
+                                  opacity: isViewMode ? 0.9 : 1.0, // Dim in view mode
+                                  child: ChoiceChip(
+                                    label: Center(
+                                      child: Text(
+                                        category,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: selectedCategory == category
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    selected: selectedCategory == category,
+                                    onSelected: isViewMode
+                                        ? null // Disable selection in view mode
+                                        : (selected) {
+                                            setState(
+                                                () => selectedCategory = category);
+                                          },
+                                    selectedColor: Colors.black,
+                                    backgroundColor: Colors.white,
+                                    showCheckmark:
+                                        false, // Prevent checkmark from appearing
+                                    visualDensity:
+                                        VisualDensity.compact, // Consistent height
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
                                     ),
                                   ),
                                 ),
-                                selected: selectedCategory == category,
-                                onSelected: isViewMode
-                                    ? null // Disable selection in view mode
-                                    : (selected) {
-                                        setState(
-                                            () => selectedCategory = category);
-                                      },
-                                selectedColor: Colors.black,
-                                backgroundColor: Colors.white,
-                                showCheckmark:
-                                    false, // Prevent checkmark from appearing
-                                visualDensity:
-                                    VisualDensity.compact, // Consistent height
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                    ),
+                            )
+                            .toList(),
+                      ),
+        
+                      // Add spacing below category buttons
+                      SizedBox(height: screenHeight * 0.02),
+        
+                      // Label for temperature selection
+                      Text("Temperature", style: kH3.copyWith(color: Colors.black)),
+        
+                      SizedBox(height: screenHeight * 0.01),
 
-                    // Add spacing below category buttons
-                    SizedBox(height: screenHeight * 0.01),
-
-                    // Label for temperature selection
-                    Text("Temperature", style: kH2),
-
-                    // Wrap to display temperature selection buttons horizontally
-                    Wrap(
-                      spacing: 6, // Space between buttons
-                      children: temperatures
-                          .map(
-                            (temp) => IntrinsicWidth(
-                              child: ChoiceChip(
-                                label: Center(
-                                  child: Text(
-                                    temp,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: selectedTemperatures.contains(temp)
-                                          ? Colors.white
-                                          : Colors.black,
+                      // Wrap to display temperature selection buttons horizontally
+                      Wrap(
+                        spacing: 6, // Space between buttons
+                        children: temperatures
+                            .map(
+                              (temp) => IntrinsicWidth(
+                                child: Opacity(
+                                  opacity: isViewMode ? 0.9 : 1.0, // Dim in view mode
+                                  child: ChoiceChip(
+                                    label: Center(
+                                      child: Text(
+                                        temp,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: selectedTemperatures.contains(temp)
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    selected: selectedTemperatures.contains(temp),
+                                    onSelected: isViewMode
+                                        ? null // Disable selection in view mode
+                                        : (selected) {
+                                            setState(() {
+                                              if (selected) {
+                                                selectedTemperatures.add(temp);
+                                              } else {
+                                                selectedTemperatures.remove(temp);
+                                              }
+                                            });
+                                          },
+                                    selectedColor: Colors.black,
+                                    backgroundColor: Colors.white,
+                                    showCheckmark: false,
+                                    visualDensity: VisualDensity.compact,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
                                     ),
                                   ),
                                 ),
-                                selected: selectedTemperatures.contains(temp),
-                                onSelected: isViewMode
-                                    ? null // Disable selection in view mode
-                                    : (selected) {
-                                        setState(() {
-                                          if (selected) {
-                                            selectedTemperatures.add(temp);
-                                          } else {
-                                            selectedTemperatures.remove(temp);
-                                          }
-                                        });
-                                      },
-                                selectedColor: Colors.black,
-                                backgroundColor: Colors.white,
-                                showCheckmark: false,
-                                visualDensity: VisualDensity.compact,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-
-                    // Add spacing before Save and Cancel buttons
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Show Save/Cancel buttons only in Edit Mode
-                    Visibility(
-                      visible: !isViewMode, // Hide buttons in View Mode
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Save Button
-                          CustomButton3(
-                            isActive: selectedCategory.isNotEmpty &&
-                                selectedTemperatures.isNotEmpty &&
-                                _nameController.text.isNotEmpty &&
-                                _imagePath != null,
-                            label: widget.item == null ? "SAVE" : "UPDATE",
-                            onPressed: () {
-                              if (selectedCategory.isNotEmpty &&
+                            )
+                            .toList(),
+                      ),
+        
+                      // Add spacing before Save and Cancel buttons
+                      SizedBox(height: screenHeight * 0.03),
+        
+                      // Show Save/Cancel buttons only in Edit Mode
+                      Visibility(
+                        visible: !isViewMode, // Hide buttons in View Mode
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Save Button
+                            CustomButton3(
+                              isActive: selectedCategory.isNotEmpty &&
                                   selectedTemperatures.isNotEmpty &&
                                   _nameController.text.isNotEmpty &&
-                                  _imagePath != null) {
-                                _handleSaveOrUpdate(); // Save or update logic
-                              }
-                            },
-                          ),
-                          // Cancel Button
-                          CustomButton3(
-                            label: "CANCEL",
-                            onPressed: () {
-                              setState(() {
-                                _nameController.clear();
-                                selectedCategory =
-                                    ''; // Clear category selection
-                                selectedTemperatures
-                                    .clear(); // Clear temperature selection
-                                _imagePath = null; // Clear the image path
-                              });
-
-                              // Return to the previous screen
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
+                                  _imagePath != null,
+                              label: widget.item == null ? "SAVE" : "UPDATE",
+                              onPressed: () {
+                                if (selectedCategory.isNotEmpty &&
+                                    selectedTemperatures.isNotEmpty &&
+                                    _nameController.text.isNotEmpty &&
+                                    _imagePath != null) {
+                                  _handleSaveOrUpdate(); // Save or update logic
+                                }
+                              },
+                            ),
+                            // Cancel Button
+                            CustomButton3(
+                              label: "CANCEL",
+                              onPressed: () {
+                                setState(() {
+                                  _nameController.clear();
+                                  selectedCategory =
+                                      ''; // Clear category selection
+                                  selectedTemperatures
+                                      .clear(); // Clear temperature selection
+                                  _imagePath = null; // Clear the image path
+                                });
+        
+                                // Return to the previous screen
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-
-                    // Add extra space below buttons
-                    SizedBox(height: screenHeight * 0.1),
-                  ],
+        
+                      // Add extra space below buttons
+                      SizedBox(height: screenHeight * 0.1),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
