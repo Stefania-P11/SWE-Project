@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
@@ -9,6 +10,7 @@ import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
 import 'package:dressify_app/widgets/item_count_display_column.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
@@ -60,6 +62,25 @@ class _HomeScreenState extends State<HomeScreen> {
   
 /// Fetches items and outfits from Firestore and updates local counters.
 Future<void> fetchData() async {
+
+  if (kUsername.isEmpty) {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('usernames')
+        .where('uid', isEqualTo: user.uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      kUsername = snapshot.docs.first.id;
+      print("kUsername loaded in HomeScreen: $kUsername");
+    } else {
+      print("Could not load username in HomeScreen");
+    }
+  }
+}
+
   // Load items from Firestore if they haven't been loaded yet
   if (!Item.isLoaded) {
     await Item.fetchItems(kUsername);
