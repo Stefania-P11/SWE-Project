@@ -1,9 +1,9 @@
 import 'package:dressify_app/constants.dart';
-import 'package:dressify_app/features/play_it_safe.dart';
 import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/services/item_service.dart';
+import 'package:dressify_app/services/play_it_safe.dart';
 import 'package:dressify_app/services/weather_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';

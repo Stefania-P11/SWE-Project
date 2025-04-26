@@ -34,7 +34,7 @@ class LandingScreen extends StatelessWidget {
             'Welcome to ', // Static welcome text
             style: kH1.copyWith(
                 color:
-                    konPressedColor), // Apply style defined in constants.dart
+                    kPressedColor), // Apply style defined in constants.dart
           ),
         ),
 
@@ -49,81 +49,45 @@ class LandingScreen extends StatelessWidget {
           ),
         ),
 
-        /// Button to navigate to the "Create Account" screen
-        Positioned(
-            // left: screenWidth * 0.32, // Position 32% from the left
-            top: screenHeight * 0.73, // Position 73% from the top
-            child: Container(
-              decoration: ShapeDecoration(
-                color: konPressedColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4)),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0x3F000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 5),
-                    spreadRadius: 0,
-                  )
-                ],
-              ),
-              child: CustomButton(
-                text: 'Create Account', // Button label
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          AuthScreen(
-                        isLogin: false,
-                      ), // Navigate to HomeScreen
-                      transitionDuration:
-                          Duration.zero, // No transition animation
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-              ),
-            )),
+        // Create Account button
+          Positioned(
+            top: screenHeight * 0.73,
+            child: CustomButton(
+              text: 'Create Account',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const AuthScreen(isLogin: false),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
+            ),
+          ),
 
-        /// Button to navigate to the "Log in" screen
-        Positioned(
-            // left: screenWidth * 0.5, // Position 32% from the left
-            top: screenHeight * 0.81, // Position 81% from the top
-            child: Container(
-              decoration: ShapeDecoration(
-                color: konPressedColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4)),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0x3F000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 5),
-                    spreadRadius: 0,
-                  )
-                ],
-              ),
-              child: CustomButton(
-                // color: konPressedColor,
-                text: 'Log in', // Button label
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          AuthScreen(
-                        isLogin: true,
-                      ), // Navigate to Home Screen
-                      transitionDuration:
-                          Duration.zero, // No transition animation
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-              ),
-            )),
-      ]),
+          // Log In button
+          Positioned(
+            top: screenHeight * 0.81,
+            child: CustomButton(
+              text: 'Log in',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const AuthScreen(isLogin: true),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

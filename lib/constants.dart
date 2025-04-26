@@ -13,7 +13,8 @@ const Color kBackgroundColor = Color.fromARGB(255, 255, 255, 255);
 const Color kOvalShapeColor = Colors.white;
 const Color kButtonColor = Color(0xFF302D30);
 const Color kappBarColor = Color.fromARGB(255, 255, 255, 255);
-const Color konPressedColor = Color(0xFFD37F59);
+const Color kPressedColor = Color(0xFFD37F59);
+
 // TEXT STYLES
 
 TextStyle kH1 = GoogleFonts.playfairDisplay(
@@ -83,4 +84,11 @@ TextStyle kHintText = TextStyle(
   fontSize: 18,
   fontFamily: 'Lato',
   fontWeight: FontWeight.w400,
+);
+
+const TextStyle kErrorMessage = TextStyle(
+  color: Colors.red,
+  fontSize: 12, 
+  fontFamily: 'Lato', 
+  fontWeight: FontWeight.w400, 
 );
