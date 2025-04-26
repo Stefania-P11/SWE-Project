@@ -451,4 +451,3 @@ void _handleSaveOrUpdate() async {
 }
 
 
-//TODO: Fix the image display container-- some items appear cropped
