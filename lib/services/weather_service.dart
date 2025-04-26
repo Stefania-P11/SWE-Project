@@ -12,6 +12,7 @@ class WeatherService {
   static final WeatherService _instance = WeatherService._internal();
   factory WeatherService() => _instance;
   WeatherService._internal();
+  WeatherService.forTests(); // For testing only
 
   // Static cache shared across the app
   static Weather? _cachedWeather;
@@ -72,6 +73,21 @@ class WeatherService {
       _isFetching = false;
     }
   }
+
+  // Testing-only helper to mock weather easily
+static void setMockWeather(double tempFahrenheit) {
+  _cachedWeather = Weather({
+    'main': {
+      'temp': ((tempFahrenheit - 32) * 5 / 9) + 273.15, // Fahrenheit to Kelvin
+    },
+    'name': 'Mock City',
+    'weather': [
+      {'main': 'Clear', 'description': 'Clear sky'}
+    ]
+  });
+  _lastFetched = DateTime.now();
+}
+
 }
 
 
