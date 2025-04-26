@@ -52,8 +52,10 @@ class Item {
   }
 
   // Fetch items from Firestore and populate itemList
-  static Future<void> fetchItems(String username) async {
-    FirebaseFirestore db = FirebaseFirestore.instance;
+  static Future<void> fetchItems(String username, {FirebaseFirestore? firestore}) async {
+    
+    // Added firestore parameter to allow dependency injection for testing
+    final db = firestore?? FirebaseFirestore.instance;
 
     // Query to get items from the "Clothes" collection of the user
     QuerySnapshot querySnapshot = await db
@@ -85,7 +87,7 @@ class Item {
     }
   }
 
-Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
+/*Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
   timesWorn++;
   (firestore ?? FirebaseFirestore.instance)
       .collection('users')
@@ -93,5 +95,21 @@ Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
       .collection("Clothes")
       .doc(id.toString())
       .update({'timesWorn': timesWorn});
+}*/
+
+Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
+  final db = firestore ?? FirebaseFirestore.instance;
+  try {
+    await db
+        .collection('users')
+        .doc(kUsername)
+        .collection("Clothes")
+        .doc(id.toString())
+        .update({'timesWorn': timesWorn + 1});
+    timesWorn++;
+  } catch (e) {
+    // Optional: Handle error
+    rethrow;
+  }
 }
 }
