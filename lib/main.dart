@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/screens/change_password_screen.dart';
 import 'package:dressify_app/screens/home_screen.dart';
 import 'package:dressify_app/screens/insights_screen.dart';
 import 'package:dressify_app/screens/landing_screen.dart';
@@ -37,7 +38,7 @@ void main() async{
   print("🔐 DEBUG APP CHECK TOKEN: $token");*/
 
 
-//kUsername = "stefania";
+kUsername = "stefania";
   
   runApp(const MyApp());
 }
@@ -55,7 +56,7 @@ class MyApp extends StatelessWidget {
       ),
 
 
-      home: const LandingScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
+      home: const ChangePasswordScreen(), //This changes the default screen the app will show when launched. Change it to the screen you want to show first.
 
 
     );
