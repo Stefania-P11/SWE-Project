@@ -132,6 +132,24 @@ class AuthenticationService{
   bool validatePassword(String password) {
     return passwordLength(password) && passwordUpperCase(password) && passwordDigit(password);
   }
+
+  ///Sets a new password for the current user 
+  Future<void> setNewPassword(String password) async {
+    try {
+      //gets the current user
+      User? user = getCurrentUser();
+      if (user != null) {
+        //password gets updated if the user is signed-in
+        await user.updatePassword(password);
+        print("The new password has been set.");
+      } else {
+        //user is not signed in
+        print("User is not signed in.");
+      }
+    } catch (e) {
+      print("The new has failed to update: $e");
+    }
+  }
 }
 
 Future<bool> isUsernameAvailable(String username) async {
@@ -161,3 +179,4 @@ Future<bool> isUsernameAvailable(String username) async {
   if (doc.docs.isEmpty) return null;
   return doc.docs.first.id; // The document ID is the username
 }
+
