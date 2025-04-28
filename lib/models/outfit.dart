@@ -152,8 +152,11 @@ class Outfit {
   /// Fetch outfits from Firestore for a given user
   static Future<void> fetchOutfits(String username) async {
     FirebaseFirestore db = FirebaseFirestore.instance;
-    QuerySnapshot querySnapshot =
-        await db.collection('users').doc(username).collection("Outfits").get();
+    QuerySnapshot querySnapshot = await db
+        .collection('users')
+        .doc(username)
+        .collection("Outfits")
+        .get();
 
     print('Fetched ${querySnapshot.docs.length} outfits.');
 
@@ -204,6 +207,24 @@ class Outfit {
   }
 
   /// Create an Outfit from a list of Items returned by surpriseMe()
+  factory Outfit.fromSurpriseMe({
+    required Item top,
+    required Item bottom,
+    required Item shoe,
+    required String tempCategory,
+  }) {
+    return Outfit(
+      id: DateTime.now().millisecondsSinceEpoch,
+      label: 'Surprise Me Outfit',
+      topItem: top,
+      bottomItem: bottom,
+      shoeItem: shoe,
+      timesWorn: 0,
+      weather: [tempCategory], // ✅ Use actual temperature category
+    );
+  }
+
+  
   factory Outfit.fromItemList(List<Item> items) {
     final top = items.firstWhere(
       (i) => i.category.toLowerCase().contains('top'),
@@ -248,11 +269,25 @@ class Outfit {
       bottomItem: bottom,
       shoeItem: shoe,
       timesWorn: 0,
-      weather: top.weather
-          .toSet()
+      weather: top.weather.toSet()
           .intersection(bottom.weather.toSet())
           .intersection(shoe.weather.toSet())
           .toList(),
     );
   }
+
+  ///Save outfits to Firestore for Like, Dislike and Heart buttons
+   Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'label': label,
+      'topID': topItem.id,
+      'bottomID': bottomItem.id,
+      'shoesID': shoeItem.id,
+      'timesWorn': timesWorn,
+      'weather': weather,
+      'createdAt': Timestamp.now(),
+    };
+  }
 }
+
