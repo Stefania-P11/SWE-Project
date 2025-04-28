@@ -14,7 +14,7 @@ Widget outfitItem(String label, double screenWidth,
                 imageUrl,
                 width: screenWidth,
                 height: 420,
-                fit: BoxFit.fitWidth,
+                fit: BoxFit.fitHeight,
                 errorBuilder: (context, error, stackTrace) => SvgPicture.asset(
                   "lib/assets/images/item-image.svg", // Fallback image
                   width: screenWidth,

@@ -407,11 +407,13 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.8),
                     child: SizedBox(
-                      height: screenHeight * 0.7,
+                      height: screenHeight * 0.8,
                       child: Column(
                         children: [
                           // Top item display
                           Container(
+                            height: screenHeight * 0.2,
+                            width: screenWidth * 0.5,
                             child: outfitItem(
                               "Top",
                               screenWidth * 0.85,
@@ -421,6 +423,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
                           // Bottom item display
                           Container(
+                            height: screenHeight * 0.25,
+                            width: screenWidth * 0.5,
                             child: outfitItem(
                               "Bottom",
                               screenWidth * 0.85,
@@ -430,6 +434,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
                           // Shoe item display
                           Container(
+                            height: screenHeight * 0.1,
+                            width: screenWidth * 0.5,
                             child: outfitItem(
                               "Shoe",
                               screenWidth * 0.85,
