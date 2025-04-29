@@ -60,6 +60,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
 // Save the outfit to Firestore (cloud database) with the provided name and item details
     await FirebaseService.addFirestoreOutfit(
+      FirebaseFirestore.instance, 
       outfitName, // User-defined name for the outfit
       outfit.id, // Unique ID of the outfit
       outfit.topItem, // Top clothing item
@@ -207,6 +208,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     // Update Firestore record for the top item to reflect potential wear-related changes
     await FirebaseService.editFirestoreItemDetails(
+      FirebaseFirestore.instance,
       outfit.topItem,
       outfit.topItem.label,
       outfit.topItem.category,
@@ -215,6 +217,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     // Update Firestore record for the bottom item
     await FirebaseService.editFirestoreItemDetails(
+      FirebaseFirestore.instance,
       outfit.bottomItem,
       outfit.bottomItem.label,
       outfit.bottomItem.category,
@@ -223,6 +226,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     // Update Firestore record for the shoe item
     await FirebaseService.editFirestoreItemDetails(
+      FirebaseFirestore.instance,
       outfit.shoeItem,
       outfit.shoeItem.label,
       outfit.shoeItem.category,
@@ -231,6 +235,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     // Save the updated outfit back to Firestore with the new wear count
     await FirebaseService.addFirestoreOutfit(
+      FirebaseFirestore.instance,
       outfit.label, // Outfit name
       outfit.id, // Unique outfit ID
       outfit.topItem, // Updated top item
@@ -350,7 +355,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             TextButton(
               onPressed: () async {
                 // Remove outfit from Firestore (cloud database)
-                FirebaseService.removeFirestoreOutfit(widget.outfit!);
+                FirebaseService.removeFirestoreOutfit(FirebaseFirestore.instance, widget.outfit!);
 
                 // Remove outfit from local storage/cache
                 FirebaseService.removeLocalOutfit(widget.outfit!);

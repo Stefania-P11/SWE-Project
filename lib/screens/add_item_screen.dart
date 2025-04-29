@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:dressify_app/services/firebase_service.dart'; 
 import 'package:dressify_app/services/cloud_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 /// AddItemScreen - Allows the user to add, view, and update a clothing item.
 class AddItemScreen extends StatefulWidget {
@@ -102,10 +104,11 @@ void _handleSaveOrUpdate() async {
     // Save item depending on whether it's new or being updated
     if (widget.item == null) {
       // Save new item to Firestore
-      await FirebaseService.addFirestoreItem(item);
+      await FirebaseService.addFirestoreItem(FirebaseFirestore.instance, item);
     } else {
       // Update item in Firestore
       await FirebaseService.editFirestoreItemDetails(
+        FirebaseFirestore.instance,
         item,
         item.label,
         item.category,
@@ -177,7 +180,7 @@ void _handleSaveOrUpdate() async {
     if (confirmed == true) {
       try {
         // Step 1: Delete from Firestore (using existing method)
-        await FirebaseService.removeFirestoreItem(widget.item!);
+        await FirebaseService.removeFirestoreItem(FirebaseFirestore.instance, widget.item!);
         
         // Step 2: Delete locally (using existing method)
         FirebaseService.removeLocalItem(widget.item!);
