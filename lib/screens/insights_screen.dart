@@ -189,10 +189,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${outfit.timesWorn} ${outfit.timesWorn == 1 ? 'time' : 'Wears'}',
+                                '${outfit.timesWorn} ${outfit.timesWorn == 1 ? 'time' : 'times'}',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[700],
+                                  color: const Color.fromARGB(255, 65, 64, 64),
                                 ),
                               ),
                             ],
@@ -231,11 +231,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 url,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                  child: Icon(Icons.broken_image, size: 40, color: Color.fromARGB(255, 235, 233, 233)),
                 ),
               )
             : const Center(
-                child: Icon(Icons.checkroom, size: 40, color: Colors.grey),
+                child: Icon(Icons.checkroom, size: 40, color: Color.fromARGB(255, 235, 233, 233)),
               ),
       ),
     );
@@ -333,7 +333,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       if (!isNeverWorn) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '$wearCount ${wearCount == 1 ? 'wear' : 'wears'}',
+                          '$wearCount ${wearCount == 1 ? 'time' : 'times'}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[700],

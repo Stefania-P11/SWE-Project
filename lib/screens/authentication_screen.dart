@@ -169,6 +169,7 @@ void handleAuth() async {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       body: Stack(
         alignment: Alignment.center,
         children: [

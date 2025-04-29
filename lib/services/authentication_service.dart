@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthenticationService{
 
   //instance to access authentication from firebase
+
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore firestore;
 
@@ -16,6 +17,7 @@ class AuthenticationService{
   FirebaseFirestore? firestore,
 })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
       firestore = firestore ?? FirebaseFirestore.instance;
+
 
 
   //gets the current signed-in user locally
@@ -145,7 +147,7 @@ class AuthenticationService{
   }
 
   ///Sets a new password for the current user 
-  Future<bool> setNewPassword(String currPassword, String newPassword) async {
+  /*Future<bool> setNewPassword(String currPassword, String newPassword) async {
     try {
       //gets the current user
       User? user = getCurrentUser();
@@ -163,6 +165,43 @@ class AuthenticationService{
       return false;
     }
   }
+
+}*/
+
+///Sets a new password for the current user -- Updated for better error handling
+Future<String?> setNewPassword(String currPassword, String newPassword) async {
+  try {
+    User? user = getCurrentUser();
+    if (user == null) {
+      print("The user is not signed-in currently.");
+      return "No user is signed in.";
+    }
+
+    final authCred = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currPassword,
+    );
+
+    await user.reauthenticateWithCredential(authCred);
+    await user.updatePassword(newPassword);
+    print("The new password has been set.");
+    return null; // success
+  } catch (e) {
+  if (e is FirebaseAuthException) {
+    if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+      return "Incorrect password provided.";
+    } else if (e.code == 'weak-password') {
+      return "The new password is too weak.";
+    } else {
+      return "Authentication error: ${e.message}";
+    }
+  }
+  return "Failed to update password. Please try again.";
+}
+
+}
+}
+
 
   Future<bool> isUsernameAvailable(String username) async {
     try {
