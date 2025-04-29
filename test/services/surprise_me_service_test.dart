@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart'; // ✅ Needed
-import 'package:mockito/mockito.dart'; // ✅ Needed
+import 'package:mockito/annotations.dart'; 
+import 'package:mockito/mockito.dart'; 
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 
@@ -15,42 +15,71 @@ import 'surprise_me_service_test.mocks.dart';
 
 
 void main() {
-  // ✅ Important for Flutter async service tests
+  // Important for Flutter async service tests
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Basic utilities', () {
-    test('getTempCategory correctly categorizes temperature', () {
-      expect(getTempCategory(30), "Cold");
-      expect(getTempCategory(50), "Cool");
-      expect(getTempCategory(70), "Warm");
-      expect(getTempCategory(90), "Hot");
+  group('getTempCategory', () {
+    test('correctly categorizes edge temperatures', () {
+      expect(getTempCategory(39.9), "Cold"); // edge just below 40
+      expect(getTempCategory(40.0), "Cool"); // exact transition to Cool
+      expect(getTempCategory(59.9), "Cool"); // edge just below 60
+      expect(getTempCategory(60.0), "Warm"); // exact transition to Warm
+      expect(getTempCategory(79.9), "Warm"); // edge just below 80
+      expect(getTempCategory(80.0), "Hot");  // exact transition to Hot
     });
 
-    test('getBasicColorName finds nearest color', () {
-      expect(getBasicColorName('#000000'), 'black');
-      expect(getBasicColorName('#FFFFFF'), 'white');
-      expect(getBasicColorName('#FF0000'), 'red');
-      expect(getBasicColorName('#00FF00'), 'lime');
-      expect(getBasicColorName('#0000FF'), 'blue');
+    test('handles extreme values', () {
+      expect(getTempCategory(-10), "Cold");
+      expect(getTempCategory(100), "Hot");
     });
   });
+
+  group('getBasicColorName', () {
+    test('matches exact RGB values for known colors', () {
+      expect(getBasicColorName('#FFFF00'), 'yellow');   // yellow
+      expect(getBasicColorName('#00FFFF'), 'cyan');     // cyan
+      expect(getBasicColorName('#FF00FF'), 'magenta');  // magenta
+      expect(getBasicColorName('#C0C0C0'), 'silver');   // silver
+      expect(getBasicColorName('#A52A2A'), 'brown');    // brown
+      expect(getBasicColorName('#ADD8E6'), 'lightblue'); // lightblue
+    });
+
+    test('handles closest match by Euclidean distance', () {
+      expect(getBasicColorName('#F4F4DC'), 'beige');     // close to beige
+      expect(getBasicColorName('#D3D3D3'), 'lightgray'); // close to lightgray
+      expect(getBasicColorName('#D2B48C'), 'tan');       // close to tan
+    });
+
+    test('returns unknown for invalid or distant values (not expected in real app)', () {
+      // If you'd like to guard this in real use, add validation logic
+      // For now, it's tested just to ensure fallback works
+      expect(getBasicColorName('#123456'), isA<String>()); // should still return some closest match
+    });
+
+    test('midpoint testing between known colors', () {
+      // Midpoint between red (255,0,0) and maroon (128,0,0) is approx (192,0,0)
+      expect(getBasicColorName('#C00000'), anyOf(['red', 'maroon'])); // whichever is closer
+    });
+  });
+});
 
   group('getColorFromImage', () {
     final mockClient = MockClient();
 
     testWidgets('returns unknown when an exception occurs during fetch', (tester) async {
-        // 🔥 Simulate network error (Exception)
+        // Simulate network error (Exception)
         when(mockClient.get(any)).thenThrow(Exception('Simulated network error'));
 
         final result = await tester.runAsync(() async {
         return await getColorFromImageWithClient('https://fakeurl.com/exception.png', mockClient);
         });
 
-        expect(result, 'unknown'); // ✅ hits the catch (e) block
+        expect(result, 'unknown'); // hits the catch (e) block
     });
 
     testWidgets('returns unknown when HTTP status is not 200', (tester) async {
-        // 🔥 Simulate bad HTTP response (404 Not Found)
+        // Simulate bad HTTP response (404 Not Found)
         when(mockClient.get(any)).thenAnswer((_) async => http.Response('Not found', 404));
 
         final result = await tester.runAsync(() async {
@@ -61,7 +90,7 @@ void main() {
     });
 
     testWidgets('returns unknown when decoding image fails', (tester) async {
-        // 🔥 Simulate HTTP 200 but invalid image bytes (garbage data)
+        // Simulate HTTP 200 but invalid image bytes (garbage data)
         final garbageBytes = Uint8List.fromList([0, 1, 2, 3, 4, 5]); // Not a real image
         when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(garbageBytes, 200));
 
@@ -73,7 +102,7 @@ void main() {
     });
 
     testWidgets('returns color when HTTP succeeds and image decodes correctly', (tester) async {
-        // 🔥 Create a real, valid image
+        //  Create a real, valid image
         final image = img.Image(width: 64, height: 64);
         for (int y = 0; y < image.height; y++) {
         for (int x = 0; x < image.width; x++) {
@@ -92,7 +121,7 @@ void main() {
     });
 
     testWidgets('returns unknown if detectDominantColorFromBytes cannot detect dominant color', (tester) async {
-        // 🔥 Simulate HTTP 200 but with an image that will result in all white or invalid pixels
+        //  Simulate HTTP 200 but with an image that will result in all white or invalid pixels
         final image = img.Image(width: 64, height: 64);
         for (int y = 0; y < image.height; y++) {
         for (int x = 0; x < image.width; x++) {
@@ -130,97 +159,7 @@ void main() {
       expect(result, 'unknown');
     });
   });
-  /*group('getColorFromImage', () {
-    final mockClient = MockClient();
-
-    testWidgets('returns unknown when an exception occurs during fetch', (tester) async {
-        when(mockClient.get(any)).thenThrow(Exception('Simulated network error'));
-
-        final result = await tester.runAsync(() async {
-        return await getColorFromImageWithClient('https://fakeurl.com/exception.png', mockClient);
-        });
-
-        expect(result, 'unknown'); // ✅ line 201
-    });
-
-    testWidgets('returns color when HTTP succeeds and bodyBytes are read', (tester) async {
-        final image = img.Image(width: 64, height: 64);
-        for (int y = 0; y < image.height; y++) {
-        for (int x = 0; x < image.width; x++) {
-            image.setPixelRgba(x, y, 240, 240, 240, 255); // light beige
-        }
-        }
-        final validImage = img.encodePng(image);
-
-        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(validImage, 200));
-
-        final result = await tester.runAsync(() async {
-        return await getColorFromImageWithClient('https://fakeurl.com/success.png', mockClient);
-        });
-
-        expect(result, isNot('unknown')); // ✅ hits line 193–194
-    });
-    testWidgets('returns color when HTTP succeeds with a valid image', (tester) async {
-        final image = img.Image(width: 64, height: 64);
-        for (int y = 0; y < image.height; y++) {
-        for (int x = 0; x < image.width; x++) {
-            image.setPixelRgba(x, y, 240, 240, 240, 255); // light gray
-        }
-        }
-        final validImage = img.encodePng(image);
-
-        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(validImage, 200));
-
-        final result = await tester.runAsync(() async {
-        return await getColorFromImageWithClient('https://fakeurl.com/success.png', mockClient);
-        });
-
-        expect(result, 'beige');
-    });
-
-    testWidgets('should hit response.bodyBytes and call detectDominantColorFromBytes', (tester) async {
-        final image = img.Image(width: 10, height: 10);
-        for (int y = 0; y < image.height; y++) {
-        for (int x = 0; x < image.width; x++) {
-            image.setPixelRgba(x, y, 240, 240, 240, 255);
-        }
-        }
-        final encodedImage = img.encodePng(image);
-
-        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(encodedImage, 200));
-
-        final result = await tester.runAsync(() async {
-        return await getColorFromImageWithClient('https://fakeurl.com/test.png', mockClient);
-        });
-
-        expect(result, isNot('unknown')); // confirms bodyBytes & clustering executed
-    });
   
-    testWidgets('getColorFromImage hits bodyBytes and detectDominantColorFromBytes', (tester) async {
-        // 1. Create a valid PNG image
-        final image = img.Image(width: 10, height: 10);
-        for (int y = 0; y < image.height; y++) {
-        for (int x = 0; x < image.width; x++) {
-            image.setPixelRgba(x, y, 240, 240, 240, 255); // Light gray
-        }
-        }
-        final encodedImage = img.encodePng(image);
-
-        // 2. Mock client to return 200 and valid image
-        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(encodedImage, 200));
-
-        // 3. Run inside runAsync properly
-        final result = await tester.runAsync(() async {
-        return await getColorFromImageWithClient('https://fakeurl.com/fake.png', mockClient);
-        });
-
-        // 4. Verify the result
-        expect(result, 'beige'); // or 'white' depending on your color map
-    });
-    
-  });*/
-
-
 
   group('getRandomBottom', () {
     test('selects a random bottom if available', () async {

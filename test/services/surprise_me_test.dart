@@ -277,23 +277,13 @@ void main() {
       final color = await detectDominantColorFromBytes(bytes);
       expect(color, 'unknown');
     });
-    /*test('detectDominantColorFromBytes returns unknown if all pixels are too bright', () async {
-        // Create an all-white image (brightness = 255)
-        final whiteImage = img.Image(width: 64, height: 64);
-        final whiteColor = img.ColorRgb8(255, 255, 255);
-
-        for (int y = 0; y < 64; y++) {
-            for (int x = 0; x < 64; x++) {
-            whiteImage.setPixel(x, y, whiteColor);
-            }
-        }
-
-        final bytes = Uint8List.fromList(img.encodePng(whiteImage));
-
-        final dominantColor = await detectDominantColorFromBytes(bytes, k: 3);
-
-        expect(dominantColor, 'unknown');
-    });*/
+    
+    test('detectDominantColorFromBytes returns unknown if image is empty', () async {
+      final emptyImage = img.Image(width: 0, height: 0); 
+      final bytes = Uint8List.fromList(img.encodePng(emptyImage));
+      final result = await detectDominantColorFromBytes(bytes);
+      expect(result, 'unknown');
+    });
 
     test('handles non-square image and clustering', () async {
         final bytes = createHalfRedHalfBlueImage(width: 80, height: 100);
@@ -301,7 +291,7 @@ void main() {
 
         expect(
             dominantColor,
-            anyOf(['red', 'blue', 'purple']), // ✅ add 'purple' as valid
+            anyOf(['red', 'blue', 'purple']), //add 'purple' as valid
         );
     });
 
@@ -358,8 +348,8 @@ void main() {
     test('getColorFromImageWithClient fully succeeds with valid image', () async {
         // Create a tiny valid 1x1 red image
         final tinyImage = img.Image(width: 1, height: 1);
-        final redColor = img.ColorRgb8(255, 0, 0); // ✅ Create solid red color
-        tinyImage.setPixel(0, 0, redColor); // ✅ Set the pixel manually to red
+        final redColor = img.ColorRgb8(255, 0, 0); // Create solid red color
+        tinyImage.setPixel(0, 0, redColor); //Set the pixel manually to red
 
         final fakeImageBytes = Uint8List.fromList(img.encodePng(tinyImage));
 
@@ -376,12 +366,12 @@ void main() {
         expect(colorName, anyOf(['red', 'lime', 'blue', 'white', 'black', 'gray', 'cyan', 'yellow', 'magenta'])); 
     });
 
-    //test('getColorFromImage returns a color when real HTTP 200', () async {
-     // ✅ Setup: You need a real small hosted image online
-    //final colorName = await getColorFromImage('https://via.placeholder.com/1x1.png');
+    test('getColorFromImage returns a color when real HTTP 200', () async {
+     //  Setup: You need a real small hosted image online
+    final colorName = await getColorFromImage('https://via.placeholder.com/1x1.png');
 
-    //expect(colorName, isNot('unknown'));
-    //});
+    expect(colorName, isNot('unknown'));
+    });
 
   });
 
@@ -508,7 +498,7 @@ void main() {
         bottom: bottom,
         tempCategory: 'Hot',
         wardrobe: wardrobe,
-        colorDetector: mockDetector.getColor, // ✅ Inject cleanly
+        colorDetector: mockDetector.getColor, //  Inject cleanly
         );
 
         expect(result.length, 2);
@@ -565,7 +555,7 @@ void main() {
         bottom: bottom,
         tempCategory: 'Hot',
         wardrobe: wardrobe,
-        colorDetector: mockDetector.getColor, // ✅
+        colorDetector: mockDetector.getColor, 
         );
 
         expect(result.length, 2);
@@ -622,7 +612,7 @@ void main() {
         bottom: bottom,
         tempCategory: 'Hot',
         wardrobe: wardrobe,
-        colorDetector: mockDetector.getColor, // ✅ Inject smart mock
+        colorDetector: mockDetector.getColor, // Inject smart mock
         );
 
         expect(result.length, 2);
@@ -649,7 +639,7 @@ void main() {
         final outfit = await surpriseMeWithMock(
             wardrobe,
             fakeWeatherService,
-            colorDetector: fakeColorDetector, // ✅ inject fake here!
+            colorDetector: fakeColorDetector, // inject fake here!
         );
 
         expect(outfit, isNotNull);
