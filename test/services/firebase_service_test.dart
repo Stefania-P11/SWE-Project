@@ -145,6 +145,97 @@ void main() async{
   group('editLocalItemDetails', (){
   });
   */
+  group('addFirestoreOutfits', (){
+    String originalUsername = constants.kUsername;
+    FakeFirebaseFirestore fakeFirestore = FakeFirebaseFirestore();
+    Item top = Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1);
+    final topData = {
+        'category': 'Top',
+        'label' : 'My Shoes',
+        'weather' : ['Hot'],
+        'url' : 'fake',
+        'id' : 32,
+        'timesWorn' : 0
+    };
+    Item invalidTop = Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 1, timesWorn : 1);
+    Item bottom = Item(category : 'Bottom', label : 'Mine', weather : ['Hot'], url : 'fake', id : 33, timesWorn : 1);
+    Item invalidBottom = Item(category : 'Bottom', label : 'Mine', weather : ['Hot'], url : 'fake', id : 2, timesWorn : 1);
+    final bottomData = {
+        'category': 'Bottom',
+        'label' : 'My Shoes',
+        'weather' : ['Hot'],
+        'url' : 'fake',
+        'id' : 33,
+        'timesWorn' : 0
+    };
+    Item shoe = Item(category : 'Shoes', label : 'Mine', weather : ['Hot'], url : 'fake', id : 34, timesWorn : 1);
+    Item invalidShoe = Item(category : 'Shoes', label : 'Mine', weather : ['Hot'], url : 'fake', id : 3, timesWorn : 1);
+    final shoeData = {
+        'category': 'Shoes',
+        'label' : 'My Shoes',
+        'weather' : ['Hot'],
+        'url' : 'fake',
+        'id' : 34,
+        'timesWorn' : 0
+      };
+    setUp(() {
+      constants.kUsername = 'dummy';
+      final outfit1 = {
+        'label' : 'Good Label',
+        'weather' : ['Hot'],
+        'id' : 32,
+        'timesWorn' : 0,
+        'bottomID' : 5,
+        'topID' : 6,
+        'shoesID' : 7
+      };
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(top.id.toString()).set(topData);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(bottom.id.toString()).set(bottomData);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(shoe.id.toString()).set(shoeData);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32').set(outfit1);
+    });
+    tearDown((){
+      constants.kUsername = originalUsername;
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(top.id.toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(bottom.id.toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(shoe.id.toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32').delete();
+    });
+    test('Expects Argument Error because top Item does not exist', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, invalidTop, bottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because bottom Item does not exist', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, invalidBottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because shoe Item does not exist', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, invalidBottom, invalidShoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because outfit top does not have the Top category in database', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, bottom, bottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because outfit bottom does not have the bottom category in database', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, shoe, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because outfit shoes does not have the shoes category in database', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, bottom, top,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because outfit ID already exists', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 32, top, bottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>()));
+    });
+    test('Successful upload', () async{
+      await FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, bottom, shoe,5, ['Hot']);
+      var doc = fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('15');
+      var docRef = await doc.get();
+      expect(docRef.exists, true);
+    });
+  });
   group('removeFirestoreOutfits', (){
     String originalUsername = constants.kUsername;
     FakeFirebaseFirestore fakeFirestore = FakeFirebaseFirestore();

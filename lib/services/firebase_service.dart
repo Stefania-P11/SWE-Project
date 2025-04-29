@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+//import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseService{
   //Reusable Firestore instance
   static final FirebaseFirestore db = FirebaseFirestore.instance;
-  static final storage = FirebaseStorage.instance;
+  //static final storage = FirebaseStorage.instance;
   //removes item from firestore
   static Future<void> removeFirestoreItem(FirebaseFirestore firestore, Item item) async{
     if(item.id < 0){
@@ -65,6 +65,27 @@ class FirebaseService{
       'timesWorn' : timesWorn,
       'weather' : weather,
     };
+    final topSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(top.id.toString()).get();
+    final bottomSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(bottom.id.toString()).get();
+    final shoeSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(shoes.id.toString()).get();
+    if(topSnapshot.exists == false || bottomSnapshot.exists == false || shoeSnapshot.exists == false){
+      throw ArgumentError();
+    }
+    Map<String, dynamic> topData = topSnapshot.data() as Map<String, dynamic>;
+    Map<String, dynamic> bottomData = bottomSnapshot.data() as Map<String, dynamic>;
+    Map<String, dynamic> shoeData = shoeSnapshot.data() as Map<String, dynamic>;
+    if(topData['category'] != 'Top'){
+      throw ArgumentError();
+    }
+    if(bottomData['category'] != 'Bottom'){
+      throw ArgumentError();
+    }
+    if(shoeData['category'] != 'Shoes'){
+      throw ArgumentError();
+    }
+    if(await doesOutfitExist(firestore, id) == true){
+      throw ArgumentError();
+    }
 
     await firestore.collection('users')
     .doc(kUsername)
