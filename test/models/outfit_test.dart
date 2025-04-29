@@ -1,3 +1,5 @@
+// test/models/outfit_test.dart
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -50,6 +52,64 @@ void main() {
       expect(outfit.bottomItem, bottom);
       expect(outfit.shoeItem, shoe);
       expect(outfit.weather, ['rainy']);
+      expect(outfit.timesWorn, 0);
+    });
+
+    test('id is a positive integer', () {
+      final top = Item(
+          id: 1,
+          category: 'Top',
+          label: 'T',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+      final bottom = Item(
+          id: 2,
+          category: 'Bottom',
+          label: 'B',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+      final shoe = Item(
+          id: 3,
+          category: 'Shoes',
+          label: 'S',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+
+      final o = Outfit.fromSurpriseMe(
+          top: top, bottom: bottom, shoe: shoe, tempCategory: 'cold');
+      expect(o.id, isA<int>());
+      expect(o.id, greaterThan(0));
+    });
+
+    test('empty tempCategory yields list with empty string', () {
+      final top = Item(
+          id: 1,
+          category: 'Top',
+          label: 'T',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+      final bottom = Item(
+          id: 2,
+          category: 'Bottom',
+          label: 'B',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+      final shoe = Item(
+          id: 3,
+          category: 'Shoes',
+          label: 'S',
+          timesWorn: 0,
+          url: '',
+          weather: []);
+
+      final outfit = Outfit.fromSurpriseMe(
+          top: top, bottom: bottom, shoe: shoe, tempCategory: '');
+      expect(outfit.weather, ['']);
     });
   });
 
@@ -92,13 +152,58 @@ void main() {
       expect(outfit.shoeItem.id, -1);
       expect(outfit.weather, isEmpty);
     });
+
+    test('partial list triggers fallback for missing categories', () {
+      final items = [
+        Item(
+            id: 1,
+            category: 'Top',
+            label: 'T2',
+            timesWorn: 0,
+            url: '',
+            weather: ['x']),
+      ];
+      final outfit = Outfit.fromItemList(items);
+      expect(outfit.topItem.id, 1);
+      expect(outfit.bottomItem.id, -1);
+      expect(outfit.shoeItem.id, -1);
+      expect(outfit.weather, isEmpty);
+    });
+
+    test('disjoint weather produces empty intersection', () {
+      final items = [
+        Item(
+            id: 1,
+            category: 'Top',
+            label: 'T3',
+            timesWorn: 0,
+            url: '',
+            weather: ['sun']),
+        Item(
+            id: 2,
+            category: 'Bottom',
+            label: 'B3',
+            timesWorn: 0,
+            url: '',
+            weather: ['rain']),
+        Item(
+            id: 3,
+            category: 'Shoes',
+            label: 'S3',
+            timesWorn: 0,
+            url: '',
+            weather: ['snow']),
+      ];
+      final outfit = Outfit.fromItemList(items);
+      expect(outfit.weather, isEmpty);
+    });
   });
 
-  group('Outfit.fromFirestore with seeded itemList', () {
-    test('maps all fields correctly when itemList contains matching items',
-        () async {
-      final fake = FakeFirebaseFirestore();
-      // Seed itemList
+  group('Outfit.fromFirestore', () {
+    late FakeFirebaseFirestore fake;
+    setUp(() => fake = FakeFirebaseFirestore());
+
+    test('maps all fields correctly when fields present', () async {
       Item.itemList.addAll([
         Item(
             id: 1,
@@ -122,101 +227,195 @@ void main() {
             url: '',
             weather: []),
       ]);
-      // Write a document into fake Firestore
       await fake
           .collection('users')
           .doc('u')
           .collection('Outfits')
-          .doc('o1')
+          .doc('o')
           .set({
-        'id': 42,
-        'label': 'MyOutfit',
+        'id': 99,
+        'label': 'Test',
         'topID': 1,
         'bottomID': 2,
         'shoesID': 3,
-        'timesWorn': 5,
-        'weather': ['x', 'y'],
+        'timesWorn': 7,
+        'weather': ['c']
       });
       final doc = await fake
           .collection('users')
           .doc('u')
           .collection('Outfits')
-          .doc('o1')
+          .doc('o')
           .get();
-      final outfit = Outfit.fromFirestore(doc);
-      expect(outfit.id, 42);
-      expect(outfit.label, 'MyOutfit');
-      expect(outfit.topItem.id, 1);
-      expect(outfit.bottomItem.id, 2);
-      expect(outfit.shoeItem.id, 3);
-      expect(outfit.timesWorn, 5);
-      expect(outfit.weather, ['x', 'y']);
+      final o = Outfit.fromFirestore(doc);
+      expect(o.id, 99);
+      expect(o.label, 'Test');
+      expect(o.timesWorn, 7);
+      expect(o.weather, ['c']);
     });
-  });
 
-  group('Outfit.fromFirestore fallback missing items', () {
-    test('returns Unknown items for missing IDs', () async {
-      final fake = FakeFirebaseFirestore();
-      // Seed with a different ID so fallback triggers
-      Item.itemList.add(Item(
-          id: 999,
-          category: 'Top',
-          label: 'Z',
-          timesWorn: 0,
-          url: '',
-          weather: []));
+    test('missing weather yields empty weather list', () async {
+      Item.itemList.addAll([
+        Item(
+            id: 1,
+            category: 'Top',
+            label: 'T',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        Item(
+            id: 2,
+            category: 'Bottom',
+            label: 'B',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        Item(
+            id: 3,
+            category: 'Shoes',
+            label: 'S',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+      ]);
       await fake
           .collection('users')
           .doc('u')
           .collection('Outfits')
-          .doc('o2')
-          .set({
-        'id': 7,
-        'label': 'Fallback',
-        'topID': 1,
-        'bottomID': 2,
-        'shoesID': 3,
-        'timesWorn': 2,
-        'weather': ['w'],
-      });
-      final doc = await fake
-          .collection('users')
-          .doc('u')
-          .collection('Outfits')
-          .doc('o2')
-          .get();
-      final outfit = Outfit.fromFirestore(doc);
-      expect(outfit.topItem.id, -1);
-      expect(outfit.bottomItem.id, -1);
-      expect(outfit.shoeItem.id, -1);
-      expect(outfit.label, 'Fallback');
-      expect(outfit.timesWorn, 2);
-      expect(outfit.weather, ['w']);
-    });
-  });
-
-  group('Outfit.fromFirestore empty itemList throws', () {
-    test('throws Exception when itemList is empty', () async {
-      final fake = FakeFirebaseFirestore();
-      await fake
-          .collection('users')
-          .doc('u')
-          .collection('Outfits')
-          .doc('x')
+          .doc('p')
           .set({
         'id': 1,
-        'label': 'Test',
+        'label': 'NoWeather',
+        'topID': 1,
+        'bottomID': 2,
+        'shoesID': 3,
+        'timesWorn': 0
+      });
+      final doc = await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('p')
+          .get();
+      final o = Outfit.fromFirestore(doc);
+      expect(o.weather, isEmpty);
+    });
+
+    test('missing timesWorn defaults to zero', () async {
+      Item.itemList.addAll([
+        Item(
+            id: 1,
+            category: 'Top',
+            label: 'T',
+            timesWorn: 5,
+            url: '',
+            weather: []),
+        Item(
+            id: 2,
+            category: 'Bottom',
+            label: 'B',
+            timesWorn: 5,
+            url: '',
+            weather: []),
+        Item(
+            id: 3,
+            category: 'Shoes',
+            label: 'S',
+            timesWorn: 5,
+            url: '',
+            weather: []),
+      ]);
+      await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('q')
+          .set({
+        'id': 2,
+        'label': 'NoTimes',
+        'topID': 1,
+        'bottomID': 2,
+        'shoesID': 3,
+        'weather': ['z']
+      });
+      final doc = await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('q')
+          .get();
+      final o = Outfit.fromFirestore(doc);
+      expect(o.timesWorn, 0);
+    });
+
+    test('missing label and id fallback defaults', () async {
+      Item.itemList.addAll([
+        Item(
+            id: 1,
+            category: 'Top',
+            label: 'T',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        Item(
+            id: 2,
+            category: 'Bottom',
+            label: 'B',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        Item(
+            id: 3,
+            category: 'Shoes',
+            label: 'S',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+      ]);
+      await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('r')
+          .set({
+        'topID': 1,
+        'bottomID': 2,
+        'shoesID': 3,
+        'timesWorn': 3,
+        'weather': []
+      });
+      final doc = await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('r')
+          .get();
+      final o = Outfit.fromFirestore(doc);
+      expect(o.id, 0);
+      expect(o.label, 'Unknown Outfit');
+    });
+
+    test('fallback when itemList empty throws Exception', () async {
+      // do not seed itemList
+      await fake
+          .collection('users')
+          .doc('u')
+          .collection('Outfits')
+          .doc('s')
+          .set({
+        'id': 5,
+        'label': 'E',
         'topID': 1,
         'bottomID': 1,
         'shoesID': 1,
-        'timesWorn': 1,
-        'weather': ['none'],
+        'timesWorn': 4,
+        'weather': []
       });
       final doc = await fake
           .collection('users')
           .doc('u')
           .collection('Outfits')
-          .doc('x')
+          .doc('s')
           .get();
       expect(() => Outfit.fromFirestore(doc), throwsException);
     });
@@ -261,10 +460,84 @@ void main() {
       expect(json['weather'], ['z']);
       expect(json['createdAt'], isA<Timestamp>());
     });
+
+    test('includes createdAt as current Timestamp', () {
+      final outfit = Outfit(
+        id: 6,
+        label: 'M',
+        topItem: Item(
+            id: 1,
+            category: 'Top',
+            label: 'T',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        bottomItem: Item(
+            id: 2,
+            category: 'Bottom',
+            label: 'B',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        shoeItem: Item(
+            id: 3,
+            category: 'Shoes',
+            label: 'S',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        timesWorn: 0,
+        weather: [],
+      );
+      final json = outfit.toJson();
+      final now = Timestamp.now();
+      expect((now.seconds - (json['createdAt'] as Timestamp).seconds).abs() < 5,
+          isTrue);
+    });
   });
 
   group('Outfit.countOutfits', () {
-    test('sets outfitCount to outfitList length', () async {
+    test('sets outfitCount to zero when empty', () async {
+      Outfit.outfitList.clear();
+      await Outfit.countOutfits('x');
+      expect(Outfit.outfitCount, 0);
+    });
+
+    test('sets outfitCount to list length', () async {
+      Outfit.outfitList = List.generate(
+          3,
+          (i) => Outfit(
+                id: i,
+                label: '\$i',
+                topItem: Item(
+                    id: 1,
+                    category: 'Top',
+                    label: 'T',
+                    timesWorn: 0,
+                    url: '',
+                    weather: []),
+                bottomItem: Item(
+                    id: 2,
+                    category: 'Bottom',
+                    label: 'B',
+                    timesWorn: 0,
+                    url: '',
+                    weather: []),
+                shoeItem: Item(
+                    id: 3,
+                    category: 'Shoes',
+                    label: 'S',
+                    timesWorn: 0,
+                    url: '',
+                    weather: []),
+                timesWorn: 0,
+                weather: [],
+              ));
+      await Outfit.countOutfits('y');
+      expect(Outfit.outfitCount, 3);
+    });
+
+    test('updates count after modifying outfitList', () async {
       Outfit.outfitList = [
         Outfit(
           id: 1,
@@ -292,10 +565,39 @@ void main() {
               weather: []),
           timesWorn: 0,
           weather: [],
-        ),
+        )
       ];
-      await Outfit.countOutfits('ignored');
+      await Outfit.countOutfits('z');
       expect(Outfit.outfitCount, 1);
+      Outfit.outfitList.add(Outfit(
+        id: 2,
+        label: 'B',
+        topItem: Item(
+            id: 4,
+            category: 'Top',
+            label: 'T',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        bottomItem: Item(
+            id: 5,
+            category: 'Bottom',
+            label: 'B',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        shoeItem: Item(
+            id: 6,
+            category: 'Shoes',
+            label: 'S',
+            timesWorn: 0,
+            url: '',
+            weather: []),
+        timesWorn: 0,
+        weather: [],
+      ));
+      await Outfit.countOutfits('z');
+      expect(Outfit.outfitCount, 2);
     });
   });
 }
