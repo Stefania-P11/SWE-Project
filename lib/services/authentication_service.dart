@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/services/firebase_service.dart';
@@ -8,11 +9,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthenticationService{
 
   //instance to access authentication from firebase
-  FirebaseAuth _firebaseAuth;
+  final FirebaseAuth _firebaseAuth;
+  final FirebaseFirestore firestore;
 
-AuthenticationService({FirebaseAuth? firebaseAuth})
-    : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
-  
+  AuthenticationService({
+  FirebaseAuth? firebaseAuth,
+  FirebaseFirestore? firestore,
+})  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+      firestore = firestore ?? FirebaseFirestore.instance;
+
 
   //gets the current signed-in user locally
   User? getCurrentUser() {
@@ -44,7 +49,7 @@ AuthenticationService({FirebaseAuth? firebaseAuth})
     await createAccount.user!.reload(); 
 
        // Save username in Firestore under a "usernames" collection
-    await FirebaseFirestore.instance
+    await firestore
         .collection('usernames')
         .doc(username)  // the username is the document ID
         .set({
@@ -73,7 +78,7 @@ AuthenticationService({FirebaseAuth? firebaseAuth})
       );
       print("Sign In successful");
    // 🔑 Fetch username from Firestore and set global kUsername
-    final snapshot = await FirebaseFirestore.instance
+    final snapshot = await firestore
         .collection('usernames')
         .where('uid', isEqualTo: signIN.user!.uid)
         .limit(1)
@@ -136,18 +141,19 @@ AuthenticationService({FirebaseAuth? firebaseAuth})
     return passwordLength(password) && passwordUpperCase(password) && passwordDigit(password);
   }
 
+  AuthCredential createCredential(String email, String password) {
+    return EmailAuthProvider.credential(email: email, password: password);
+  }
+
   ///Sets a new password for the current user 
-  /*Future<bool> setNewPassword(String currPassword, String newPassword) async {
+  Future<bool> setNewPassword(String currPassword, String newPassword) async {
     try {
       //gets the current user
       User? user = getCurrentUser();
       if (user == null) {print("The user is not signed-in currently."); return false;}
 
        //the current password gets re-authenticated 
-      final authCred = EmailAuthProvider.credential(
-        email: user.email!,
-        password: currPassword,
-      );
+      final authCred = createCredential(user.email!, currPassword);
       await user.reauthenticateWithCredential(authCred);
       //password gets updated to a new password if the re-authentication is correct
       await user.updatePassword(newPassword);
@@ -158,48 +164,10 @@ AuthenticationService({FirebaseAuth? firebaseAuth})
       return false;
     }
   }
-}*/
 
-///Sets a new password for the current user -- Updated for better error handling
-Future<String?> setNewPassword(String currPassword, String newPassword) async {
-  try {
-    User? user = getCurrentUser();
-    if (user == null) {
-      print("The user is not signed-in currently.");
-      return "No user is signed in.";
-    }
-
-    final authCred = EmailAuthProvider.credential(
-      email: user.email!,
-      password: currPassword,
-    );
-
-    await user.reauthenticateWithCredential(authCred);
-    await user.updatePassword(newPassword);
-    print("The new password has been set.");
-    return null; // success
-  } catch (e) {
-  if (e is FirebaseAuthException) {
-    if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-      return "Incorrect password provided.";
-    } else if (e.code == 'weak-password') {
-      return "The new password is too weak.";
-    } else {
-      return "Authentication error: ${e.message}";
-    }
-  }
-  return "Failed to update password. Please try again.";
-}
-
-}
-}
-
-Future<bool> isUsernameAvailable(String username) async {
+  Future<bool> isUsernameAvailable(String username) async {
     try {
-      final result = await FirebaseService.db
-          .collection('usernames')
-          .doc(username)
-          .get();
+      final result = await firestore.collection('usernames').doc(username).get();
       return !result.exists; // true = available
     } catch (e) {
       print("Username check failed: $e");
@@ -208,11 +176,11 @@ Future<bool> isUsernameAvailable(String username) async {
   }
 
   Future<String?> getUsernameForCurrentUser() async {
-  final user = FirebaseAuth.instance.currentUser;
+  final user = _firebaseAuth.currentUser;
   if (user == null) return null;
 
  
-  final doc = await FirebaseFirestore.instance
+  final doc = await firestore
       .collection('usernames')
       .where('uid', isEqualTo: user.uid)
       .limit(1)
@@ -221,4 +189,4 @@ Future<bool> isUsernameAvailable(String username) async {
   if (doc.docs.isEmpty) return null;
   return doc.docs.first.id; // The document ID is the username
 }
-
+}
