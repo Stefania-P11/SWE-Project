@@ -1,14 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
-import 'package:dressify_app/features/play_it_safe.dart';
 import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/screens/create_outfit_screen.dart';
 import 'package:dressify_app/screens/display_outfit_screen.dart';
 import 'package:dressify_app/services/item_service.dart';
+import 'package:dressify_app/services/play_it_safe.dart';
 import 'package:dressify_app/services/weather_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
 import 'package:dressify_app/widgets/custom_bottom_navbar.dart';
 import 'package:dressify_app/widgets/custom_button_2.dart';
 import 'package:dressify_app/widgets/item_count_display_column.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dressify_app/widgets/vertical_divider.dart';
@@ -60,6 +62,25 @@ class _HomeScreenState extends State<HomeScreen> {
   
 /// Fetches items and outfits from Firestore and updates local counters.
 Future<void> fetchData() async {
+
+  if (kUsername.isEmpty) {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('usernames')
+        .where('uid', isEqualTo: user.uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      kUsername = snapshot.docs.first.id;
+      print("kUsername loaded in HomeScreen: $kUsername");
+    } else {
+      print("Could not load username in HomeScreen");
+    }
+  }
+}
+
   // Load items from Firestore if they haven't been loaded yet
   if (!Item.isLoaded) {
     await Item.fetchItems(kUsername);
@@ -109,7 +130,7 @@ Future<void> fetchData() async {
 
     return Scaffold(
       // Background color for the entire screen
-      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
+      backgroundColor: kBackgroundColor,
 
       // Custom App Bar at the top
       appBar: CustomAppBar(),
@@ -124,26 +145,23 @@ Future<void> fetchData() async {
             Column(
               spacing: 0, // No spacing between widgets
               children: [
-                // Weather condition icon
-                SvgPicture.asset(
-                  'lib/assets/icons/fluent_weather-hail-day-24-regular.svg',
-                ),
+
+                SizedBox(height: screenHeight * 0.02,),
+                
                 // Location name
                 Text(
-                  // TODO: Pull actual location data dynamically
                   locationName,
                   textAlign: TextAlign.center,
                   style: kBodyMedium,
                 ),
                 // Current temperature
                 Text(
-                  //'54°F', // TODO: Pull actual weather data dynamically
                   currentTemp,
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
+
                 // Temperature range (min/max)
                 Text(
-                  //'37° - 64°', // TODO: Pull actual weather data dynamically
                   tempRange,
                   style: kBodyMedium,
                 ),

@@ -13,10 +13,9 @@ class PlayItSafeService {
   }
 
   /// Returns a random favorite outfit that matches the current weather category
-  static Future<Outfit?> getSafeOutfit() async {
-    try {
-      // Attempt to fetch current weather using WeatherService
-      final weather = await WeatherService().getTheWeather();
+  static Future<Outfit?> getSafeOutfit({WeatherService? weatherService}) async {
+  try {
+    final weather = await (weatherService ?? WeatherService()).getTheWeather();
 
       // Use current temp in °F, or fallback to 70°F if weather data is unavailable
       final double tempFahrenheit = weather.temperature?.fahrenheit ?? 70.0;
