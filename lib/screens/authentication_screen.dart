@@ -46,7 +46,7 @@ class _AuthScreenState extends State<AuthScreen> {
   // Only check if user is signing up
   if (!isLogin && username.isNotEmpty) {
     Future.delayed(const Duration(milliseconds: 300), () async {
-      final available = await isUsernameAvailable(username);
+      final available = await _authService.isUsernameAvailable(username);
       if (mounted) {
         setState(() {
           usernameTaken = !available;
