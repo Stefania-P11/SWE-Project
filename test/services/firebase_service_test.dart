@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
+import 'package:dressify_app/models/outfit.dart';
 import 'package:dressify_app/services/firebase_service.dart';
 import 'package:dressify_app/constants.dart' as constants;
 import 'package:firebase_core/firebase_core.dart';
@@ -127,8 +128,8 @@ void main() async{
     });
 
     test('Successful remove', () async {
-      FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
-      var doc = fakeFirestore.collection('users').doc().collection('Clothes').doc('32');
+      await FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
+      var doc = fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('32');
       var docRef = await doc.get();
       expect(docRef.exists, false);
     });
@@ -145,15 +146,43 @@ void main() async{
   });
   */
   group('removeFirestoreOutfits', (){
-    final fakeFirestore = FakeFirebaseFirestore();
     String originalUsername = constants.kUsername;
-    setUp((){
-
+    FakeFirebaseFirestore fakeFirestore = FakeFirebaseFirestore();
+    Item top = Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1);
+    Item bottom = Item(category : 'Bottom', label : 'Mine', weather : ['Hot'], url : 'fake', id : 33, timesWorn : 1);
+    Item shoe = Item(category : 'Shoes', label : 'Mine', weather : ['Hot'], url : 'fake', id : 34, timesWorn : 1);
+    setUp(() {
+      constants.kUsername = 'dummy';
+      final outfit1 = {
+        'label' : 'Good Label',
+        'weather' : ['Hot'],
+        'id' : 32,
+        'timesWorn' : 0,
+        'bottomID' : 5,
+        'topID' : 6,
+        'shoesID' : 7
+      };
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32').set(outfit1);
     });
     tearDown((){
       constants.kUsername = originalUsername;
-      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('33').delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32').delete();
     });
+    test('Expects ArgumentError due to invalid ID', (){
+      expect(() => FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: -1, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot'])),
+      throwsA(isA<ArgumentError>()));
+    });
+    test('Expects ArgumentError due to item not existing', (){
+      expect(() => FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: -1, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot'])),
+      throwsA(isA<ArgumentError>()));
+    });
+    test('Successful removal', () async{
+      await FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: 32, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot']));
+      var doc = fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32');
+      var docRef = await doc.get();
+      expect(docRef.exists, false);
+    });
+
 
   }); 
   group('addFirestoreItems', () {
@@ -212,8 +241,8 @@ void main() async{
       throwsA(isA<ArgumentError>()));
     });
     test('Successful upload', () async {
-      FirebaseService.addFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
-      var docRef = await fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('33').get();
+      await FirebaseService.addFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
+      var docRef = await fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(32.toString()).get();
       expect(docRef.exists, true);
       fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('33').delete();
     });
