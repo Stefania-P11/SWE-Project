@@ -18,6 +18,7 @@ class OutfitSuggestionScreen extends StatefulWidget {
   final bool showDeleteIcon; // Whether to show the trash icon
   final Outfit? outfit; // The outfit to display
   final VoidCallback? onRegenerate; // Optional regenerate callback
+  final bool showWearIcon; 
 
   const OutfitSuggestionScreen({
     super.key,
@@ -26,6 +27,7 @@ class OutfitSuggestionScreen extends StatefulWidget {
     this.outfit,
     this.onRegenerate,
     this.showDeleteIcon = true,
+    this.showWearIcon = true,
   });
 
   @override
@@ -486,35 +488,33 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         },
                       ),
 
-                    // Regenerate and wear icons
-                    if (widget.showRegenerate)
-                      Row(
-                        children: [
-                          // Regenerate outfit suggestion
-                          IconButton(
-                            iconSize: screenWidth * 0.1,
-                            icon: const Icon(Icons.autorenew),
-                            onPressed: widget.onRegenerate ??
-                                () {
-                                  print("Regenerate pressed");
-                                },
-                          ),
-                          SizedBox(
-                              width: screenWidth *
-                                  0.05), // Small gap between buttons
+                  Row(
+  children: [
+    if (widget.showRegenerate)
+      IconButton(
+        iconSize: screenWidth * 0.1,
+        icon: const Icon(Icons.autorenew),
+        onPressed: widget.onRegenerate ??
+            () {
+              print("Regenerate pressed");
+            },
+      ),
+    if (widget.showWearIcon)
+      Padding(
+        padding: EdgeInsets.only(left: screenWidth * 0.05), 
+        child: IconButton(
+          iconSize: screenWidth * 0.1,
+          icon: const Icon(Icons.checkroom, color: Colors.black,),
+          onPressed: () {
+            if (widget.outfit != null) {
+              _handleWearOutfit(widget.outfit!);
+            }
+          },
+        ),
+      ),
+  ],
+),
 
-                          // Mark outfit as worn
-                          IconButton(
-                            iconSize: screenWidth * 0.1,
-                            icon: const Icon(Icons.checkroom),
-                            onPressed: () {
-                              if (widget.outfit != null) {
-                                _handleWearOutfit(widget.outfit!);
-                              }
-                            },
-                          ),
-                        ],
-                      ),
 
                     // Thumbs up (like) icon
                     if (widget.showFavorite)
