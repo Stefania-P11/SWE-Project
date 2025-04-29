@@ -37,27 +37,24 @@ Future<Position> determinePosition() async {
 }
 
 ///Returns the location settings of a device based on current platform it's on: Andriod, Apple, or Web.
-LocationSettings getLocationSettings({
-  TargetPlatform? overridePlatform,
-  bool? overrideIsWeb,
-}) {
-  final platform = overridePlatform ?? defaultTargetPlatform;
-  final isWeb = overrideIsWeb ?? kIsWeb;
-
-  if (platform == TargetPlatform.android) {
+LocationSettings getLocationSettings() {
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    //returns the location settings for android devices
     return AndroidSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
       forceLocationManager: true,
       intervalDuration: const Duration(seconds: 10),
+      //(Optional) Set foreground notification config to keep the app alive 
+      //when going to the background
       foregroundNotificationConfig: const ForegroundNotificationConfig(
         notificationText: "Location access",
         notificationTitle: "Dressify is accessing your location",
         enableWakeLock: true,
-      ),
+      )
     );
-  } else if (platform == TargetPlatform.iOS ||
-             platform == TargetPlatform.macOS) {
+  } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+    //returns the location settings for apple devices
     return AppleSettings(
       accuracy: LocationAccuracy.high,
       activityType: ActivityType.fitness,
@@ -65,11 +62,12 @@ LocationSettings getLocationSettings({
       pauseLocationUpdatesAutomatically: true,
       showBackgroundLocationIndicator: false,
     );
-  } else if (isWeb) {
+  } else if (kIsWeb) {
+    //returns the location settings for web platforms
     return WebSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
-      maximumAge: const Duration(minutes: 5),
+      maximumAge: Duration(minutes: 5),
     );
   } else {
     return LocationSettings(

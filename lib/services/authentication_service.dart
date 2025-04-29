@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthenticationService{
 
   //instance to access authentication from firebase
+
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore firestore;
 
@@ -16,7 +17,6 @@ class AuthenticationService{
   FirebaseFirestore? firestore,
 })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
       firestore = firestore ?? FirebaseFirestore.instance;
-
 
   //gets the current signed-in user locally
   User? getCurrentUser() {
@@ -48,7 +48,7 @@ class AuthenticationService{
     await createAccount.user!.reload(); 
 
        // Save username in Firestore under a "usernames" collection
-    await firestore
+    await FirebaseFirestore.instance
         .collection('usernames')
         .doc(username)  // the username is the document ID
         .set({
@@ -77,7 +77,7 @@ class AuthenticationService{
       );
       print("Sign In successful");
    // 🔑 Fetch username from Firestore and set global kUsername
-    final snapshot = await firestore
+    final snapshot = await FirebaseFirestore.instance
         .collection('usernames')
         .where('uid', isEqualTo: signIN.user!.uid)
         .limit(1)
@@ -140,10 +140,6 @@ class AuthenticationService{
     return passwordLength(password) && passwordUpperCase(password) && passwordDigit(password);
   }
 
-  AuthCredential createCredential(String email, String password) {
-    return EmailAuthProvider.credential(email: email, password: password);
-  }
-
   ///Sets a new password for the current user 
   Future<bool> setNewPassword(String currPassword, String newPassword) async {
     try {
@@ -152,7 +148,10 @@ class AuthenticationService{
       if (user == null) {print("The user is not signed-in currently."); return false;}
 
        //the current password gets re-authenticated 
-      final authCred = createCredential(user.email!, currPassword);
+      final authCred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currPassword,
+      );
       await user.reauthenticateWithCredential(authCred);
       //password gets updated to a new password if the re-authentication is correct
       await user.updatePassword(newPassword);
@@ -164,9 +163,49 @@ class AuthenticationService{
     }
   }
 
-  Future<bool> isUsernameAvailable(String username) async {
+}*/
+
+///Sets a new password for the current user -- Updated for better error handling
+Future<String?> setNewPassword(String currPassword, String newPassword) async {
+  try {
+    User? user = getCurrentUser();
+    if (user == null) {
+      print("The user is not signed-in currently.");
+      return "No user is signed in.";
+    }
+
+    final authCred = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currPassword,
+    );
+
+    await user.reauthenticateWithCredential(authCred);
+    await user.updatePassword(newPassword);
+    print("The new password has been set.");
+    return null; // success
+  } catch (e) {
+  if (e is FirebaseAuthException) {
+    if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+      return "Incorrect password provided.";
+    } else if (e.code == 'weak-password') {
+      return "The new password is too weak.";
+    } else {
+      return "Authentication error: ${e.message}";
+    }
+  }
+  return "Failed to update password. Please try again.";
+}
+
+}
+}
+
+Future<bool> isUsernameAvailable(String username) async {
+
     try {
-      final result = await firestore.collection('usernames').doc(username).get();
+      final result = await FirebaseService.db
+          .collection('usernames')
+          .doc(username)
+          .get();
       return !result.exists; // true = available
     } catch (e) {
       print("Username check failed: $e");
@@ -175,11 +214,11 @@ class AuthenticationService{
   }
 
   Future<String?> getUsernameForCurrentUser() async {
-  final user = _firebaseAuth.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
   if (user == null) return null;
 
  
-  final doc = await firestore
+  final doc = await FirebaseFirestore.instance
       .collection('usernames')
       .where('uid', isEqualTo: user.uid)
       .limit(1)
@@ -188,6 +227,4 @@ class AuthenticationService{
   if (doc.docs.isEmpty) return null;
   return doc.docs.first.id; // The document ID is the username
 }
-}
-
 
