@@ -130,7 +130,7 @@ Future<void> fetchData() async {
 
     return Scaffold(
       // Background color for the entire screen
-      backgroundColor: const Color.fromARGB(255, 239, 240, 240),
+      backgroundColor: kBackgroundColor,
 
       // Custom App Bar at the top
       appBar: CustomAppBar(),
@@ -145,26 +145,23 @@ Future<void> fetchData() async {
             Column(
               spacing: 0, // No spacing between widgets
               children: [
-                // Weather condition icon
-                SvgPicture.asset(
-                  'lib/assets/icons/fluent_weather-hail-day-24-regular.svg',
-                ),
+
+                SizedBox(height: screenHeight * 0.02,),
+                
                 // Location name
                 Text(
-                  // TODO: Pull actual location data dynamically
                   locationName,
                   textAlign: TextAlign.center,
                   style: kBodyMedium,
                 ),
                 // Current temperature
                 Text(
-                  //'54°F', // TODO: Pull actual weather data dynamically
                   currentTemp,
                   style: GoogleFonts.lato(textStyle: kBodyLarge),
                 ),
+
                 // Temperature range (min/max)
                 Text(
-                  //'37° - 64°', // TODO: Pull actual weather data dynamically
                   tempRange,
                   style: kBodyMedium,
                 ),

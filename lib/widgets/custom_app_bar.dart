@@ -1,5 +1,6 @@
 import 'dart:ui'; // Importing dart:ui for drawing and rendering
 
+import 'package:dressify_app/screens/profile_settings_screen.dart';
 import 'package:flutter/material.dart'; // Importing Flutter material package for UI components
 import '../constants.dart'; // Importing constants for styles and colors
 import 'package:flutter_svg/flutter_svg.dart'; // Importing SVG package to load vector icons
@@ -80,12 +81,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
 
         // Profile button on the right side
-        IconButton(
-          onPressed: () {
-            // TODO: Handle profile navigation
-          },
-          icon: Icon(Icons.account_circle_rounded), // Profile icon
-        ),
+IconButton(
+  onPressed: () {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => ProfileSettingsScreen(username: kUsername),
+        transitionDuration: Duration.zero, // No animation
+        reverseTransitionDuration: Duration.zero, // No animation when going back
+      ),
+    );
+  },
+  icon: const Icon(Icons.account_circle_rounded, color: Colors.black),
+),
       ],
 
       // Bottom black line below the app bar for a subtle separator
