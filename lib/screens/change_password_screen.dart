@@ -72,11 +72,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     setState(() => isLoading = true);
 
     // Attempt to change password using AuthenticationService
-    final passwordUpdated = await _authService.setNewPassword(currentPassword, newPassword);
+    final String? error = await _authService.setNewPassword(currentPassword, newPassword);
 
     setState(() => isLoading = false);
 
-    if (passwordUpdated) {
+    if (error == null) {
       // Password successfully changed
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully!')),
@@ -88,7 +88,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } else {
       // Show specific error message if password change failed
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password update failed.')),
+        SnackBar(content: Text(error)),
       );
     }
   }
