@@ -1,14 +1,12 @@
 import 'package:dressify_app/constants.dart';
+import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/screens/choose_item_screen.dart';
+import 'package:dressify_app/services/firebase_service.dart';
 import 'package:dressify_app/widgets/custom_app_bar.dart';
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart';
 import 'package:dressify_app/widgets/label_input_field.dart';
 import 'package:flutter/material.dart';
-import 'package:dressify_app/widgets/custom_button.dart';
-import 'package:dressify_app/services/firebase_service.dart';
-import 'package:dressify_app/models/outfit.dart';
-import 'package:dressify_app/models/item.dart';
-import 'package:dressify_app/services/outfit_service.dart';
 
 /// Screen for creating an outfit where users can select items and name their outfit.
 class CreateOutfitScreen extends StatefulWidget {
@@ -24,87 +22,68 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
   String? bottomUrl;
   String? shoesUrl;
 
-  // void _saveNewOutfit() {
-  //   if (topUrl == null || bottomUrl == null || shoesUrl == null) {
-  //     debugPrint(
-  //         'Please select your top, bottom and shoes to create an outfit.');
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: const Text("Invalid Outfit!"),
-  //           content: const Text(
-  //               "Please select your top, bottom, and shoes item to create a new Outfit."),
-  //           actions: <Widget>[
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop(); // Dismiss the popup
-  //               },
-  //               child: const Text("Back"),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //     return;
-  //   }
-  //   // Convert the selected URLs to actual Item objects.
-  //   // (Assumes that you have a helper method to look up an Item by its URL.)
-  //   final Item? topItem = Item.getItemByUrl(topUrl!);
-  //   final Item? bottomItem = Item.getItemByUrl(bottomUrl!);
-  //   final Item? shoeItem = Item.getItemByUrl(shoesUrl!);
-
-  //   if (topItem == null || bottomItem == null || shoeItem == null) {
-  //     debugPrint("Failed to retrieve one or more Items for the outfit.");
-
-  //     return;
-  //   }
-  //   // Use the outfit name from the text field (or assign a default)
-  //   String label = outfitNameController.text.trim();
-  //   if (label.isEmpty) {
-  //     label = "Outfit ${Outfit.outfitList.length + 1}";
-  //   }
-
-  //   // Generate an outfit ID; here, we simply use length+1 as an example.
-  //   int newId = Outfit.outfitList.length + 1;
-  //   debugPrint("NewId: \"$newId\" ");
-  //   // Set default values for times worn and weather
-  //   int timesWorn = 0;
-  //   List<String> weather = topItem
-  //       .weather; // Default assign weather for new outfit as top weather.
-
-  //   // Save the outfit to Firestore and locally (assuming these methods are defined in your FirebaseService)
-  //   FirebaseService.addFirestoreOutfit(
-  //       label, newId, topItem, bottomItem, shoeItem, timesWorn, weather);
-  //   FirebaseService.addLocalOutfit(
-  //       label, newId, topItem, bottomItem, shoeItem, timesWorn, weather);
-
-  //   debugPrint("Outfit saved successfully!");
-
-  //   Navigator.pop(context);
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text("Outfit saved successfully!"),
-  //         content: Text("Your new outfit \"$label\" is saved to your List."),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Dismiss the popup
-  //             },
-  //             child: const Text("OK"),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  // List of weather conditions for the outfit
+  List<String> temperatures = ['Hot', 'Warm', 'Cool', 'Cold'];
+  // Selected temperatures for the outfit
+  List<String> selectedTemperatures = [];
 
   // Controller to handle text input for the outfit name
   final TextEditingController outfitNameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    Future<void> handleSave({
+      required BuildContext context,
+      required String label,
+      required List<String> weather,
+      required String topUrl,
+      required String bottomUrl,
+      required String shoesUrl,
+    }) async {
+      // Get selected items from URLs
+      final topItem = Item.itemList.firstWhere((item) => item.url == topUrl);
+      final bottomItem =
+          Item.itemList.firstWhere((item) => item.url == bottomUrl);
+      final shoesItem =
+          Item.itemList.firstWhere((item) => item.url == shoesUrl);
+
+      final id = DateTime.now().millisecondsSinceEpoch;
+
+      // Save to Firestore
+      await FirebaseService.addFirestoreOutfit(
+        label,
+        id,
+        topItem,
+        bottomItem,
+        shoesItem,
+        0,
+        weather,
+      );
+
+      // Save locally
+      FirebaseService.addLocalOutfit(
+        label,
+        id,
+        topItem,
+        bottomItem,
+        shoesItem,
+        0,
+        weather,
+      );
+
+      //Show and store the message box entry
+      final overlayEntry = _showTopSnackbarStatic("Outfit saved successfully!");
+
+      //Wait ~1 second so user sees the message
+      await Future.delayed(const Duration(seconds: 2));
+
+      //Remove message BEFORE screen pops
+      overlayEntry.remove();
+
+      //Now pop back
+      Navigator.pop(context, true);
+    }
+
     // Get screen width and height for responsive UI
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -119,156 +98,216 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
       ), // Replaces the hamburger menu icon with a back arrow to allow the user to go back
 
       // Main body content
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: screenHeight * 0.5, // Scroll area height
-              width: screenWidth,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Outfit items stack
+              SizedBox(
+                height: screenHeight * 0.7,
+                child: Stack(
                   children: [
-                    // Left side: Top item (full height)
-                    Expanded(
-                      flex: 2,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white, // Your background color
-                          borderRadius: BorderRadius.circular(
-                              8), // Optional rounded corners
-                        ),
-                        child: outfitItem(
-                          "Top",
-                          screenWidth,
-                          onTap: () async {
-                            final selectedItemUrl = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ChooseItemScreen(category: "Top"),
-                              ),
-                            );
-                            if (selectedItemUrl != null) {
-                              setState(() {
-                                topUrl = selectedItemUrl;
-                              });
-                            }
-                          },
-                          imageUrl: topUrl,
-                        ),
+                    // Top item
+                    Positioned(
+                      top: screenHeight * 0.03,
+                      left: 0,
+                      child: outfitItem(
+                        "Top",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Top"),
+                            ),
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              topUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: topUrl,
                       ),
                     ),
 
-                    // Horizontal spacing between Top and the right column
-                    const SizedBox(width: 16),
-
-                    // Right side: Column with Bottom and Shoes
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Bottom item with flex 2
-                          Expanded(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white, // Your background color
-                                borderRadius: BorderRadius.circular(
-                                    8), // Optional rounded corners
-                              ),
-                              child: outfitItem(
-                                "Bottom",
-                                screenWidth,
-                                onTap: () async {
-                                  final selectedItemUrl = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ChooseItemScreen(category: "Bottom"),
-                                    ),
-                                  );
-                                  if (selectedItemUrl != null) {
-                                    setState(() {
-                                      bottomUrl = selectedItemUrl;
-                                    });
-                                  }
-                                },
-                                imageUrl: bottomUrl,
-                              ),
+                    // Bottom item
+                    Positioned(
+                      top: screenHeight * 0.25,
+                      right: 0,
+                      child: outfitItem(
+                        "Bottom",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Bottom"),
                             ),
-                          ),
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              bottomUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: bottomUrl,
+                      ),
+                    ),
 
-                          // Vertical spacing between Bottom and Shoes
-                          const SizedBox(height: 16),
-
-                          // Shoes item as a square box using AspectRatio
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white, // Your background color
-                                borderRadius: BorderRadius.circular(
-                                    8), // Optional rounded corners
-                              ),
-                              child: outfitItem(
-                                "Shoes",
-                                screenWidth,
-                                onTap: () async {
-                                  final selectedItemUrl = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ChooseItemScreen(category: "Shoes"),
-                                    ),
-                                  );
-                                  if (selectedItemUrl != null) {
-                                    setState(() {
-                                      shoesUrl = selectedItemUrl;
-                                    });
-                                  }
-                                },
-                                imageUrl: shoesUrl,
-                              ),
+                    // Shoes item
+                    Positioned(
+                      top: screenHeight * 0.45,
+                      left: 0,
+                      child: outfitItem(
+                        "Shoes",
+                        screenWidth,
+                        onTap: () async {
+                          final selectedItemUrl = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseItemScreen(category: "Shoes"),
                             ),
-                          ),
-                        ],
+                          );
+                          if (selectedItemUrl != null) {
+                            setState(() {
+                              shoesUrl = selectedItemUrl;
+                            });
+                          }
+                        },
+                        imageUrl: shoesUrl,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-            // Input field to name the outfit using LabelInputField widget
-            LabelInputField(
-              controller: outfitNameController,
-              hintText: "Add a name for your outfit",
-            ),
 
-            // Add spacing between the input field and the next element
-            SizedBox(height: screenHeight * 0.03),
-            //Add Save Button here!
-            CustomButton(
-              onPressed: () async {
-                await saveNewOutfit(
-                  context: context,
-                  topUrl: topUrl,
-                  bottomUrl: bottomUrl,
-                  shoesUrl: shoesUrl,
-                  label: outfitNameController.text.trim(),
-                );
-              },
-              text: 'Save Outfit',
-            )
-          ],
+              // Spacing
+              const SizedBox(height: 10),
+
+              // Input field
+              LabelInputField(
+                controller: outfitNameController,
+                hintText: "Add a name for your outfit",
+              ),
+
+              // Temperature selection
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 5),
+                  Text("Temperature", style: kH3),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: temperatures.map((temp) {
+                      final isSelected = selectedTemperatures.contains(temp);
+                      return ChoiceChip(
+                        label: Text(temp,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                            )),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedTemperatures.add(temp);
+                            } else {
+                              selectedTemperatures.remove(temp);
+                            }
+                          });
+                        },
+                        selectedColor: Colors.black,
+                        backgroundColor: Colors.white,
+                        showCheckmark: false,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 15),
+
+              // SAVE button
+              CustomButton3(
+                label: "SAVE",
+                onPressed: () {
+                  handleSave(
+                    context: context,
+                    label: outfitNameController.text,
+                    weather: selectedTemperatures,
+                    topUrl: topUrl!,
+                    bottomUrl: bottomUrl!,
+                    shoesUrl: shoesUrl!,
+                  );
+                },
+                isActive: (topUrl != null &&
+                    bottomUrl != null &&
+                    shoesUrl != null &&
+                    selectedTemperatures.isNotEmpty),
+              ),
+
+              const SizedBox(height: 30), // Extra bottom space
+            ],
+          ),
         ),
       ),
     );
   }
+
+  OverlayEntry _showTopSnackbarStatic(String message) {
+    final overlay = Overlay.of(context);
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: screenHeight * 0.5,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.black87, size: 24),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+    return overlayEntry;
+  }
 }
+  /// Widget to display an outfit item with a label and image.
