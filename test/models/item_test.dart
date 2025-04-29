@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
+import 'package:mockito/mockito.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:dressify_app/constants.dart'
     as constants; // Import constants separately
+
+class MockDocumentSnapshot extends Mock implements DocumentSnapshot {}
 
 void main() {
   // FINAL-- DO NOT CHANGE FROM HERE
@@ -226,6 +229,118 @@ void main() {
     });
   
   });
-}
 
  //-- TO HERE -- Stefania
+
+ 
+   // COUNT ITEMS PER CATEGORY TESTS
+  group('Item.countItemsPerCategory()', () {
+    setUp(() {
+      Item.itemList.clear();  // Ensure fresh start for each test
+      Item.topCount = 0;      // Reset counters
+      Item.bottomCount = 0;
+      Item.shoeCount = 0;
+    });
+
+    test('should count one item per category correctly', () {
+      Item.itemList.addAll([
+        Item(category: 'Top', id: 1, label: 'T-Shirt', timesWorn: 0, url: '', weather: []),
+        Item(category: 'Bottom', id: 2, label: 'Jeans', timesWorn: 0, url: '', weather: []),
+        Item(category: 'Shoes', id: 3, label: 'Sneakers', timesWorn: 0, url: '', weather: []),
+      ]);
+
+      Item.countItemsPerCategory();
+
+      expect(Item.topCount, equals(1));
+      expect(Item.bottomCount, equals(1));
+      expect(Item.shoeCount, equals(1));
+    });
+
+    test('should count multiple items in same category', () {
+      Item.itemList.addAll([
+        Item(category: 'Top', id: 1, label: 'T-Shirt', timesWorn: 0, url: '', weather: []),
+        Item(category: 'Top', id: 2, label: 'Blouse', timesWorn: 0, url: '', weather: []),
+        Item(category: 'Shoes', id: 3, label: 'Sneakers', timesWorn: 0, url: '', weather: []),
+      ]);
+
+      Item.countItemsPerCategory();
+
+      expect(Item.topCount, equals(2));
+      expect(Item.bottomCount, equals(0));
+      expect(Item.shoeCount, equals(1));
+    });
+
+    test('should return zeros when itemList is empty', () {
+      Item.countItemsPerCategory();
+
+      expect(Item.topCount, equals(0));
+      expect(Item.bottomCount, equals(0));
+      expect(Item.shoeCount, equals(0));
+    });
+
+    test('should reset previous counts before counting', () {
+      Item.topCount = 5;
+      Item.bottomCount = 3;
+      Item.shoeCount = 2;
+
+      Item.itemList.add(
+        Item(category: 'Top', id: 1, label: 'T-Shirt', timesWorn: 0, url: '', weather: [])
+      );
+
+      Item.countItemsPerCategory();
+
+      expect(Item.topCount, equals(1));
+      expect(Item.bottomCount, equals(0));
+      expect(Item.shoeCount, equals(0));
+    });
+  });
+
+  // ITEM.FROMFIRESTORE TESTS
+group('Item.fromFirestore()', () {
+  late MockDocumentSnapshot mockDoc;
+
+  const Map<String, dynamic> completeTestData = {
+    'category': 'Top',
+    'id': 123,
+    'label': 'Test Shirt',
+    'timesWorn': 5,
+    'url': 'https://example.com/shirt.jpg',
+    'weather': ['Warm', 'Sunny'],
+  };
+
+  setUp(() {
+    mockDoc = MockDocumentSnapshot();
+  });
+
+  test('should correctly convert complete Firestore document', () {
+    when(mockDoc.data()).thenReturn(completeTestData);
+    final item = Item.fromFirestore(mockDoc);
+    expect(item.category, equals('Top'));
+    expect(item.id, equals(123));
+    expect(item.label, equals('Test Shirt'));
+    expect(item.timesWorn, equals(5));
+    expect(item.url, equals('https://example.com/shirt.jpg'));
+    expect(item.weather, equals(['Warm', 'Sunny']));
+  });
+
+  test('should handle weather list with string elements', () {
+    when(mockDoc.data()).thenReturn({
+      ...completeTestData,
+      'weather': ['Rainy', 'Cloudy'],
+    });
+    final item = Item.fromFirestore(mockDoc);
+    expect(item.weather, equals(['Rainy', 'Cloudy']));
+  });
+
+  test('should handle empty weather list', () {
+    when(mockDoc.data()).thenReturn({
+      ...completeTestData,
+      'weather': [],
+    });
+    final item = Item.fromFirestore(mockDoc);
+    expect(item.weather, isEmpty);
+  });
+});
+
+}
+ //-- TO HERE -- Yabbi
