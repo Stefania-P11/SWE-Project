@@ -104,7 +104,8 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: kBackgroundColor, // Background color
+      backgroundColor:
+          const Color.fromARGB(255, 239, 240, 240), // Background color
       appBar: CustomAppBar(), // Display the custom app bar
 
       // Main body of the screen
@@ -183,7 +184,6 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Category", style: kH3),
-                        const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
                           children: categories.map((category) {
@@ -196,7 +196,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                               },
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 20),
+                                    vertical: 8, horizontal: 12),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.grey[400]
@@ -218,7 +218,6 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text("Temperature", style: kH3),
-                        const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
                           children: temperatures.map((temperature) {
@@ -237,7 +236,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                               },
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 20),
+                                    vertical: 8, horizontal: 12),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.grey[400]
@@ -257,7 +256,7 @@ class _ClosetItemsScreenState extends State<ClosetItemsScreen> {
                             );
                           }).toList(),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
