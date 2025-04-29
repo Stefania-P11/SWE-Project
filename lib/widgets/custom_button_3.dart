@@ -31,7 +31,7 @@ class CustomButton3 extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
-        backgroundColor: isActive ? Colors.black : Colors.white,
+        backgroundColor: isActive ? kButtonColor : Colors.white,
         minimumSize: Size(buttonWidth, buttonHeight),
       ),
       child: Text(
