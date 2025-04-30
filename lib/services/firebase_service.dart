@@ -30,12 +30,31 @@ class FirebaseService{
     return 0;
   }
   //edits item in Firestore
-  static editFirestoreItemDetails(FirebaseFirestore firestore, Item item, String label, String category, List<String> weather){
+  static editFirestoreItemDetails(FirebaseFirestore firestore, Item item, String label, String category, List<String> weather) async{
     final itemToSet = {
       'category' : item.category,
       'label' : item.label,
       'weather' : item.weather
     };
+    if(item.category != 'Top' && item.category != 'Bottom' && item.category != 'Shoes'){
+      throw ArgumentError();
+    }
+    if(item.label == '' || item.label.length > 15){
+      throw ArgumentError();
+    }
+    List<String> duplicateList = [];
+    for(String weatherCat in item.weather){
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat!= 'Cold') || duplicateList.contains(weatherCat)){
+        throw ArgumentError();
+      }
+      duplicateList.add(weatherCat);
+    }
+    if(item.id < 0){
+      throw ArgumentError();
+    }
+    if(await doesItemExist(firestore, item.id) == false){
+      throw ArgumentError();
+    }
    firestore.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).set(itemToSet, SetOptions(merge : true));
     return 0;
   }
@@ -65,6 +84,25 @@ class FirebaseService{
       'timesWorn' : timesWorn,
       'weather' : weather,
     };
+    if(timesWorn < 0 ){
+      throw ArgumentError();
+    }
+    if(label == '' || label.length > 15){
+      throw ArgumentError();
+    }
+    List<String> duplicateList = [];
+    if(weather.isEmpty){
+      throw ArgumentError();
+    }
+    for(String weatherCat in weather){
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat != 'Cold') || duplicateList.contains(weatherCat)){
+        throw ArgumentError();
+      }
+      duplicateList.add(weatherCat);
+    }
+    if(id < 0){
+      throw ArgumentError();
+    }
     final topSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(top.id.toString()).get();
     final bottomSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(bottom.id.toString()).get();
     final shoeSnapshot = await firestore.collection('users').doc(kUsername).collection('Clothes').doc(shoes.id.toString()).get();
@@ -159,9 +197,8 @@ class FirebaseService{
         .doc(item.id.toString())
         .set(itemMap);
 
-  // Add the item to the local item list
-  Item.itemList.add(item);
-
+    // Add the item to the local item list
+    Item.itemList.add(item);
   }
 
   //check if Outfit is in Favorite
@@ -175,6 +212,7 @@ class FirebaseService{
 
     return favorites.docs.isNotEmpty;
   }
+  //helper function to determine if Item has valid contents before uploading
   static bool isValidItem(Item item){
     if(item.category == '' || (item.category != 'Top' && item.category != 'Bottom' && item.category != 'Shoes')){
       return false;
@@ -185,14 +223,15 @@ class FirebaseService{
     if(item.label == '' || item.label.length > 15){
       return false;
     }
-    item.weather = item.weather.toSet().toList();
+    List<String> duplicateList = [];
     if(item.weather.isEmpty){
       return false;
     }
     for(String weatherCat in item.weather){
-      if(weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat!= 'Cold'){
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat!= 'Cold') || duplicateList.contains(weatherCat)){
         return false;
       }
+      duplicateList.add(weatherCat);
     }
     if(item.timesWorn < 0){
       return false;

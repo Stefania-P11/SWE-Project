@@ -43,7 +43,7 @@ void main() async{
       expect(FirebaseService.isValidItem(Item(category : '', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : 0)), 
       isFalse);
     });
-    test('ArgumentError should be thrown due to  invalid value for category', (){
+    test('ArgumentError should be thrown due to invalid value for category', (){
       expect(FirebaseService.isValidItem(Item(category : 'Groovy Headgear', label : 'Mine', weather : [], url : 'fake', id : 26, timesWorn : 0)), 
       isFalse);
     });
@@ -63,13 +63,21 @@ void main() async{
       expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Hot', 'HotCrossBuns'], url : 'fake', id : 26, timesWorn : 0)), 
       isFalse);
     });
+    test('ArgumentError should be thrown due to weather list containing duplicates', (){
+      expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Cold','Cold'], url : 'fake', id : 26, timesWorn : 0)), 
+      isFalse);
+    });
     test('ArgumentError should be thrown due to invalid timesWorn', (){
-      expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : -1)), 
+      expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Cool'], url : 'fake', id : 26, timesWorn : -1)), 
       isFalse);
     });
     test('ArgumentError should be thrown due to invalid id', (){
       expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : -1, timesWorn : 0)), 
       isFalse);
+    });
+    test('Item is valid', (){
+      expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Hot', 'Cold', 'Cool', 'Warm'], url : 'fake', id : 1, timesWorn : 0)), 
+      isTrue);
     });
   });
   group('doesOutfitExist', () {
@@ -200,6 +208,7 @@ void main() async{
       fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(bottom.id.toString()).delete();
       fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(shoe.id.toString()).delete();
       fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('32').delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('15').delete();
     });
     test('Expects Argument Error because top Item does not exist', (){
       expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, invalidTop, bottom, shoe,5, ['Hot']),
@@ -210,7 +219,7 @@ void main() async{
       throwsA(isA<ArgumentError>())); 
     });
     test('Expects Argument Error because shoe Item does not exist', (){
-      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, invalidBottom, invalidShoe,5, ['Hot']),
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, bottom, invalidShoe,5, ['Hot']),
       throwsA(isA<ArgumentError>())); 
     });
     test('Expects Argument Error because outfit top does not have the Top category in database', (){
@@ -223,6 +232,30 @@ void main() async{
     });
     test('Expects Argument Error because outfit shoes does not have the shoes category in database', (){
       expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'hello', 15, top, bottom, top,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because label exceeds 15 chars', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'reallllllllllly loooooooong labeel', 15, top, bottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because id is < 0 ', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'label', -1, top, bottom, shoe,5, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because timesWorn is < 0 ', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'label', 15, top, bottom, shoe,-1, ['Hot']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because weatherList is empty', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'label', 15, top, bottom, shoe, 5, []),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because weatherList contains invalid values', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'label', 15, top, bottom, shoe, 5, ['HotCrossBuns']),
+      throwsA(isA<ArgumentError>())); 
+    });
+    test('Expects Argument Error because weatherList contains duplicate values', (){
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore, 'label', 15, top, bottom, shoe, 5, ['Hot', 'Warm', 'Warm', 'Cool']),
       throwsA(isA<ArgumentError>())); 
     });
     test('Expects Argument Error because outfit ID already exists', (){
@@ -339,13 +372,30 @@ void main() async{
     });
 
   });
-  /*
   group('editFirestoreItems', () {
     final fakeFirestore = FakeFirebaseFirestore();
+    String originalUsername = constants.kUsername;
+    setUp((){
+      constants.kUsername = 'dummy';
+      final item1 = {
+        'category': 'Top',
+        'label' : 'Good Label',
+        'weather' : ['Hot'],
+        'url' : 'fake',
+        'id' : 33,
+        'timesWorn' : 0
+      };
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('33').set(item1);
+    });
+    tearDown((){
+      constants.kUsername = originalUsername;
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('33').delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('26').delete();
+    });
     test('ArgumentError should be thrown due to label exceeding 15 chars', (){
       expect(() => FirebaseService.editFirestoreItemDetails(
         fakeFirestore,
-        Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : 5), 
+        Item(category : 'Top', label : 'This is a reallyreallyreally long label', weather : ['Hot'], url : 'fake', id : 33, timesWorn : 5), 
         'This is a reallyreallyreally long label', 
         'Top', 
         ['Hot']), throwsA(isA<ArgumentError>()));
@@ -353,7 +403,7 @@ void main() async{
     test('ArgumentError should be thrown due to invalid category', (){
       expect(() => FirebaseService.editFirestoreItemDetails(
         fakeFirestore,
-        Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : 5), 
+        Item(category : 'Groovy Headgear', label : 'Mine', weather : ['Hot'], url : 'fake', id : 33, timesWorn : 5), 
         'test item', 
         'AppleBottom', 
         ['Hot']), throwsA(isA<ArgumentError>()));
@@ -361,20 +411,35 @@ void main() async{
     test('ArgumentError should be thrown due to invalid list for weather', (){
       expect(() => FirebaseService.editFirestoreItemDetails(
         fakeFirestore,
-        Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : 5), 
+        Item(category : 'Top', label : 'Mine', weather : ['HotCrossBuns'], url : 'fake', id : 33, timesWorn : 5), 
         'test item', 
         'Top', 
         ['ColdNuggets']), throwsA(isA<ArgumentError>()));
     });
-    test('ArgumentError should be thrown due to all args being empty', (){
+    test('ArgumentError should be thrown due to weather containing duplicate values', (){
       expect(() => FirebaseService.editFirestoreItemDetails(
         fakeFirestore,
-        Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 26, timesWorn : 5), 
-        '', 
-        '', 
-        []), throwsA(isA<ArgumentError>()));
+        Item(category : 'Top', label : 'Mine', weather : ['Hot','Warm','Cool','Cold','Cold'], url : 'fake', id : 33, timesWorn : 5), 
+        'test item', 
+        'Top', 
+        ['Cold']), throwsA(isA<ArgumentError>()));
+    });
+    test('ArgumentError should be thrown due to id < 0', (){
+      expect(() => FirebaseService.editFirestoreItemDetails(
+        fakeFirestore,
+        Item(category : 'Top', label : 'Mine', weather : ['Hot','Warm','Cold'], url : 'fake', id : -1, timesWorn : 5), 
+        'test item', 
+        'Top', 
+        ['Cold']), throwsA(isA<ArgumentError>()));
+    });
+    test('ArgumentError should be thrown due to id not existing', (){
+      expect(() => FirebaseService.editFirestoreItemDetails(
+        fakeFirestore,
+        Item(category : 'Top', label : 'Mine', weather : ['Hot','Warm','Cold'], url : 'fake', id : 15, timesWorn : 5), 
+        'test item', 
+        'Top', 
+        ['Cold']), throwsA(isA<ArgumentError>()));
     });
 
   });  
-  */
 }
