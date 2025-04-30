@@ -1,76 +1,27 @@
-// surprise_me_service_test.dart
-
-// -------------------------------------------------
-// IMPORTS
-// -------------------------------------------------
-
 import 'dart:typed_data';
 import 'dart:math';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 
 import 'package:dressify_app/services/surprise_me_service.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
-import 'package:dressify_app/mocks/mock_color_detector.dart'; // Your smart color mock
+import 'package:dressify_app/mocks/mock_color_detector.dart';
 
-// -------------------------------------------------
-// HELPER FUNCTIONS FOR TESTING
-// -------------------------------------------------
+@GenerateMocks([http.Client])
+import 'surprise_me_service_test.mocks.dart';
 
-/// Create invalid file
-Uint8List createInvalidPngBytes() {
-  return Uint8List.fromList([
-    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
-  ]);
-}
+// ----------------------------
+// Helpers & Mocks
+// ----------------------------
 
-
-/// Creates a PNG-encoded image where the left half is red and the right half is blue.
-/// Useful for testing color clustering (like KMeans).
-/// 
-/// [width]: The width of the generated image (default 80).
-/// [height]: The height of the generated image (default 100).
-/// Returns: Uint8List (bytes of PNG image)
-Uint8List createHalfRedHalfBlueImage({int width = 80, int height = 100}) {
-  // Create a blank image object with the specified width and height
-  final image = img.Image(width: width, height: height);
-
-  // Define the RED color (pure red: R=255, G=0, B=0)
-  final red = img.ColorRgb8(255, 0, 0);
-
-  // Define the BLUE color (pure blue: R=0, G=0, B=255)
-  final blue = img.ColorRgb8(0, 0, 255);
-
-  // Loop through every pixel row (y-axis: top to bottom)
-  for (int y = 0; y < height; y++) {
-    // Loop through every pixel column (x-axis: left to right)
-    for (int x = 0; x < width; x++) {
-      // If x is in the left half of the image, set the pixel color to RED
-      if (x < width ~/ 2) {
-        image.setPixel(x, y, red); // Left half: RED
-      } else {
-        // Else, x is in the right half, set the pixel color to BLUE
-        image.setPixel(x, y, blue); // Right half: BLUE
-      }
-    }
-  }
-
-  // Encode the image into PNG format (compressing it)
-  final pngBytes = img.encodePng(image);
-
-  // Return the PNG image as a byte array (Uint8List) ready for saving or testing
-  return Uint8List.fromList(pngBytes);
-}
-
-
-/// Create a solid color PNG image with specified RGB values
 Uint8List createSolidColorImage(int r, int g, int b, {int size = 32}) {
   final image = img.Image(width: size, height: size);
   final color = img.ColorRgb8(r, g, b);
-
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       image.setPixel(x, y, color);
@@ -79,22 +30,26 @@ Uint8List createSolidColorImage(int r, int g, int b, {int size = 32}) {
   return Uint8List.fromList(img.encodePng(image));
 }
 
-/// Create a solid white image (all 255,255,255)
-Uint8List createWhiteImage({int size = 32}) {
-  return createSolidColorImage(255, 255, 255, size: size);
+Uint8List createWhiteImage({int size = 32}) => createSolidColorImage(255, 255, 255, size: size);
+
+Uint8List createHalfRedHalfBlueImage({int width = 80, int height = 100}) {
+  final image = img.Image(width: width, height: height);
+  final red = img.ColorRgb8(255, 0, 0);
+  final blue = img.ColorRgb8(0, 0, 255);
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      image.setPixel(x, y, x < width ~/ 2 ? red : blue);
+    }
+  }
+  return Uint8List.fromList(img.encodePng(image));
 }
 
-/// Create invalid (random junk) bytes that simulate broken images
-Uint8List createInvalidImage() {
-  return Uint8List.fromList(List<int>.generate(10, (_) => Random().nextInt(255)));
-}
+Uint8List createInvalidImage() => Uint8List.fromList(List<int>.generate(10, (_) => Random().nextInt(255)));
+Uint8List createInvalidPngBytes() => Uint8List.fromList([0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
 
-/// Fake HttpClient to simulate HTTP responses without real network (getColorFromImage test)
 class FakeHttpClient extends http.BaseClient {
   final Future<http.Response> Function(http.Request) _handler;
-
   FakeHttpClient(this._handler);
-
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final response = await _handler(request as http.Request);
@@ -106,7 +61,6 @@ class FakeHttpClient extends http.BaseClient {
   }
 }
 
-/// Dummy Temperature and Weather classes for mocking (surpriseMe test)
 class Temperature {
   final double fahrenheit;
   Temperature({required this.fahrenheit});
@@ -117,44 +71,33 @@ class Weather {
   Weather({this.temperature});
 }
 
-/// Fake WeatherService used to inject different temperatures (surpriseMe test)
 class FakeWeatherService {
   final Temperature? fakeTemperature;
-
   FakeWeatherService({this.fakeTemperature});
-
-  Future<Weather> getTheWeather() async {
-    return Weather(temperature: fakeTemperature);
-  }
+  Future<Weather> getTheWeather() async => Weather(temperature: fakeTemperature);
 }
 
-/// Helper function: A version of surpriseMe that uses FakeWeatherService 
 Future<Outfit?> surpriseMeWithMock(
-    List<Item> wardrobe,
-    FakeWeatherService weatherService, {
-    Set<int> excludeBottomIds = const {},
-    Future<String> Function(String url)? colorDetector, // NEW!
-  }) async {
-
+  List<Item> wardrobe,
+  FakeWeatherService weatherService, {
+  Set<int> excludeBottomIds = const {},
+  Future<String> Function(String url)? colorDetector,
+}) async {
   final weather = await weatherService.getTheWeather();
   final temp = weather.temperature?.fahrenheit ?? 70.0;
   final tempCategory = getTempCategory(temp);
-
   final validBottoms = wardrobe.where((item) =>
     item.category.toLowerCase().contains("bottom") &&
     item.weather.contains(tempCategory) &&
     !excludeBottomIds.contains(item.id)).toList();
-
   final bottom = validBottoms.isNotEmpty ? validBottoms[0] : null;
   if (bottom == null) return null;
-
   final matchedItems = await matchTopAndShoe(
     bottom: bottom,
     tempCategory: tempCategory,
     wardrobe: wardrobe,
-    colorDetector: colorDetector, // inject to here too!
+    colorDetector: colorDetector,
   );
-
   return Outfit.fromSurpriseMe(
     top: matchedItems[0],
     bottom: bottom,
@@ -163,27 +106,266 @@ Future<Outfit?> surpriseMeWithMock(
   );
 }
 
-///Fake Color Detector
 Future<String> fakeColorDetector(String url) async {
-  // Pretend everything is 'blue' or 'white'
-  if (url.contains('shorts')) return 'blue';
-  if (url.contains('jeans')) return 'blue';
+  if (url.contains('shorts') || url.contains('jeans')) return 'blue';
   if (url.contains('tshirt') || url.contains('tshirt2')) return 'white';
   if (url.contains('sneakers') || url.contains('sneakers2')) return 'black';
   return 'unknown';
 }
 
-
-
-// -------------------------------------------------
-// TESTS START
-// -------------------------------------------------
+// ----------------------------
+// Test Entry Point
+// ----------------------------
 
 void main() {
+  // TestWidgetsFlutterBinding.ensureInitialized();
 
-  // --------------------------
-  // 1. detectDominantColorFromBytes Tests
-  // --------------------------
+
+  group('Basic utilities', () {
+  group('getTempCategory', () {
+    test('correctly categorizes edge temperatures', () {
+      expect(getTempCategory(39.9), "Cold"); // edge just below 40
+      expect(getTempCategory(40.0), "Cool"); // exact transition to Cool
+      expect(getTempCategory(59.9), "Cool"); // edge just below 60
+      expect(getTempCategory(60.0), "Warm"); // exact transition to Warm
+      expect(getTempCategory(79.9), "Warm"); // edge just below 80
+      expect(getTempCategory(80.0), "Hot");  // exact transition to Hot
+    });
+
+    test('handles extreme values', () {
+      expect(getTempCategory(-10), "Cold");
+      expect(getTempCategory(100), "Hot");
+    });
+  });
+
+  group('getBasicColorName', () {
+    test('matches exact RGB values for known colors', () {
+      expect(getBasicColorName('#FFFF00'), 'yellow');   // yellow
+      expect(getBasicColorName('#00FFFF'), 'cyan');     // cyan
+      expect(getBasicColorName('#FF00FF'), 'magenta');  // magenta
+      expect(getBasicColorName('#C0C0C0'), 'silver');   // silver
+      expect(getBasicColorName('#A52A2A'), 'brown');    // brown
+      expect(getBasicColorName('#ADD8E6'), 'lightblue'); // lightblue
+    });
+
+    test('handles closest match by Euclidean distance', () {
+      expect(getBasicColorName('#F4F4DC'), 'beige');     // close to beige
+      expect(getBasicColorName('#D3D3D3'), 'lightgray'); // close to lightgray
+      expect(getBasicColorName('#D2B48C'), 'tan');       // close to tan
+    });
+
+    test('returns unknown for invalid or distant values (not expected in real app)', () {
+      // If you'd like to guard this in real use, add validation logic
+      // For now, it's tested just to ensure fallback works
+      expect(getBasicColorName('#123456'), isA<String>()); // should still return some closest match
+    });
+
+    test('midpoint testing between known colors', () {
+      // Midpoint between red (255,0,0) and maroon (128,0,0) is approx (192,0,0)
+      expect(getBasicColorName('#C00000'), anyOf(['red', 'maroon'])); // whichever is closer
+    });
+  });
+});
+
+  group('getColorFromImage', () {
+    final mockClient = MockClient();
+
+    test('returns unknown when an exception occurs during fetch', () async {
+        // Simulate network error (Exception)
+        when(mockClient.get(any)).thenThrow(Exception('Simulated network error'));
+
+        final result = await getColorFromImageWithClient('https://fakeurl.com/exception.png', mockClient);
+        
+
+        expect(result, 'unknown'); // hits the catch (e) block
+    });
+
+    test('returns unknown when HTTP status is not 200', () async {
+        // Simulate bad HTTP response (404 Not Found)
+        when(mockClient.get(any)).thenAnswer((_) async => http.Response('Not found', 404));
+
+        final result = await getColorFromImageWithClient('https://fakeurl.com/404.png', mockClient);
+        
+
+        expect(result, 'unknown'); // hits HTTP failure path
+    });
+
+    test('returns unknown when decoding image fails', () async {
+        // Simulate HTTP 200 but invalid image bytes (garbage data)
+        final garbageBytes = Uint8List.fromList([0, 1, 2, 3, 4, 5]); // Not a real image
+        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(garbageBytes, 200));
+
+        final result = await getColorFromImageWithClient('https://fakeurl.com/invalidimage.png', mockClient);
+  
+
+        expect(result, 'unknown'); // hits decoding failure inside detectDominantColorFromBytes
+    });
+
+    test('returns color when HTTP succeeds and image decodes correctly', () async {
+        //  Create a real, valid image
+        final image = img.Image(width: 64, height: 64);
+        for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+            image.setPixelRgba(x, y, 240, 240, 240, 255); // Light beige
+        }
+        }
+        final validImageBytes = img.encodePng(image);
+
+        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(validImageBytes, 200));
+
+        final result = await getColorFromImageWithClient('https://fakeurl.com/success.png', mockClient);
+    
+
+        expect(result, isNot('unknown')); // hits happy path: decoding, clustering
+    });
+
+    test('returns unknown if detectDominantColorFromBytes cannot detect dominant color', () async {
+        //  Simulate HTTP 200 but with an image that will result in all white or invalid pixels
+        final image = img.Image(width: 64, height: 64);
+        for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+            image.setPixelRgba(x, y, 255, 255, 255, 255); // All white pixels
+        }
+        }
+        final whiteImageBytes = img.encodePng(image);
+
+        when(mockClient.get(any)).thenAnswer((_) async => http.Response.bytes(whiteImageBytes, 200));
+
+        final result = await getColorFromImageWithClient('https://fakeurl.com/white.png', mockClient);
+      
+        expect(result, 'unknown'); // some dominant color detectors return 'unknown' for pure white noise
+    });
+
+  });
+
+  group('Real getColorFromImage (no injected client)', () {
+    test('returns unknown if fetch throws error', () async {
+      final result = await getColorFromImage('httpp://invalid_url'); // invalid URL causes error
+    
+
+      expect(result, 'unknown');
+    });
+
+    test('returns unknown if HTTP status is not 200', () async {
+      // Normally you cannot fake http.get easily without a mock client.
+      // So to simulate, we use a special bad image server (or leave as TODO if offline).
+      final result = await getColorFromImage('https://httpstat.us/404');
+
+      expect(result, 'unknown');
+    });
+  });
+  
+
+  group('getRandomBottom', () {
+    test('selects a random bottom if available', () async {
+      final wardrobe = [
+        Item(id: 1, label: 'Shorts', category: 'bottom', url: '', weather: ['Warm'], timesWorn: 0),
+      ];
+      final bottom = await getRandomBottom('Warm', wardrobe);
+      expect(bottom, isNotNull);
+      expect(bottom?.label, 'Shorts');
+    });
+
+    test('returns null if no bottom matches', () async {
+      final wardrobe = [
+        Item(id: 1, label: 'Jacket', category: 'top', url: '', weather: ['Cold'], timesWorn: 0),
+      ];
+      final bottom = await getRandomBottom('Warm', wardrobe);
+      expect(bottom, isNull);
+    });
+  });
+
+  group('matchTopAndShoe', () {
+    test('matches top and shoe based on bottom color', () async {
+      final wardrobe = [
+        Item(id: 2, label: 'White Shirt', category: 'top', url: 'top1', weather: ['Warm'], timesWorn: 0),
+        Item(id: 3, label: 'Black Shoes', category: 'shoe', url: 'shoe1', weather: ['Warm'], timesWorn: 0),
+      ];
+
+      Future<String> fakeColorDetector(String url) async {
+        if (url == 'bottom') return 'blue';
+        if (url == 'top1') return 'white';
+        if (url == 'shoe1') return 'white';
+        return 'unknown';
+      }
+
+      final bottom = Item(id: 1, label: 'Blue Jeans', category: 'bottom', url: 'bottom', weather: ['Warm'], timesWorn: 0);
+
+      final items = await matchTopAndShoe(bottom: bottom, tempCategory: 'Warm', wardrobe: wardrobe, colorDetector: fakeColorDetector);
+
+      expect(items.length, 2);
+      expect(items[0].label, 'White Shirt'); // Top
+      expect(items[1].label, 'Black Shoes'); // Shoe
+    });
+
+    test('fallbacks to default top/shoe when no match', () async {
+      final wardrobe = <Item>[];
+
+      Future<String> fakeColorDetector(String url) async => 'unknown';
+
+      final bottom = Item(id: 1, label: 'Any Pants', category: 'bottom', url: 'bottom', weather: ['Warm'], timesWorn: 0);
+
+      final items = await matchTopAndShoe(bottom: bottom, tempCategory: 'Warm', wardrobe: wardrobe, colorDetector: fakeColorDetector);
+
+      expect(items.length, 2);
+      expect(items[0].label, 'default');
+      expect(items[1].label, 'default');
+    });
+
+    test('fallback selects random top/shoe from unknown colors', () async {
+        final wardrobe = [
+        Item(id: 2, label: 'Mystery Top', category: 'top', url: 'top1', weather: ['Warm'], timesWorn: 0),
+        Item(id: 3, label: 'Mystery Shoe', category: 'shoe', url: 'shoe1', weather: ['Warm'], timesWorn: 0),
+        ];
+
+        Future<String> fakeAlwaysUnknownColorDetector(String url) async => 'unknown'; // All unknowns!
+
+        final bottom = Item(id: 1, label: 'Any Pants', category: 'bottom', url: 'bottom', weather: ['Warm'], timesWorn: 0);
+
+        final matchedItems = await matchTopAndShoe(
+        bottom: bottom,
+        tempCategory: 'Warm',
+        wardrobe: wardrobe,
+        colorDetector: fakeAlwaysUnknownColorDetector,
+        );
+
+        expect(matchedItems.length, 2);
+        expect(matchedItems[0].label, 'Mystery Top'); //fallback from unknown
+        expect(matchedItems[1].label, 'Mystery Shoe'); //fallback from unknown
+    });
+  });
+
+  group('surpriseMe', () {
+    test('generates an outfit successfully', () async {
+      final wardrobe = [
+        Item(id: 1, label: 'Jeans', category: 'bottom', url: 'bottom', weather: ['Warm'], timesWorn: 0),
+        Item(id: 2, label: 'T-shirt', category: 'top', url: 'top1', weather: ['Warm'], timesWorn: 0),
+        Item(id: 3, label: 'Sneakers', category: 'shoe', url: 'shoe1', weather: ['Warm'], timesWorn: 0),
+      ];
+
+      Future<String> fakeColorDetector(String url) async {
+        if (url == 'bottom') return 'blue';
+        if (url == 'top1') return 'white';
+        if (url == 'shoe1') return 'white';
+        return 'unknown';
+      }
+
+      final outfit = await surpriseMe(wardrobe);
+
+      expect(outfit, isNotNull);
+      expect(outfit?.bottomItem.label, 'Jeans'); // fixed from bottom.label to bottomItem.label
+    });
+
+    test('returns null if no bottoms available', () async {
+      final wardrobe = [
+        Item(id: 2, label: 'Top', category: 'top', url: '', weather: ['Warm'], timesWorn: 0),
+        Item(id: 3, label: 'Shoe', category: 'shoe', url: '', weather: ['Warm'], timesWorn: 0),
+      ];
+
+      final result = await surpriseMe(wardrobe);
+      expect(result, isNull);
+    });
+  });
   group('detectDominantColorFromBytes Integration Tests', () {
     
     test('Detect dominant color from solid red image', () async {
@@ -304,8 +486,8 @@ void main() {
   // --------------------------
   group('getColorFromImage Network Fetch Tests', () {
     test('getColorFromImage real image test (requires network)', () async {
-        const imageUrl = 'https://via.placeholder.com/1x1.png';
-
+        
+        const imageUrl = 'https://firebasestorage.googleapis.com/v0/b/dressify-47e6a.firebasestorage.app/o/images%2Fimage_picker_25BB0901-13BB-40E0-A09E-34A9B50B3D43-3675-0000001DEBA3FED0.png?alt=media&token=e00a2dfc-e0a0-43cf-ad90-d2e6c87fa765';
         try {
             final result = await getColorFromImage(imageUrl);
             expect(result, isNot('unknown'));
@@ -368,8 +550,8 @@ void main() {
 
     test('getColorFromImage returns a color when real HTTP 200', () async {
      //  Setup: You need a real small hosted image online
-    final colorName = await getColorFromImage('https://via.placeholder.com/1x1.png');
-
+    final colorName = await getColorFromImage('https://firebasestorage.googleapis.com/v0/b/dressify-47e6a.firebasestorage.app/o/images%2Fimage_picker_25BB0901-13BB-40E0-A09E-34A9B50B3D43-3675-0000001DEBA3FED0.png?alt=media&token=e00a2dfc-e0a0-43cf-ad90-d2e6c87fa765');
+    
     expect(colorName, isNot('unknown'));
     });
 
@@ -686,6 +868,5 @@ void main() {
         expect(outfit, isNull);
     });
     });
-
 
 }

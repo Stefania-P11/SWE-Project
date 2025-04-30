@@ -76,7 +76,7 @@ String getBasicColorName(String hex) {
 // Detect the dominant color of an image using a lightweight KMeans algorithm
 Future<String> detectDominantColorFromBytes(Uint8List imageBytes, {int k = 3}) async {
   final image = img.decodeImage(imageBytes);
-  if (image == null) {
+  if (image == null || (image.width == 0 && image.height == 0)) {
     print("🛑 Failed to decode image.");
     return 'unknown';
   }
