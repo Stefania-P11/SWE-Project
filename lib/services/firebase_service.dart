@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dressify_app/constants.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
+import 'package:collection/collection.dart';
 //import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseService{
@@ -42,6 +43,9 @@ class FirebaseService{
     if(item.label == '' || item.label.length > 15){
       throw ArgumentError();
     }
+    if(item.weather.isEmpty){
+      throw ArgumentError();
+    }
     List<String> duplicateList = [];
     for(String weatherCat in item.weather){
       if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat!= 'Cold') || duplicateList.contains(weatherCat)){
@@ -55,19 +59,38 @@ class FirebaseService{
     if(await doesItemExist(firestore, item.id) == false){
       throw ArgumentError();
     }
-   firestore.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).set(itemToSet, SetOptions(merge : true));
+    firestore.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).set(itemToSet, SetOptions(merge : true));
     return 0;
   }
 
   //edits item in local Item.itemList
   static editLocalItemDetails(Item item, String label, String category, List<String> weather){
+    if(!Item.itemList.contains(item)){
+      throw ArgumentError();
+    }
+    if(label.length > 15){
+      throw ArgumentError();
+    }
+    if(category != 'Top' && category != 'Bottom' && category != 'Shoes' && category != ''){
+      throw ArgumentError();
+    }
+    List<String> duplicateList = [];
+    for(String weatherCat in weather){
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat != 'Cold') || duplicateList.contains(weatherCat)){
+        throw ArgumentError();
+      }
+      duplicateList.add(weatherCat);
+    }
+    if(label == '' && category == '' && weather.isEmpty){
+      throw ArgumentError();
+    }
     if(label != ''){
       item.label = label;
     }
     if(category != ''){
       item.category = category;
     }
-    if(weather != []){
+    if(weather.isNotEmpty){
       item.weather = weather;
     }
     return 0;
@@ -135,10 +158,38 @@ class FirebaseService{
   }
 
   //add outfit locally
-  static addLocalOutfit(String category, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
+  static addLocalOutfit(String label, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
     //Calls outfit constructor and then add it to Outfit.outfitList
+    if(!Item.itemList.contains(top) || top.category != 'Top'){
+      throw ArgumentError();
+    }
+    if(!Item.itemList.contains(bottom) || bottom.category != 'Bottom'){
+      throw ArgumentError();
+    }
+    if(!Item.itemList.contains(shoes) || shoes.category != 'Shoes'){
+      throw ArgumentError();
+    }
+    if(label == '' || label.length > 15){
+      throw ArgumentError();
+    }
+    if(id < 0 || Outfit.outfitList.firstWhereOrNull((o) => o.id == id) != null){
+      throw ArgumentError();
+    }
+    if(timesWorn < 0){
+      throw ArgumentError();
+    }
+    if(weather.isEmpty){
+      throw ArgumentError();
+    }
+    List<String> duplicateList = [];
+    for(String weatherCat in weather){
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat !='Cold') || duplicateList.contains(weatherCat)){
+        throw ArgumentError();
+      }
+      duplicateList.add(weatherCat);
+    }
     Outfit outfitSet = Outfit(
-      label : category,
+      label : label,
       id : id,
       topItem : top,
       bottomItem : bottom,
