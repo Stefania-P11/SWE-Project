@@ -76,20 +76,25 @@ String getBasicColorName(String hex) {
 // Detect the dominant color of an image using a lightweight KMeans algorithm
 Future<String> detectDominantColorFromBytes(Uint8List imageBytes, {int k = 3}) async {
   final image = img.decodeImage(imageBytes);
-  if (image == null) {
+  if (image == null || (image.width == 0 && image.height == 0)) {
     print("🛑 Failed to decode image.");
     return 'unknown';
   }
 
-  // 🔹 Step 1: Crop center square to remove background corners
-  final cropSize = min(image.width, image.height);
+  // 🔹 Step 1: Crop center square to remove background corners 
+  final cropSize = min(image.width, image.height);// Define the cropping size (square: take min dimension)
+  //Assign width and height for cropping separately
+  final cropWidth = cropSize;
+  final cropHeight = cropSize;
+  //Now call img.copyCrop using the separate width/height
   final cropped = img.copyCrop(
     image,
-    x: (image.width - cropSize) ~/ 2,
-    y: (image.height - cropSize) ~/ 2,
-    width: cropSize,
-    height: cropSize,
+    x: (image.width - cropWidth) ~/ 2,
+    y: (image.height - cropHeight) ~/ 2,
+    width: cropWidth,
+    height: cropHeight,
   );
+
 
   // 🔹 Step 2: Resize to reduce background pixel influence
   final resized = img.copyResize(cropped, width: 64, height: 64);
@@ -107,22 +112,11 @@ Future<String> detectDominantColorFromBytes(Uint8List imageBytes, {int k = 3}) a
       if (brightness < 245) {
         pixels.add([r, g, b]);
       }
-      //final maxDiff = [r - g, g - b, r - b].map((d) => d.abs()).reduce(max);
-
-      // 🔸 Keep pixels that are not nearly white or flat-gray
-      //if ((brightness < 240 && maxDiff > 10) || brightness < 30) {
-        //pixels.add([r, g, b]);
-      //}
+      
     }
   }
   if (pixels.isEmpty) {
     print("⚠️ All pixels filtered out. Returning unknown.");
-    return 'unknown';
-  }
-
-  //print("🧪 Total usable pixels: ${pixels.length}");
-  if (pixels.isEmpty) {
-    print("⚠️ All pixels filtered out.");
     return 'unknown';
   }
 
@@ -191,6 +185,8 @@ Future<String> detectDominantColorFromBytes(Uint8List imageBytes, {int k = 3}) a
 
 // Download image from URL and detect its dominant color
 Future<String> getColorFromImage(String imageUrl) async {
+//Future<String> getColorFromImage(String imageUrl, {http.Client? client}) async {
+  //final httpClient = client ?? http.Client(); // Use provided client, or real client
   try {
     final response = await http.get(Uri.parse(imageUrl));
     if (response.statusCode == 200) {
@@ -207,7 +203,7 @@ Future<String> getColorFromImage(String imageUrl) async {
 }
 
 // Fashion color compatibility map based on dominant bottom color
-const colorMatchMap = {
+Map<String, Map<String, List<String>>> colorMatchMap = {
   "blue": {
     "Top": ["white", "gray", "black"],
     "Shoe": ["white", "black"]
@@ -238,55 +234,63 @@ Future<Item?> getRandomBottom(String tempCategory, List<Item> wardrobe) async {
   return bottoms[Random().nextInt(bottoms.length)];
 }
 
-// Select top and shoe items based on detected bottom color and weather
+
+/// Matches a top and shoe based on a given bottom item's detected color and the weather category.
+/// 
+/// [bottom]: The bottom item.
+/// [tempCategory]: Current weather category ("Hot", "Warm", "Cool", "Cold").
+/// [wardrobe]: List of all available wardrobe items.
+/// [colorDetector]: Optional custom color detector for testing or overriding image analysis.
+///
+/// Returns a [List] with exactly 2 items: selected Top and Shoe.
 Future<List<Item>> matchTopAndShoe({
   required Item bottom,
   required String tempCategory,
   required List<Item> wardrobe,
+  Future<String> Function(String url)? colorDetector,
 }) async {
-  final bottomColor = await getColorFromImage(bottom.url);
+  final detectColor = colorDetector ?? getColorFromImage; // ✅ use this everywhere
+
+  // Step 1: Detect color from the bottom item's image URL
+  final bottomColor = await detectColor(bottom.url);
   final colorKey = bottomColor.toLowerCase();
   print("🎨 Detected Bottom Color: $bottomColor");
 
+  // Step 2: Lookup preferred matching colors for tops and shoes
   final topColors = colorMatchMap[colorKey]?['Top'] ?? ["white", "black"];
-  //final shoeColors = colorMatchMap[colorKey]?['Shoe'] ?? ["white", "black"];
   final shoeColors = colorMatchMap[colorKey]?['Shoe'] ?? ["white", "black", "gray", "brown"];
 
-  // Build top candidates with their detected color
+  // Step 3: Detect colors for tops
   final topColorFutures = wardrobe
       .where((item) => item.category.toLowerCase().contains("top") && item.weather.contains(tempCategory))
       .map((item) async {
-        final color = await getColorFromImage(item.url);
+        final color = await detectColor(item.url); // ✅ use detectColor
         return MapEntry(item, color == "unknown" ? "white" : color);
       }).toList();
 
-  // Build shoe candidates with their detected color
+  // Step 4: Detect colors for shoes
   final shoeColorFutures = wardrobe
       .where((item) => item.category.toLowerCase().contains("shoe") && item.weather.contains(tempCategory))
       .map((item) async {
-        final color = await getColorFromImage(item.url);
+        final color = await detectColor(item.url); // ✅ use detectColor
         return MapEntry(item, color == "unknown" ? "white" : color);
       }).toList();
 
   final topPairs = await Future.wait(topColorFutures);
   final shoePairs = await Future.wait(shoeColorFutures);
 
-  // Filter items by compatible color
+  // Step 5: Filter items by compatible color
   final matchedTops = topPairs.where((entry) => topColors.contains(entry.value)).map((e) => e.key).toList();
   final matchedShoes = shoePairs.where((entry) => shoeColors.contains(entry.value)).map((e) => e.key).toList();
 
-  // Fallback to default item if no match is found
-  //final top = matchedTops.isNotEmpty
-    //  ? matchedTops[Random().nextInt(matchedTops.length)]
-      //: Item(category: 'Top', id: 0, label: 'default', timesWorn: 0, url: 'https://via.placeholder.com/150', weather: [tempCategory]);
+  // Step 6: Select a top
   final top = matchedTops.isNotEmpty
     ? matchedTops[Random().nextInt(matchedTops.length)]
     : (topPairs.any((entry) => entry.value != 'unknown')
         ? topPairs
             .where((entry) => entry.value != 'unknown')
             .map((e) => e.key)
-            .toList()[Random().nextInt(
-              topPairs.where((entry) => entry.value != 'unknown').length)]
+            .toList()[Random().nextInt(topPairs.where((entry) => entry.value != 'unknown').length)]
         : Item(
             category: 'Top',
             id: 0,
@@ -296,13 +300,14 @@ Future<List<Item>> matchTopAndShoe({
             weather: [tempCategory],
           ));
 
+  // Step 7: Select a shoe
   final shoe = matchedShoes.isNotEmpty
     ? matchedShoes[Random().nextInt(matchedShoes.length)]
     : (shoePairs.any((entry) => entry.value != 'unknown')
         ? shoePairs
             .where((entry) => entry.value != 'unknown')
             .map((e) => e.key)
-            .toList()[Random().nextInt(shoePairs.length)]
+            .toList()[Random().nextInt(shoePairs.where((entry) => entry.value != 'unknown').length)]
         : Item(
             category: 'Shoe',
             id: 0,
@@ -312,12 +317,9 @@ Future<List<Item>> matchTopAndShoe({
             weather: [tempCategory],
           ));
 
-  //final shoe = matchedShoes.isNotEmpty
-    //  ? matchedShoes[Random().nextInt(matchedShoes.length)]
-      //: Item(category: 'Shoe', id: 0, label: 'default', timesWorn: 0, url: 'https://via.placeholder.com/150', weather: [tempCategory]);
-
   return [top, shoe];
 }
+
 
 // Full Surprise Me feature: generate a full outfit based on weather and wardrobe
 Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = const {}}) async {
@@ -356,4 +358,21 @@ Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = con
     tempCategory: tempCategory,
   );
 }
+///HELPER for test
+Future<String> getColorFromImageWithClient(String imageUrl, http.Client client) async {
+  try {
+    final response = await client.get(Uri.parse(imageUrl));
+    if (response.statusCode == 200) {
+      final imageBytes = response.bodyBytes;
+      return await detectDominantColorFromBytes(imageBytes);
+    } else {
+      print("\u274c Failed to fetch image: ${response.statusCode}");
+      return 'unknown';
+    }
+  } catch (e) {
+    print("\u274c Error fetching or processing image: $e");
+    return 'unknown';
+  }
+}
+
 
