@@ -4,15 +4,17 @@ import 'package:dressify_app/constants.dart';
 // Item class to model clothing items
 class Item {
   // Properties to store item details
-  late  String category;        // Category of the item (e.g., Top, Bottom, Shoes)
+  late String category;        // Category of the item (e.g., Top, Bottom, Shoes)
   late final int id;            // Unique ID for the item
-  late  String label;           // Label or name of the item
+  late String label;           // Label or name of the item
   int timesWorn;                // Number of times the item has been worn
   late final String url;        // URL for the item's image
   late List<String> weather;    // Weather conditions suited for the item
 
   // Static list to store fetched items
   static List<Item> itemList = [];
+
+   static bool isLoaded = false; 
 
   // Static counters to store item counts by category
   static int topCount = 0;      // Count of tops
@@ -43,15 +45,17 @@ class Item {
       category: data['category'],   // Assign category from Firestore
       id: data['id'],               // Assign item ID from Firestore
       label: data['label'],         // Assign label from Firestore
-      timesWorn: data['timesWorn'], // Assign times worn from Firestore
+      timesWorn: data['timesWorn'] ?? 0,// Assign times worn from Firestore
       url: data['url'],             // Assign URL from Firestore
       weather: weatherList          // Assign weather array from Firestore
     );
   }
 
   // Fetch items from Firestore and populate itemList
-  static Future<void> fetchItems(String username) async {
-    FirebaseFirestore db = FirebaseFirestore.instance;
+  static Future<void> fetchItems(String username, {FirebaseFirestore? firestore}) async {
+    
+    // Added firestore parameter to allow dependency injection for testing
+    final db = firestore?? FirebaseFirestore.instance;
 
     // Query to get items from the "Clothes" collection of the user
     QuerySnapshot querySnapshot = await db
@@ -82,4 +86,30 @@ class Item {
       }
     }
   }
+
+/*Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
+  timesWorn++;
+  (firestore ?? FirebaseFirestore.instance)
+      .collection('users')
+      .doc(kUsername)
+      .collection("Clothes")
+      .doc(id.toString())
+      .update({'timesWorn': timesWorn});
+}*/
+
+Future<void> incrementTimesWorn({FirebaseFirestore? firestore}) async {
+  final db = firestore ?? FirebaseFirestore.instance;
+  try {
+    await db
+        .collection('users')
+        .doc(kUsername)
+        .collection("Clothes")
+        .doc(id.toString())
+        .update({'timesWorn': timesWorn + 1});
+    timesWorn++;
+  } catch (e) {
+    // Optional: Handle error
+    rethrow;
+  }
+}
 }

@@ -1,6 +1,5 @@
 import 'package:dressify_app/constants.dart'; // Import constants for styling and reusable values
 import 'package:dressify_app/models/item.dart'; // Import the Item model
-import 'package:dressify_app/services/item_service.dart'; // Import ItemService to fetch data
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar widget
 import 'package:dressify_app/widgets/item_grid.dart'; // Import custom widget to display grid items
 import 'package:flutter/material.dart'; // Import Flutter Material package
@@ -22,10 +21,8 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
   String?
       selectedItemUrl; // Stores the selected item URL to pass back to the previous screen
 
-  // Create an instance of ItemService
-  final ItemService _itemService = ItemService();
 
-  @override
+   @override
   void initState() {
     super.initState();
     _loadItems(); // Load items when the screen initializes
@@ -33,21 +30,13 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
 
   /// Fetch items from Firestore using ItemService and filter based on the selected category
   Future<void> _loadItems() async {
-    setState(() {
-      _isLoading = true; // Show loading indicator while data is fetched
-    });
-
-    // Fetch items using the service and filter by category
-    final items = await _itemService.fetchItemsByCategory(
-      widget.category,
-      kUsername, 
-    );
-
-    setState(() {
-      _items = items; // Update item list with fetched and filtered items
-      _isLoading = false; // Hide loading indicator after data is loaded
-    });
-  }
+  setState(() {
+    _items = Item.itemList
+        .where((item) => item.category == widget.category)
+        .toList(); // Local filter only
+    _isLoading = false;
+  });
+}
 
   @override
   Widget build(BuildContext context) {

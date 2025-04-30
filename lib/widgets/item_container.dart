@@ -11,24 +11,26 @@ Widget outfitItem(String label, double screenWidth, {VoidCallback? onTap, String
         child: imageUrl != null && imageUrl.isNotEmpty
             ? Image.network(
                 imageUrl,
-                width: screenWidth * 0.52,
-                height: screenWidth * 0.52,
-                fit: BoxFit.cover,
+                width: screenWidth * 0.55,
+                height: screenWidth * 0.55,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => SvgPicture.asset(
                   "lib/assets/images/item-image.svg", // Fallback image
                   width: screenWidth * 0.52,
                   height: screenWidth * 0.52,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               )
             : SvgPicture.asset(
                 "lib/assets/images/item-image.svg", // Default asset if no image URL
                 width: screenWidth * 0.52,
                 height: screenWidth * 0.52,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
               ),
       ),
-      Text(label, style: kButtons),
+         // 👇 Show label only if imageUrl is empty or null
+      if (imageUrl == null || imageUrl.isEmpty)
+        Text(label, style: kButtons),
     ],
   );
 

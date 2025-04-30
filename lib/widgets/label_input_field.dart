@@ -12,11 +12,23 @@ class LabelInputField extends StatelessWidget {
   // Hint text to be displayed inside the text field when it's empty
   final String hintText;
 
+  // Maximum length of the input text
+  final int maxLength; 
+
+  // Obscure text property to hide the input (used for passwords)
+  final bool obscureText;
+
+  // Controls whether to show the character counter
+  final bool showCounter;
+
   // Constructor to initialize the controller and hintText with required arguments.
   const LabelInputField({
     super.key,
     required this.controller,
     this.hintText = "", // Default hint if not provided
+    this.maxLength = 15, // Default max length if not provided
+    this.obscureText = false, // Default to false if not provided
+    this.showCounter = true, // Default to true if not provided
   });
 
   @override
@@ -33,13 +45,18 @@ class LabelInputField extends StatelessWidget {
         controller: controller,
 
         // Limit the input to 15 characters
-        maxLength: 15,
+        maxLength: maxLength,
+
+        //Obscure the text if the obscureText property is true (used for passwords)
+        obscureText: obscureText,
 
         // Define the appearance and behavior of the input field
         decoration: InputDecoration(
          
           // Use the passed hintText or the default one
           hintText: hintText,
+
+          counterText: showCounter ? null : "", // Show character counter if showCounter is true
 
           // Default border when the TextField is not focused
           border: const OutlineInputBorder(
