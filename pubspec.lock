@@ -129,8 +129,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.9.5"
-<<<<<<< HEAD
-=======
   cel:
     dependency: transitive
     description:
@@ -139,7 +137,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.3"
->>>>>>> origin/main
   characters:
     dependency: transitive
     description:
@@ -156,8 +153,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
-<<<<<<< HEAD
-=======
   cli_config:
     dependency: transitive
     description:
@@ -166,7 +161,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
->>>>>>> origin/main
   clock:
     dependency: transitive
     description:
@@ -247,8 +241,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-<<<<<<< HEAD
-=======
   coverage:
     dependency: transitive
     description:
@@ -257,7 +249,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.0"
->>>>>>> origin/main
   cross_file:
     dependency: transitive
     description:
@@ -290,8 +281,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-<<<<<<< HEAD
-=======
   equatable:
     dependency: transitive
     description:
@@ -300,7 +289,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.7"
->>>>>>> origin/main
   fake_async:
     dependency: transitive
     description:
@@ -804,8 +792,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.1"
-<<<<<<< HEAD
-=======
   logger:
     dependency: transitive
     description:
@@ -814,7 +800,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.5.0"
->>>>>>> origin/main
   logging:
     dependency: transitive
     description:
@@ -855,8 +840,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-<<<<<<< HEAD
-=======
   mock_exceptions:
     dependency: transitive
     description:
@@ -865,7 +848,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.8.2"
->>>>>>> origin/main
   mockito:
     dependency: "direct dev"
     description:
@@ -874,8 +856,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.6"
-<<<<<<< HEAD
-=======
   more:
     dependency: transitive
     description:
@@ -892,7 +872,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.2"
->>>>>>> origin/main
   package_config:
     dependency: transitive
     description:
@@ -1021,8 +1000,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-<<<<<<< HEAD
-=======
   quiver:
     dependency: transitive
     description:
@@ -1047,7 +1024,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
->>>>>>> origin/main
   shelf:
     dependency: transitive
     description:
@@ -1056,8 +1032,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.2"
-<<<<<<< HEAD
-=======
   shelf_packages_handler:
     dependency: transitive
     description:
@@ -1074,7 +1048,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.3"
->>>>>>> origin/main
   shelf_web_socket:
     dependency: transitive
     description:
@@ -1096,8 +1069,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-<<<<<<< HEAD
-=======
   source_map_stack_trace:
     dependency: transitive
     description:
@@ -1114,7 +1085,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.13"
->>>>>>> origin/main
   source_span:
     dependency: transitive
     description:
@@ -1187,8 +1157,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
-<<<<<<< HEAD
-=======
   test_core:
     dependency: transitive
     description:
@@ -1197,7 +1165,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.8"
->>>>>>> origin/main
   timing:
     dependency: transitive
     description:
@@ -1206,8 +1173,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
-<<<<<<< HEAD
-=======
   tuple:
     dependency: transitive
     description:
@@ -1216,7 +1181,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.2"
->>>>>>> origin/main
   typed_data:
     dependency: transitive
     description:
@@ -1313,8 +1277,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
-<<<<<<< HEAD
-=======
   webkit_inspection_protocol:
     dependency: transitive
     description:
@@ -1323,7 +1285,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
->>>>>>> origin/main
   xdg_directories:
     dependency: transitive
     description:
