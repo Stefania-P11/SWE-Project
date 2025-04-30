@@ -48,6 +48,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
     // Check if the outfit already exists
     final existing = await FirebaseService.isOutfitFavorited(
+      FirebaseFirestore.instance,
       outfit.topItem.id,
       outfit.bottomItem.id,
       outfit.shoeItem.id,

@@ -217,7 +217,7 @@ class FirebaseService{
   //remove local outfit from Outfit.outfitList. Outfit arg should already be a part of outfitList, so this is trivial
   static removeLocalOutfit(Outfit outfit){
     //remove outfit from Outfit.outfitList if outfit.id matches list element's id
-    if(!Outfit.outfitList.contains(outfit)){
+    if(outfit.id < 0 || !Outfit.outfitList.contains(outfit)){
       throw ArgumentError();
     }
     Outfit.outfitList.removeWhere((o) => o.id == outfit.id);
@@ -253,8 +253,17 @@ class FirebaseService{
   }
 
   //check if Outfit is in Favorite
-  static Future<bool> isOutfitFavorited(int topID, int bottomID, int shoeID) async {
-    final userDoc = FirebaseFirestore.instance.collection('users').doc(kUsername);
+  static Future<bool> isOutfitFavorited(FirebaseFirestore firestore, int topID, int bottomID, int shoeID) async {
+    final userDoc = firestore.collection('users').doc(kUsername);
+    if(await doesItemExist(firestore, topID) == false){
+      throw ArgumentError();
+    }
+    if(await doesItemExist(firestore, bottomID) == false){
+      throw ArgumentError();
+    }
+    if(await doesItemExist(firestore, shoeID) == false){
+      throw ArgumentError();
+    }
     final favorites = await userDoc.collection('FavoriteOutfits')
         .where('topID', isEqualTo: topID)
         .where('bottomID', isEqualTo: bottomID)
@@ -279,8 +288,8 @@ class FirebaseService{
       return false;
     }
     for(String weatherCat in item.weather){
-      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat!= 'Cold') || duplicateList.contains(weatherCat)){
-        return false;
+      if((weatherCat != 'Hot' && weatherCat != 'Warm' && weatherCat != 'Cool' && weatherCat != 'Cold') || duplicateList.contains(weatherCat)){
+        return false; 
       }
       duplicateList.add(weatherCat);
     }

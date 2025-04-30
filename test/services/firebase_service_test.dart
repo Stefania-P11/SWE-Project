@@ -494,6 +494,37 @@ void main() async{
 
   }); 
   group('removeLocalOutfits', (){
+    Item item1 = Item(category: 'Top', id: 1, label : 'Favorite Top', weather : ['Hot','Cool', 'Warm'], url : 'fake', timesWorn: 5);
+    Item item2 = Item(category: 'Bottom', id: 2, label : 'Favorite Bottom', weather : ['Hot','Cool', 'Warm'], url : 'fake', timesWorn: 5);
+    Item item3 = Item(category: 'Shoes', id: 3, label : 'Favorite Shoes', weather : ['Hot','Cool', 'Warm'], url : 'fake', timesWorn: 5);
+    Outfit outfit1 = Outfit(id : 1, label : 'My Favorite Outfit', topItem: item1, bottomItem:  item2, shoeItem: item3, timesWorn : 5, weather : ['Warm', 'Cool']);
+    Outfit outfit2 = Outfit(id : 5, label : 'My Favorite Outfit', topItem: item1, bottomItem:  item2, shoeItem: item3, timesWorn : 5, weather : ['Warm', 'Cool']);
+
+    setUp((){
+      Item.itemList.add(item1);
+      Item.itemList.add(item2);
+      Item.itemList.add(item3);
+      Outfit.outfitList.add(outfit1);
+    });
+    tearDown(() {
+      Item.itemList.remove(item1);
+      Item.itemList.remove(item2);
+      Item.itemList.remove(item3);
+      Outfit.outfitList.remove(outfit1);
+      Outfit.outfitList.remove(outfit2);
+    });
+    test('Argument Error b/c id < 0', () {
+      expect(() => FirebaseService.removeLocalOutfit(Outfit(id : -1, label : 'My Favorite Outfit', topItem: item1, bottomItem:  item2, shoeItem: item3, timesWorn : 5, weather : ['Warm', 'Cool'])),
+      throwsA(isA<ArgumentError>()));
+    });
+    test('Argument Error b/c outfit does not exist in list', () {
+      expect(() => FirebaseService.removeLocalOutfit(outfit2),
+      throwsA(isA<ArgumentError>()));
+    });
+    test('Successful removal', (){
+      FirebaseService.removeLocalOutfit(outfit1);
+      expect(Outfit.outfitList.contains(outfit1), false);
+    });
 
   });
   group('addFirestoreItems', () {
@@ -635,6 +666,66 @@ void main() async{
         'Top', 
         ['Cold']), throwsA(isA<ArgumentError>()));
     });
+    test('Successful Edit', () async{
+      await FirebaseService.editFirestoreItemDetails(
+          fakeFirestore,
+          Item(category : 'Top', label : 'Mine', weather : ['Hot','Warm','Cold'], url : 'fake', id : 33, timesWorn : 5), 
+          'test item', 
+          'Top', 
+          ['Cold']
+      );
+      var docRef = await fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('33').get();
+      Map<String, dynamic> data = docRef.data() as Map<String, dynamic>;
+      expect(data['category'], 'Top');
+      expect(data['label'], 'Mine');
+      expect(data['weather'], ['Hot','Warm','Cold']);
+    });
 
   });  
+  group('isOutfitFavorited', (){
+    final fakeFirestore = FakeFirebaseFirestore();
+    String originalUsername = constants.kUsername;
+    final outfit = {
+      'id' : 5,
+      'topID' : 1,
+      'bottomID' : 2,
+      'shoeID' : 6
+    };
+    final item1Data = {
+      'id' : 1,
+    };
+    final item2Data = {
+      'id' : 2,
+    };
+    final item3Data = {
+      'id' : 6,
+    };
+    setUp((){
+      constants.kUsername = 'dummy';
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item1Data['id'].toString()).set(item1Data);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item2Data['id'].toString()).set(item2Data);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item3Data['id'].toString()).set(item3Data);
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('FavoriteOutfits').doc(outfit['id'].toString()).set(outfit);
+    });
+    tearDown((){
+      constants.kUsername = originalUsername;
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item1Data['id'].toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item2Data['id'].toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc(item3Data['id'].toString()).delete();
+      fakeFirestore.collection('users').doc(constants.kUsername).collection('FavoriteOutfits').doc(outfit['id'].toString()).delete();
+    });
+    test('Expect Argument Error b/c Top ID does not exist', (){
+      expect(() => FirebaseService.isOutfitFavorited(fakeFirestore, 3,  2, 6), throwsA(isA<ArgumentError>()));
+    });
+    test('Expect Argument Error b/c Bottom ID does not exist', (){
+      expect(() => FirebaseService.isOutfitFavorited(fakeFirestore, 1,  4, 6), throwsA(isA<ArgumentError>()));
+    });
+    test('Expect Argument Error b/c Shoe ID does not exist', (){
+      expect(() => FirebaseService.isOutfitFavorited(fakeFirestore, 1,  2, 7), throwsA(isA<ArgumentError>()));
+    });
+    test('Expect return true', () async{
+      bool result = await FirebaseService.isOutfitFavorited(fakeFirestore, 1,  2, 6);
+      expect(result, true);
+    });
+  });
 }
