@@ -1,6 +1,7 @@
 import 'package:dressify_app/constants.dart'; // Import constants for styling and reusable values
 import 'package:dressify_app/models/item.dart'; // Import the Item model
 import 'package:dressify_app/widgets/custom_app_bar.dart'; // Import custom app bar widget
+import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_grid.dart'; // Import custom widget to display grid items
 import 'package:flutter/material.dart'; // Import Flutter Material package
 
@@ -21,8 +22,7 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
   String?
       selectedItemUrl; // Stores the selected item URL to pass back to the previous screen
 
-
-   @override
+  @override
   void initState() {
     super.initState();
     _loadItems(); // Load items when the screen initializes
@@ -30,13 +30,13 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
 
   /// Fetch items from Firestore using ItemService and filter based on the selected category
   Future<void> _loadItems() async {
-  setState(() {
-    _items = Item.itemList
-        .where((item) => item.category == widget.category)
-        .toList(); // Local filter only
-    _isLoading = false;
-  });
-}
+    setState(() {
+      _items = Item.itemList
+          .where((item) => item.category == widget.category)
+          .toList(); // Local filter only
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,9 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
                         },
                       ),
           ),
-
+          SizedBox(
+            height: screenHeight * 0.01,
+          ), // Add space below the grid
           /// Button to confirm selection (only visible if an item is selected)
           if (selectedItemUrl != null)
             Padding(
@@ -99,27 +101,19 @@ class _ChooseItemScreenState extends State<ChooseItemScreen> {
                 horizontal: screenWidth * 0.2,
                 vertical: 12,
               ), // Add padding to the button
-              child: ElevatedButton(
+              child: CustomButton3(
+                label: "Add",
+                isActive: selectedItemUrl != null,
                 onPressed: () {
-                  Navigator.pop(context,
-                      selectedItemUrl); // Return selected item URL to previous screen
+                  if (selectedItemUrl != null) {
+                    Navigator.pop(context, selectedItemUrl);
+                  }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Button background color
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12), // Vertical padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(30), // Button border radius
-                  ),
-                ),
-                child: const Text(
-                  "Add", // Button text
-                  style: TextStyle(
-                      color: Colors.white, fontSize: 16), // Button text style
-                ),
               ),
             ),
+          SizedBox(
+            height: screenHeight * 0.02,
+          ), // Add space below the button
         ],
       ),
     );
