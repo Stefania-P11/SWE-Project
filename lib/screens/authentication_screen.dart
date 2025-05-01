@@ -33,76 +33,75 @@ class _AuthScreenState extends State<AuthScreen> {
   final AuthenticationService _authService = AuthenticationService();
 
   @override
-void initState() {
-  super.initState();
-  isLogin = widget.isLogin;
+  void initState() {
+    super.initState();
+    isLogin = widget.isLogin;
 
-  // Listen to password changes to validate strength and match
-  passwordController.addListener(_checkPasswords);
-  retypePasswordController.addListener(_checkPasswords);
+    // Listen to password changes to validate strength and match
+    passwordController.addListener(_checkPasswords);
+    retypePasswordController.addListener(_checkPasswords);
 
-  // Listen for changes in the username field (sign-up only)
-  usernameController.addListener(() {
-    final username = usernameController.text.trim();
+    // Listen for changes in the username field (sign-up only)
+    usernameController.addListener(() {
+      final username = usernameController.text.trim();
 
-    if (!isLogin && username.isNotEmpty) {
-      Future.delayed(const Duration(milliseconds: 300), () async {
-        final available = await _authService.isUsernameAvailable(username);
+      if (!isLogin && username.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final available = await _authService.isUsernameAvailable(username);
+          if (mounted) {
+            setState(() {
+              usernameTaken = !available;
+            });
+          }
+        });
+      } else {
         if (mounted) {
           setState(() {
-            usernameTaken = !available;
+            usernameTaken = false;
           });
         }
-      });
-    } else {
-      if (mounted) {
-        setState(() {
-          usernameTaken = false;
-        });
-      }
-    }
-  });
-
-  // Real-time check for email availability during sign-up
-emailController.addListener(() {
-  final email = emailController.text.trim();
-
-  if (!isLogin && email.isNotEmpty) {
-    Future.delayed(const Duration(milliseconds: 300), () async {
-      final inUse = await _authService.isEmailInUse(email);
-      if (mounted) {
-        setState(() {
-          emailTaken = inUse;
-        });
       }
     });
-  } else {
-    if (mounted) {
-      setState(() {
-        emailTaken = false;
-      });
-    }
+
+    // Real-time check for email availability during sign-up
+    emailController.addListener(() {
+      final email = emailController.text.trim();
+
+      if (!isLogin && email.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final inUse = await _authService.isEmailInUse(email);
+          if (mounted) {
+            setState(() {
+              emailTaken = inUse;
+            });
+          }
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            emailTaken = false;
+          });
+        }
+      }
+    });
+
+    // Listen to all fields to trigger UI rebuilds (e.g., for enabling the button)
+    _addFieldListeners();
   }
-});
-
-
-  // Listen to all fields to trigger UI rebuilds (e.g., for enabling the button)
-  _addFieldListeners();
-}
 
 // Helper method to auto-update UI on any form change
-void _addFieldListeners() {
-  for (final controller in [
-    usernameController,
-    emailController,
-    passwordController,
-    retypePasswordController,
-  ]) {
-    controller.addListener(() {
-      if (mounted) setState(() {});
-    });
+  void _addFieldListeners() {
+    for (final controller in [
+      usernameController,
+      emailController,
+      passwordController,
+      retypePasswordController,
+    ]) {
+      controller.addListener(() {
+        if (mounted) setState(() {});
+      });
+    }
   }
-}
 
   bool _validatePassword(String password) {
     final bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
@@ -120,23 +119,21 @@ void _addFieldListeners() {
     });
   }
 
- bool get isFormComplete {
-  if (isLogin) {
-    return emailController.text.isNotEmpty &&
-        passwordController.text.isNotEmpty;
-  } else {
-    return usernameController.text.isNotEmpty &&
-        emailController.text.isNotEmpty &&
-        passwordController.text.isNotEmpty &&
-        retypePasswordController.text.isNotEmpty &&
-        passwordValid &&
-        passwordsMatch &&
-        !usernameTaken &&
-        !emailTaken;
-        
+  bool get isFormComplete {
+    if (isLogin) {
+      return emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
+    } else {
+      return usernameController.text.isNotEmpty &&
+          emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty &&
+          retypePasswordController.text.isNotEmpty &&
+          passwordValid &&
+          passwordsMatch &&
+          !usernameTaken &&
+          !emailTaken;
+    }
   }
-}
-
 
   // Toggle the auth mode from within the AuthScreen if needed
   void toggleAuthMode() {
@@ -178,20 +175,20 @@ void _addFieldListeners() {
         return; // Don't continue to signup if password is invalid
       }
       // Attempt to sign up
-    try {
-  user = await _authService.signUp(email, password, usernameInput);
-} on FirebaseAuthException catch (e) {
-  if (e.code == 'email-already-in-use') {
-    setState(() {
-      emailTaken = true;
-    });
-    return;
-  } else {
-    print("Other Firebase signup error: ${e.code}");
-  }
-} catch (e) {
-  print("Unexpected error during signup: $e");
-}
+      try {
+        user = await _authService.signUp(email, password, usernameInput);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          setState(() {
+            emailTaken = true;
+          });
+          return;
+        } else {
+          print("Other Firebase signup error: ${e.code}");
+        }
+      } catch (e) {
+        print("Unexpected error during signup: $e");
+      }
     }
 
     if (user != null) {
@@ -348,6 +345,16 @@ void _addFieldListeners() {
                             obscureText: true,
                             showCounter: false,
                           ),
+                          if (!passwordValid &&
+                              passwordController.text.isNotEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 5.0),
+                              child: Text(
+                                'Password must have:\n• Minimum 8 characters\n• At least one uppercase letter (A-Z)\n• At least one lowercase letter (a-z)\n• At least one digit (0-9)',
+                                style: kErrorMessage,
+                              ),
+                            ),
                           if (!isLogin) ...[
                             const SizedBox(height: 20),
                             Padding(
@@ -364,18 +371,6 @@ void _addFieldListeners() {
                               showCounter: false,
                             ),
                             const SizedBox(height: 10),
-
-                            // Show password strength error
-                            if (!passwordValid &&
-                                passwordController.text.isNotEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 5.0),
-                                child: Text(
-                                  'Password must have:\n• Minimum 8 characters\n• At least one uppercase letter (A-Z)\n• At least one lowercase letter (a-z)\n• At least one digit (0-9)',
-                                  style: kErrorMessage,
-                                ),
-                              ),
 
                             // Show password match error
                             if (!passwordsMatch &&
