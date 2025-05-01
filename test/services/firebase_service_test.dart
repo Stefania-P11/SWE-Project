@@ -480,8 +480,8 @@ void main() async{
       expect(() => FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: -1, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot'])),
       throwsA(isA<ArgumentError>()));
     });
-    test('Expects ArgumentError due to item not existing', (){
-      expect(() => FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: -1, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot'])),
+    test('Expects ArgumentError due to outfit not existing', (){
+      expect(() => FirebaseService.removeFirestoreOutfit(fakeFirestore, Outfit(id: 1, label : 'hello', topItem: top,  bottomItem : bottom, shoeItem : shoe, timesWorn : 5, weather : ['Hot'])),
       throwsA(isA<ArgumentError>()));
     });
     test('Successful removal', () async{
