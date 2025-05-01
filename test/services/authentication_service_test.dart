@@ -22,7 +22,11 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {
   bool _throwOnSignIn = false;
   bool _throwOnSignOut = false;
   bool _throwOnResetPassword = false;
-  
+  List<String> _signInMethodsForEmail = [];
+  bool _throwOnFetchSignInMethods = false;
+  bool _throwOnCreateUserWithOtherError = false;
+  bool _throwGenericError = false;
+
   MockFirebaseAuth() {
     _currentUser = MockUser();
   }
@@ -49,6 +53,31 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {
   void setThrowOnResetPassword(bool value) {
     _throwOnResetPassword = value;
   }
+
+  void setSignInMethodsForEmail(List<String> methods) {
+  _signInMethodsForEmail = methods;
+}
+
+  void setThrowOnFetchSignInMethods(bool value) {
+  _throwOnFetchSignInMethods = value;
+}
+
+void setThrowOnCreateUserWithOtherError(bool value) {
+  _throwOnCreateUserWithOtherError = value;
+}
+
+void setThrowGenericError(bool value) {
+  _throwGenericError = value;
+}
+
+
+  @override
+Future<List<String>> fetchSignInMethodsForEmail(String email) async {
+  if (_throwOnFetchSignInMethods) {
+    throw FirebaseAuthException(code: 'internal-error');
+  }
+  return _signInMethodsForEmail;
+}
   
   @override
   Future<UserCredential> createUserWithEmailAndPassword({
@@ -58,6 +87,12 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {
     if (_throwOnCreateUser) {
       throw FirebaseAuthException(code: 'email-already-in-use');
     }
+    if (_throwOnCreateUserWithOtherError) {
+    throw FirebaseAuthException(code: 'invalid-email');
+  }
+   if (_throwGenericError) {
+    throw Exception('Unexpected error');
+  }
     return Future.value(MockUserCredential(user: _currentUser));
   }
   
@@ -525,4 +560,38 @@ void main() {
       expect(kUsername, 'user5');
     },
   );
+
+  group('isEmailInUse Tests', () {
+  test('returns true when sign-in methods are found', () async {
+    mockAuth.setSignInMethodsForEmail(['password']);
+    final result = await authService.isEmailInUse('used@example.com');
+    expect(result, isTrue);
+  });
+
+  test('returns false when no sign-in methods are found', () async {
+    mockAuth.setSignInMethodsForEmail([]);
+    final result = await authService.isEmailInUse('new@example.com');
+    expect(result, isFalse);
+  });
+
+  test('returns false when exception is thrown', () async {
+    mockAuth.setThrowOnFetchSignInMethods(true);
+    final result = await authService.isEmailInUse('fail@example.com');
+    expect(result, isFalse);
+  });
+
+  test('signUp prints "Sign Up Error" for non-email FirebaseAuthException', () async {
+  mockAuth.setThrowOnCreateUserWithOtherError(true);
+  final result = await authService.signUp('bademail', 'Password123', 'testuser');
+  expect(result, isNull);
+});
+
+test('signUp prints "Sign Up General Error" for non-Firebase exception', () async {
+  mockAuth.setThrowGenericError(true);
+  final result = await authService.signUp('test@example.com', 'Password123', 'testuser');
+  expect(result, isNull);
+});
+
+});
+
 }

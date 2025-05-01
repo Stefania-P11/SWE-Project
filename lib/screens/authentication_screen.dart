@@ -63,11 +63,34 @@ void initState() {
     }
   });
 
+  // Real-time check for email availability during sign-up
+emailController.addListener(() {
+  final email = emailController.text.trim();
+
+  if (!isLogin && email.isNotEmpty) {
+    Future.delayed(const Duration(milliseconds: 300), () async {
+      final inUse = await _authService.isEmailInUse(email);
+      if (mounted) {
+        setState(() {
+          emailTaken = inUse;
+        });
+      }
+    });
+  } else {
+    if (mounted) {
+      setState(() {
+        emailTaken = false;
+      });
+    }
+  }
+});
+
+
   // Listen to all fields to trigger UI rebuilds (e.g., for enabling the button)
   _addFieldListeners();
 }
 
-// 👇 Helper method to auto-update UI on any form change
+// Helper method to auto-update UI on any form change
 void _addFieldListeners() {
   for (final controller in [
     usernameController,
@@ -97,21 +120,23 @@ void _addFieldListeners() {
     });
   }
 
-  bool get isFormComplete {
-    if (isLogin) {
-      return emailController.text.isNotEmpty &&
-          passwordController.text.isNotEmpty;
-    } else {
-      return usernameController.text.isNotEmpty &&
-          emailController.text.isNotEmpty &&
-          passwordController.text.isNotEmpty &&
-          retypePasswordController.text.isNotEmpty &&
-          passwordValid &&
-          passwordsMatch &&
-          !usernameTaken &&
-          !emailTaken;
-    }
+ bool get isFormComplete {
+  if (isLogin) {
+    return emailController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty;
+  } else {
+    return usernameController.text.isNotEmpty &&
+        emailController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty &&
+        retypePasswordController.text.isNotEmpty &&
+        passwordValid &&
+        passwordsMatch &&
+        !usernameTaken &&
+        !emailTaken;
+        
   }
+}
+
 
   // Toggle the auth mode from within the AuthScreen if needed
   void toggleAuthMode() {
@@ -153,18 +178,20 @@ void _addFieldListeners() {
         return; // Don't continue to signup if password is invalid
       }
       // Attempt to sign up
-      try {
-        user = await _authService.signUp(email, password, usernameInput);
-      } catch (e) {
-        if (e.toString().contains('email-already-in-use')) {
-          setState(() {
-            emailTaken = true;
-          });
-          return;
-        } else {
-          print("Unexpected signup error: $e");
-        }
-      }
+    try {
+  user = await _authService.signUp(email, password, usernameInput);
+} on FirebaseAuthException catch (e) {
+  if (e.code == 'email-already-in-use') {
+    setState(() {
+      emailTaken = true;
+    });
+    return;
+  } else {
+    print("Other Firebase signup error: ${e.code}");
+  }
+} catch (e) {
+  print("Unexpected error during signup: $e");
+}
     }
 
     if (user != null) {

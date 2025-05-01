@@ -63,7 +63,7 @@ class AuthenticationService {
       return _firebaseAuth.currentUser;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        throw Exception('email-already-in-use');
+        rethrow;
       }
       print("Sign Up Error: $e");
       return null;
@@ -185,17 +185,31 @@ class AuthenticationService {
     }
   }
 
-  Future<String?> getUsernameForCurrentUser() async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) return null;
+    Future<String?> getUsernameForCurrentUser() async {
+  final user = _firebaseAuth.currentUser;
+  if (user == null) return null;
 
-    final doc = await firestore
-        .collection('usernames')
-        .where('uid', isEqualTo: user.uid)
-        .limit(1)
-        .get();
+ 
+  final doc = await firestore
+      .collection('usernames')
+      .where('uid', isEqualTo: user.uid)
+      .limit(1)
+      .get();
 
-    if (doc.docs.isEmpty) return null;
-    return doc.docs.first.id; // The document ID is the username
+  if (doc.docs.isEmpty) return null;
+  return doc.docs.first.id; // The document ID is the username
+}
+
+Future<bool> isEmailInUse(String email) async {
+  try {
+    // ignore: deprecated_member_use
+    final methods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
+    return methods.isNotEmpty;
+  } catch (e) {
+    print('Error checking email availability: $e');
+    return false; // default to "not in use" to avoid false blocks
   }
 }
+
+}
+
