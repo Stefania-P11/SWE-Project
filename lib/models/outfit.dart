@@ -90,8 +90,8 @@ class Outfit {
   }
 
   /// Fetch outfits from Firestore for a given user
-  static Future<void> fetchOutfits(String username) async {
-    FirebaseFirestore db = FirebaseFirestore.instance;
+  static Future<void> fetchOutfits(String username, {FirebaseFirestore? firestore}) async {
+    final db = firestore ?? FirebaseFirestore.instance;
     QuerySnapshot querySnapshot =
         await db.collection('users').doc(username).collection("Outfits").get();
 
