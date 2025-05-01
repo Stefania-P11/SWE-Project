@@ -600,4 +600,39 @@ void main() {
       expect(Outfit.outfitCount, 2);
     });
   });
+  test('findItemById fallback via fromFirestore', () async {
+    // 1) seed with one item so list isn't empty
+    Item.itemList.add(Item(
+        id: 999,
+        category: 'Top',
+        label: 'X',
+        timesWorn: 0,
+        url: '',
+        weather: []));
+
+    // 2) write a doc with topID=1 (missing), bottomID=2 (missing), shoesID=3 (missing)
+    final fake = FakeFirebaseFirestore();
+    await fake.collection('users').doc('u').collection('Outfits').doc('f').set({
+      'id': 5,
+      'label': 'Fall',
+      'topID': 1,
+      'bottomID': 2,
+      'shoesID': 3,
+      'timesWorn': 1,
+      'weather': ['none'],
+    });
+    final doc = await fake
+        .collection('users')
+        .doc('u')
+        .collection('Outfits')
+        .doc('f')
+        .get();
+
+    // 3) invoking fromFirestore will now exercise all three orElse closures
+    final o = Outfit.fromFirestore(doc);
+
+    expect(o.topItem.id, -1);
+    expect(o.bottomItem.id, -1);
+    expect(o.shoeItem.id, -1);
+  });
 }
