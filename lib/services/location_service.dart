@@ -37,8 +37,15 @@ Future<Position> determinePosition() async {
 }
 
 ///Returns the location settings of a device based on current platform it's on: Andriod, Apple, or Web.
-LocationSettings getLocationSettings() {
-  if (defaultTargetPlatform == TargetPlatform.android) {
+LocationSettings getLocationSettings({
+  TargetPlatform? overridePlatform,
+  bool overrideIsWeb = kIsWeb,
+}) {
+
+   final platform = overridePlatform ?? defaultTargetPlatform;
+  final isWeb    = overrideIsWeb;
+
+  if (platform == TargetPlatform.android) {
     //returns the location settings for android devices
     return AndroidSettings(
       accuracy: LocationAccuracy.high,
@@ -53,7 +60,7 @@ LocationSettings getLocationSettings() {
         enableWakeLock: true,
       )
     );
-  } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+  } else if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
     //returns the location settings for apple devices
     return AppleSettings(
       accuracy: LocationAccuracy.high,
@@ -62,7 +69,7 @@ LocationSettings getLocationSettings() {
       pauseLocationUpdatesAutomatically: true,
       showBackgroundLocationIndicator: false,
     );
-  } else if (kIsWeb) {
+  } else if (isWeb) {
     //returns the location settings for web platforms
     return WebSettings(
       accuracy: LocationAccuracy.high,
