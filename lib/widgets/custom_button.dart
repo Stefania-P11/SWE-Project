@@ -3,7 +3,7 @@ import '../constants.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const CustomButton({
     super.key,
@@ -16,14 +16,14 @@ class CustomButton extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
 
     // Button sizing: match CustomButton3
-    final double buttonWidth = screenSize.width * 0.6;  
-    final double buttonHeight = screenSize.height * 0.055;  
-    final double borderRadius = 45; 
+    final double buttonWidth = screenSize.width * 0.6;
+    final double buttonHeight = screenSize.height * 0.055;
+    final double borderRadius = 45;
 
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: kPressedColor, // Use your pressed color
+        backgroundColor: onPressed == null ? Colors.grey : kPressedColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
