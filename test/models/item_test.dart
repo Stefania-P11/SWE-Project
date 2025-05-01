@@ -3,8 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:mockito/mockito.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:dressify_app/constants.dart'
-    as constants; // Import constants separately
+import 'package:dressify_app/constants.dart' as constants; // Import constants separately
 
 class MockDocumentSnapshot extends Mock implements DocumentSnapshot {}
 
@@ -13,13 +12,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
     setUp(() {
-    // Reset static variables before each test
-    Item.itemList.clear();
-    Item.isLoaded = false;
-    Item.topCount = 0;
-    Item.bottomCount = 0;
-    Item.shoeCount = 0;
-  });
+      // Reset static variables before each test
+      Item.itemList.clear();
+      Item.isLoaded = false;
+      Item.topCount = 0;
+      Item.bottomCount = 0;
+      Item.shoeCount = 0;
+    });
 
   // INCREMENT TIMES WORN TESTS
   group('Item.incrementTimesWorn', () {
@@ -114,7 +113,6 @@ void main() {
       }
     });
   });
-
  
   // FETCH ITEMS TESTS
   group('Item.fetchItems', () {
@@ -228,11 +226,8 @@ void main() {
       }
     });
   
-  });
-
- //-- TO HERE -- Stefania
-
- 
+  });//-- TO HERE -- Stefania
+  
    // COUNT ITEMS PER CATEGORY TESTS
   group('Item.countItemsPerCategory()', () {
     setUp(() {
@@ -296,51 +291,51 @@ void main() {
   });
 
   // ITEM.FROMFIRESTORE TESTS
-group('Item.fromFirestore()', () {
-  late MockDocumentSnapshot mockDoc;
+  group('Item.fromFirestore()', () {
+    late MockDocumentSnapshot mockDoc;
 
-  const Map<String, dynamic> completeTestData = {
-    'category': 'Top',
-    'id': 123,
-    'label': 'Test Shirt',
-    'timesWorn': 5,
-    'url': 'https://example.com/shirt.jpg',
-    'weather': ['Warm', 'Sunny'],
-  };
+    const Map<String, dynamic> completeTestData = {
+      'category': 'Top',
+      'id': 123,
+      'label': 'Test Shirt',
+      'timesWorn': 5,
+      'url': 'https://example.com/shirt.jpg',
+      'weather': ['Warm', 'Sunny'],
+    };
 
-  setUp(() {
-    mockDoc = MockDocumentSnapshot();
-  });
-
-  test('should correctly convert complete Firestore document', () {
-    when(mockDoc.data()).thenReturn(completeTestData);
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.category, equals('Top'));
-    expect(item.id, equals(123));
-    expect(item.label, equals('Test Shirt'));
-    expect(item.timesWorn, equals(5));
-    expect(item.url, equals('https://example.com/shirt.jpg'));
-    expect(item.weather, equals(['Warm', 'Sunny']));
-  });
-
-  test('should handle weather list with string elements', () {
-    when(mockDoc.data()).thenReturn({
-      ...completeTestData,
-      'weather': ['Rainy', 'Cloudy'],
+    setUp(() {
+      mockDoc = MockDocumentSnapshot();
     });
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.weather, equals(['Rainy', 'Cloudy']));
-  });
 
-  test('should handle empty weather list', () {
-    when(mockDoc.data()).thenReturn({
-      ...completeTestData,
-      'weather': [],
+    test('should correctly convert complete Firestore document', () {
+      when(mockDoc.data()).thenReturn(completeTestData);
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.category, equals('Top'));
+      expect(item.id, equals(123));
+      expect(item.label, equals('Test Shirt'));
+      expect(item.timesWorn, equals(5));
+      expect(item.url, equals('https://example.com/shirt.jpg'));
+      expect(item.weather, equals(['Warm', 'Sunny']));
     });
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.weather, isEmpty);
-  });
-});
 
-}
- //-- TO HERE -- Yabbi
+    test('should handle weather list with string elements', () {
+      when(mockDoc.data()).thenReturn({
+        ...completeTestData,
+        'weather': ['Rainy', 'Cloudy'],
+      });
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.weather, equals(['Rainy', 'Cloudy']));
+    });
+
+    test('should handle empty weather list', () {
+      when(mockDoc.data()).thenReturn({
+        ...completeTestData,
+        'weather': [],
+      });
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.weather, isEmpty);
+    });
+  });
+
+}//-- TO HERE -- Yabbi
+ 

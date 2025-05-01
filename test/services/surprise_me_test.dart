@@ -10,7 +10,11 @@ import 'package:image/image.dart' as img;
 import 'package:dressify_app/services/surprise_me_service.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
-import 'package:dressify_app/mocks/mock_color_detector.dart';
+//import 'package:dressify_app/mocks/mock_color_detector.dart';
+//import 'mocks/mock_color_detector.dart';
+import '../mocks/mock_color_detector.dart';  // ✅ NEW
+
+
 
 @GenerateMocks([http.Client])
 import 'surprise_me_service_test.mocks.dart';
