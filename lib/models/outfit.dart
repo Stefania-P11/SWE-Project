@@ -92,7 +92,6 @@ class Outfit {
   /// Fetch outfits from Firestore for a given user
   static Future<void> fetchOutfits(String username, {FirebaseFirestore? firestore}) async {
     final db = firestore ?? FirebaseFirestore.instance;
-
     QuerySnapshot querySnapshot =
         await db.collection('users').doc(username).collection("Outfits").get();
 
@@ -100,43 +99,43 @@ class Outfit {
 
     // Map Firestore documents to Outfit objects
     outfitList = querySnapshot.docs.map((doc) {
-    try {
-      return Outfit.fromFirestore(doc);
-    } catch (e) {
-      print('Error creating outfit: $e');
-      return Outfit(
-        id: 0,
-        label: 'Error Outfit',
-        topItem: Item(
-          id: -1,
-          category: 'Top',
-          label: 'Unknown Top',
+      try {
+        return Outfit.fromFirestore(doc);
+      } catch (e) {
+        print('Error creating outfit: $e');
+        return Outfit(
+          id: 0,
+          label: 'Error Outfit',
+          topItem: Item(
+            id: -1,
+            category: 'Top',
+            label: 'Unknown Top',
+            timesWorn: 0,
+            url: '',
+            weather: [],
+          ),
+          bottomItem: Item(
+            id: -1,
+            category: 'Bottom',
+            label: 'Unknown Bottom',
+            timesWorn: 0,
+            url: '',
+            weather: [],
+          ),
+          shoeItem: Item(
+            id: -1,
+            category: 'Shoes',
+            label: 'Unknown Shoes',
+            timesWorn: 0,
+            url: '',
+            weather: [],
+          ),
           timesWorn: 0,
-          url: '',
           weather: [],
-        ),
-        bottomItem: Item(
-          id: -1,
-          category: 'Bottom',
-          label: 'Unknown Bottom',
-          timesWorn: 0,
-          url: '',
-          weather: [],
-        ),
-        shoeItem: Item(
-          id: -1,
-          category: 'Shoes',
-          label: 'Unknown Shoes',
-          timesWorn: 0,
-          url: '',
-          weather: [],
-        ),
-        timesWorn: 0,
-        weather: [],
-      );
-    }
-  }).toList();
-}
+        );
+      }
+    }).toList();
+  }
 
   /// Count number of outfits loaded
   static Future<void> countOutfits(String username) async {
