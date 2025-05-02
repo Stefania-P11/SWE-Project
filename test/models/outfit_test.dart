@@ -600,4 +600,224 @@ void main() {
       expect(Outfit.outfitCount, 2);
     });
   });
+  test('findItemById fallback via fromFirestore', () async {
+    // 1) seed with one item so list isn't empty
+    Item.itemList.add(Item(
+        id: 999,
+        category: 'Top',
+        label: 'X',
+        timesWorn: 0,
+        url: '',
+        weather: []));
+
+    // 2) write a doc with topID=1 (missing), bottomID=2 (missing), shoesID=3 (missing)
+    final fake = FakeFirebaseFirestore();
+    await fake.collection('users').doc('u').collection('Outfits').doc('f').set({
+      'id': 5,
+      'label': 'Fall',
+      'topID': 1,
+      'bottomID': 2,
+      'shoesID': 3,
+      'timesWorn': 1,
+      'weather': ['none'],
+    });
+    final doc = await fake
+        .collection('users')
+        .doc('u')
+        .collection('Outfits')
+        .doc('f')
+        .get();
+
+    // 3) invoking fromFirestore will now exercise all three orElse closures
+    final o = Outfit.fromFirestore(doc);
+
+    expect(o.topItem.id, -1);
+    expect(o.bottomItem.id, -1);
+    expect(o.shoeItem.id, -1);
+  });
+
+
+  //-- FROM HERE -- Yabbi 
+
+  group('Outfit.fetchOutfits', () {
+
+    test('fetches and populates outfitList from Firestore', () async {
+
+      final fakeFirestore = FakeFirebaseFirestore();
+
+
+
+      // Add required items to Item.itemList
+
+      Item.itemList = [
+
+        Item(
+
+          id: 1,
+
+          category: 'Top',
+
+          label: 'T',
+
+          timesWorn: 0,
+
+          url: '',
+
+          weather: ['sun'],
+
+        ),
+
+        Item(
+
+          id: 2,
+
+          category: 'Bottom',
+
+          label: 'B',
+
+          timesWorn: 0,
+
+          url: '',
+
+          weather: ['sun'],
+
+        ),
+
+        Item(
+
+          id: 3,
+
+          category: 'Shoes',
+
+          label: 'S',
+
+          timesWorn: 0,
+
+          url: '',
+
+          weather: ['sun'],
+
+        ),
+
+      ];
+
+
+
+      // Create a sample outfit in Firestore
+
+      await fakeFirestore
+
+          .collection('users')
+
+          .doc('testuser')
+
+          .collection('Outfits')
+
+          .doc('1')
+
+          .set({
+
+        'id': 123,
+
+        'label': 'Sunny Outfit',
+
+        'topID': 1,
+
+        'bottomID': 2,
+
+        'shoesID': 3,
+
+        'timesWorn': 2,
+
+        'weather': ['sun'],
+
+      });
+
+
+
+      // Run the method with injected fakeFirestore
+
+      await Outfit.fetchOutfits('testuser', firestore: fakeFirestore);
+
+
+
+      // Verify results
+
+      expect(Outfit.outfitList.length, 1);
+
+      final outfit = Outfit.outfitList.first;
+
+      expect(outfit.label, 'Sunny Outfit');
+
+      expect(outfit.topItem.label, 'T');
+
+      expect(outfit.timesWorn, 2);
+
+      expect(outfit.weather, ['sun']);
+
+    });
+
+
+
+    test('creates fallback outfit when fromFirestore throws', () async {
+
+      final fakeFirestore = FakeFirebaseFirestore();
+
+
+
+      // Do NOT seed Item.itemList → this should cause fromFirestore to throw
+
+      Item.itemList.clear();
+
+
+
+      await fakeFirestore
+
+          .collection('users')
+
+          .doc('baduser')
+
+          .collection('Outfits')
+
+          .doc('2')
+
+          .set({
+
+        'id': 999,
+
+        'label': 'Broken Outfit',
+
+        'topID': 100,
+
+        'bottomID': 101,
+
+        'shoesID': 102,
+
+        'timesWorn': 3,
+
+        'weather': ['storm'],
+
+      });
+
+
+
+      await Outfit.fetchOutfits('baduser', firestore: fakeFirestore);
+
+
+
+      expect(Outfit.outfitList.length, 1);
+
+      final fallback = Outfit.outfitList.first;
+
+      expect(fallback.label, 'Error Outfit');
+
+      expect(fallback.topItem.label, 'Unknown Top');
+
+      expect(fallback.bottomItem.label, 'Unknown Bottom');
+
+      expect(fallback.shoeItem.label, 'Unknown Shoes');
+
+    });
+
+  });
 }

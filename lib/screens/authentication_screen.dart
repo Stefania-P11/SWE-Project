@@ -28,7 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool passwordValid = false;
   bool passwordsMatch = false;
   bool usernameTaken = false;
-
+  bool emailTaken = false;
 
   final AuthenticationService _authService = AuthenticationService();
 
@@ -37,29 +37,71 @@ class _AuthScreenState extends State<AuthScreen> {
     super.initState();
     isLogin = widget.isLogin;
 
+    // Listen to password changes to validate strength and match
     passwordController.addListener(_checkPasswords);
     retypePasswordController.addListener(_checkPasswords);
 
-   usernameController.addListener(() {
-  final username = usernameController.text.trim();
+    // Listen for changes in the username field (sign-up only)
+    usernameController.addListener(() {
+      final username = usernameController.text.trim();
 
-  // Only check if user is signing up
-  if (!isLogin && username.isNotEmpty) {
-    Future.delayed(const Duration(milliseconds: 300), () async {
-      final available = await _authService.isUsernameAvailable(username);
-      if (mounted) {
-        setState(() {
-          usernameTaken = !available;
+      if (!isLogin && username.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final available = await _authService.isUsernameAvailable(username);
+          if (mounted) {
+            setState(() {
+              usernameTaken = !available;
+            });
+          }
         });
+      } else {
+        if (mounted) {
+          setState(() {
+            usernameTaken = false;
+          });
+        }
       }
     });
-  } else {
-    setState(() {
-      usernameTaken = false;
+
+    // Real-time check for email availability during sign-up
+    emailController.addListener(() {
+      final email = emailController.text.trim();
+
+      if (!isLogin && email.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final inUse = await _authService.isEmailInUse(email);
+          if (mounted) {
+            setState(() {
+              emailTaken = inUse;
+            });
+          }
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            emailTaken = false;
+          });
+        }
+      }
     });
+
+    // Listen to all fields to trigger UI rebuilds (e.g., for enabling the button)
+    _addFieldListeners();
   }
-});
-}
+
+// Helper method to auto-update UI on any form change
+  void _addFieldListeners() {
+    for (final controller in [
+      usernameController,
+      emailController,
+      passwordController,
+      retypePasswordController,
+    ]) {
+      controller.addListener(() {
+        if (mounted) setState(() {});
+      });
+    }
+  }
 
   bool _validatePassword(String password) {
     final bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
@@ -77,6 +119,22 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  bool get isFormComplete {
+    if (isLogin) {
+      return emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
+    } else {
+      return usernameController.text.isNotEmpty &&
+          emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty &&
+          retypePasswordController.text.isNotEmpty &&
+          passwordValid &&
+          passwordsMatch &&
+          !usernameTaken &&
+          !emailTaken;
+    }
+  }
+
   // Toggle the auth mode from within the AuthScreen if needed
   void toggleAuthMode() {
     setState(() {
@@ -84,74 +142,88 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  void handleAuth() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final usernameInput =
+        usernameController.text.trim(); // renamed to usernameInput
 
-void handleAuth() async {
-  final email = emailController.text.trim();
-  final password = passwordController.text.trim();
-  final usernameInput = usernameController.text.trim(); // renamed to usernameInput
+    setState(() {
+      emailTaken = false; // reset before every attempt
+    });
 
-  if (email.isEmpty || password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter both email and password.')),
-    );
-    return;
-  }
-
-  User? user;
-
-  if (isLogin) {
-    // Attempt to log in
-    user = await _authService.signIn(email, password);
-  } else {
-    // Validate password strength before signing up
-    if (!_authService.validatePassword(password)) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                'Password must be at least 8 characters, include an uppercase letter, and a number.')),
+        const SnackBar(content: Text('Please fill out all fields.')),
       );
-      return; // Don't continue to signup if password is invalid
+      return;
     }
-    // Attempt to sign up
-    user = await _authService.signUp(email, password, usernameInput);
-  }
 
-  if (user != null) {
+    User? user;
+
     if (isLogin) {
-      // 🔥 After login, fetch username based on the logged-in UID
-      final snapshot = await FirebaseFirestore.instance
-          .collection('usernames')
-          .where('uid', isEqualTo: user.uid) // use user.uid DIRECTLY
-          .limit(1)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        kUsername = snapshot.docs.first.id; // username = doc ID
-        print('Username loaded after login: $kUsername');
-      } else {
-        print('Username not found for UID: ${user.uid}');
-      }
+      // Attempt to log in
+      user = await _authService.signIn(email, password);
     } else {
-      // 🔥 After signup, use the input username
-      kUsername = usernameInput;
-      print('Username set after signup: $kUsername');
+      // Validate password strength before signing up
+      if (!_authService.validatePassword(password)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Password must be at least 8 characters, include an uppercase letter, and a number.')),
+        );
+        return; // Don't continue to signup if password is invalid
+      }
+      // Attempt to sign up
+      try {
+        user = await _authService.signUp(email, password, usernameInput);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          setState(() {
+            emailTaken = true;
+          });
+          return;
+        } else {
+          print("Other Firebase signup error: ${e.code}");
+        }
+      } catch (e) {
+        print("Unexpected error during signup: $e");
+      }
     }
 
-    // ✅ Now navigate
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    if (user != null) {
+      if (isLogin) {
+        // After login, fetch username based on the logged-in UID
+        final snapshot = await FirebaseFirestore.instance
+            .collection('usernames')
+            .where('uid', isEqualTo: user.uid) // use user.uid DIRECTLY
+            .limit(1)
+            .get();
 
-  } else {
-    // Auth failed
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(isLogin ? 'Login failed.' : 'Sign up failed.')),
-    );
+        if (snapshot.docs.isNotEmpty) {
+          kUsername = snapshot.docs.first.id; // username = doc ID
+          print('Username loaded after login: $kUsername');
+        } else {
+          print('Username not found for UID: ${user.uid}');
+        }
+      } else {
+        // 🔥 After signup, use the input username
+        kUsername = usernameInput;
+        print('Username set after signup: $kUsername');
+      }
+
+      // ✅ Now navigate
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else if (!emailTaken) {
+      // Auth failed
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isLogin ? 'Login failed.' : 'Sign up failed.')),
+      );
+    }
   }
-}
-
-
 
   @override
   void dispose() {
@@ -197,33 +269,35 @@ void handleAuth() async {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                     if (!isLogin) ...[
-  Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Text('Username:', style: kH3),
-      ),
-      const SizedBox(height: 10),
-      LabelInputField(
-        controller: usernameController,
-        hintText: "Enter your username",
-        maxLength: 50,
-        showCounter: false,
-      ),
-      if (usernameTaken)
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-          child: const Text(
-            'This username is not available! Please choose a different one.',
-            style: kErrorMessage,
-          ),
-        ),
-    ],
-  ),
-  const SizedBox(height: 10),
-],
+                      if (!isLogin) ...[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Text('Username:', style: kH3),
+                            ),
+                            const SizedBox(height: 10),
+                            LabelInputField(
+                              controller: usernameController,
+                              hintText: "Enter your username",
+                              maxLength: 50,
+                              showCounter: false,
+                            ),
+                            if (usernameTaken)
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 5.0),
+                                child: const Text(
+                                  'This username is not available! Please choose a different one.',
+                                  style: kErrorMessage,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                      ],
 
                       // Email input field
 
@@ -242,6 +316,15 @@ void handleAuth() async {
                             maxLength: 50,
                             showCounter: false,
                           ),
+                          if (emailTaken)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 5.0),
+                              child: Text(
+                                'An account connected to this email address already exists.',
+                                style: kErrorMessage,
+                              ),
+                            ),
                         ],
                       ),
                       SizedBox(height: isLogin ? 20 : 10),
@@ -262,6 +345,16 @@ void handleAuth() async {
                             obscureText: true,
                             showCounter: false,
                           ),
+                          if (!isLogin && !passwordValid &&
+                              passwordController.text.isNotEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 5.0),
+                              child: Text(
+                                'Password must have:\n• Minimum 8 characters\n• At least one uppercase letter (A-Z)\n• At least one lowercase letter (a-z)\n• At least one digit (0-9)',
+                                style: kErrorMessage,
+                              ),
+                            ),
                           if (!isLogin) ...[
                             const SizedBox(height: 20),
                             Padding(
@@ -279,22 +372,12 @@ void handleAuth() async {
                             ),
                             const SizedBox(height: 10),
 
-                            // Show password strength error
-                            if (!passwordValid &&
-                                passwordController.text.isNotEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                                child: Text(
-                                  'Password must have:\n• Minimum 8 characters\n• At least one uppercase letter (A-Z)\n• At least one lowercase letter (a-z)\n• At least one digit (0-9)',
-                                  style: kErrorMessage,
-                                ),
-                              ),
-
                             // Show password match error
                             if (!passwordsMatch &&
                                 retypePasswordController.text.isNotEmpty)
                               Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 5.0),
                                 child: Text(
                                   'Passwords do not match. Please try again.',
                                   style: kErrorMessage,
@@ -308,8 +391,9 @@ void handleAuth() async {
                       // Button: Its text depends on the mode
                       CustomButton(
                         text: isLogin ? 'Login' : 'Create Account',
-                        onPressed: handleAuth,
+                        onPressed: isFormComplete ? handleAuth : null,
                       ),
+
                       const SizedBox(height: 10),
                       // Option to toggle mode from this screen
                       TextButton(

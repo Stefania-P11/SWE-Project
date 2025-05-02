@@ -7,6 +7,8 @@ import 'package:dressify_app/widgets/custom_button_3.dart';
 import 'package:dressify_app/widgets/item_container.dart';
 import 'package:dressify_app/widgets/label_input_field.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 /// Screen for creating an outfit where users can select items and name their outfit.
 class CreateOutfitScreen extends StatefulWidget {
@@ -51,6 +53,7 @@ class _CreateOutfitScreenState extends State<CreateOutfitScreen> {
 
       // Save to Firestore
       await FirebaseService.addFirestoreOutfit(
+        FirebaseFirestore.instance,
         label,
         id,
         topItem,
