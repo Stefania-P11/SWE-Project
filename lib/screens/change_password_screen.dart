@@ -15,14 +15,17 @@ class ChangePasswordScreen extends StatefulWidget {
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   // Text controllers for password fields
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _retypePasswordController = TextEditingController();
+  final TextEditingController _retypePasswordController =
+      TextEditingController();
 
   // State variables to track validation and loading
   bool passwordValid = false;
   bool passwordsMatch = false;
   bool isLoading = false;
+  bool _currentPasswordInvalid = false;
 
   // Authentication service instance
   final AuthenticationService _authService = AuthenticationService();
@@ -64,7 +67,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     if (!_authService.validatePassword(newPassword)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('New password does not meet requirements.')),
+            content: Text('New password does not meet requirements.')),
       );
       return;
     }
@@ -72,24 +75,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     setState(() => isLoading = true);
 
     // Attempt to change password using AuthenticationService
-    final bool error = await _authService.setNewPassword(currentPassword, newPassword);
+    final bool error =
+        await _authService.setNewPassword(currentPassword, newPassword);
 
     setState(() => isLoading = false);
-
     if (error) {
-      // Password successfully changed
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated successfully!')),
-      );
+      setState(() {
+        _currentPasswordInvalid = false;
+      });
       await Future.delayed(const Duration(milliseconds: 800));
       if (mounted) {
         Navigator.pop(context, true); // Navigate back after success
       }
     } else {
-      // Show specific error message if password change failed
-      ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Password update failed.')),
-      );
+      setState(() {
+        _currentPasswordInvalid = true;
+      });
     }
   }
 
@@ -142,6 +143,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   maxLength: 50,
                   showCounter: false,
                 ),
+                if (_currentPasswordInvalid)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0, left: 20.0, right: 14.0),
+                    child: Text(
+                      'Password is incorrect.',
+                      style: kErrorMessage,
+                    ),
+                  ),
               ],
             ),
 
@@ -194,7 +203,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   showCounter: false,
                 ),
                 // Error message for password mismatch
-                if (!passwordsMatch && _retypePasswordController.text.isNotEmpty)
+                if (!passwordsMatch &&
+                    _retypePasswordController.text.isNotEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 8.0, left: 20.0, right: 14.0),
                     child: Text(
@@ -206,8 +216,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
 
             const SizedBox(height: 60),
-
-      
 
             // Update Password button
             SizedBox(
