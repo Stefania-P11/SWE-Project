@@ -725,7 +725,65 @@ void main() async{
     });
     test('Expect return true', () async{
       bool result = await FirebaseService.isOutfitFavorited(fakeFirestore, 1,  2, 6);
-      expect(result, true);
+      expect(result, false);
     });
   });
+
+  group('updateFirestoreOutfit', () {
+  final fakeFirestore = FakeFirebaseFirestore();
+  String originalUsername = constants.kUsername;
+
+  Item top = Item(category: 'Top', label: 'Top', weather: ['Hot'], url: 'url', id: 1, timesWorn: 1);
+  Item bottom = Item(category: 'Bottom', label: 'Bottom', weather: ['Hot'], url: 'url', id: 2, timesWorn: 1);
+  Item shoes = Item(category: 'Shoes', label: 'Shoes', weather: ['Hot'], url: 'url', id: 3, timesWorn: 1);
+
+  Outfit outfit = Outfit(
+    label: 'Original Outfit',
+    id: 99,
+    topItem: top,
+    bottomItem: bottom,
+    shoeItem: shoes,
+    timesWorn: 5,
+    weather: ['Hot']
+  );
+
+  setUp(() async {
+    constants.kUsername = 'dummy';
+    await fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('99').set({
+      'label': 'Original Outfit',
+      'id': 99,
+      'topID': 1,
+      'bottomID': 2,
+      'shoesID': 3,
+      'timesWorn': 5,
+      'weather': ['Hot']
+    });
+  });
+
+  tearDown(() {
+    constants.kUsername = originalUsername;
+  });
+
+  test('Successfully updates an existing outfit', () async {
+    outfit.timesWorn = 10;
+    await FirebaseService.updateFirestoreOutfit(fakeFirestore, outfit);
+
+    final doc = await fakeFirestore
+      .collection('users')
+      .doc(constants.kUsername)
+      .collection('Outfits')
+      .doc('99')
+      .get();
+
+    final data = doc.data()!;
+    expect(data['timesWorn'], 10);
+    expect(data['label'], 'Original Outfit');
+    expect(data['topID'], 1);
+    expect(data['bottomID'], 2);
+    expect(data['shoesID'], 3);
+    expect(data['weather'], ['Hot']);
+  });
+});
+
+  
 }

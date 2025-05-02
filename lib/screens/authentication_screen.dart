@@ -345,7 +345,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             obscureText: true,
                             showCounter: false,
                           ),
-                          if (!passwordValid &&
+                          if (!isLogin && !passwordValid &&
                               passwordController.text.isNotEmpty)
                             const Padding(
                               padding: EdgeInsets.symmetric(
