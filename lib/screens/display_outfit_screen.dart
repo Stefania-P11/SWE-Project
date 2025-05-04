@@ -18,7 +18,7 @@ class OutfitSuggestionScreen extends StatefulWidget {
   final bool showDeleteIcon; // Whether to show the trash icon
   final Outfit? outfit; // The outfit to display
   final VoidCallback? onRegenerate; // Optional regenerate callback
-  final bool showWearIcon; 
+  final bool showWearIcon;
 
   const OutfitSuggestionScreen({
     super.key,
@@ -61,7 +61,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
 // Save the outfit to Firestore (cloud database) with the provided name and item details
     await FirebaseService.addFirestoreOutfit(
-      FirebaseFirestore.instance, 
+      FirebaseFirestore.instance,
       outfitName, // User-defined name for the outfit
       outfit.id, // Unique ID of the outfit
       outfit.topItem, // Top clothing item
@@ -145,6 +145,26 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     }
   }
 
+  Future<void> _ensureUsernameLoaded() async {
+    if (kUsername.isEmpty) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('usernames')
+            .where('uid', isEqualTo: user.uid)
+            .limit(1)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          kUsername = snapshot.docs.first.id;
+          print("kUsername loaded in OutfitSuggestionScreen: $kUsername");
+        } else {
+          print("Username not found for UID: ${user.uid}");
+        }
+      }
+    }
+  }
+
 // Displays a dialog box prompting the user to name their outfit
 // Returns the entered name as a String, or null if the user cancels
   Future<String?> _showNameInputDialog(BuildContext context) async {
@@ -204,6 +224,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
 // Handles the action of "wearing" an outfit by updating item and outfit data
   Future<void> _handleWearOutfit(Outfit outfit) async {
+    await _ensureUsernameLoaded();
+
     // Increment the outfit's wear count locally
     outfit.timesWorn++;
 
@@ -234,16 +256,9 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       outfit.shoeItem.weather,
     );
 
-    // Save the updated outfit back to Firestore with the new wear count
-    await FirebaseService.addFirestoreOutfit(
+    await FirebaseService.updateFirestoreOutfit(
       FirebaseFirestore.instance,
-      outfit.label, // Outfit name
-      outfit.id, // Unique outfit ID
-      outfit.topItem, // Updated top item
-      outfit.bottomItem, // Updated bottom item
-      outfit.shoeItem, // Updated shoe item
-      outfit.timesWorn, // Incremented wear count
-      outfit.weather, // Associated weather data
+      outfit,
     );
 
     // Refresh the UI to reflect any updates
@@ -327,11 +342,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Print item image URLs to the console for debugging purposes
-    print('Top URL: ${widget.outfit?.topItem.url}');
-    print('Bottom URL: ${widget.outfit?.bottomItem.url}');
-    print('Shoe URL: ${widget.outfit?.shoeItem.url}');
+    _ensureUsernameLoaded();
   }
 
   /// Handles the deletion of an outfit, including confirmation prompt and cleanup
@@ -356,7 +367,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             TextButton(
               onPressed: () async {
                 // Remove outfit from Firestore (cloud database)
-                FirebaseService.removeFirestoreOutfit(FirebaseFirestore.instance, widget.outfit!);
+                FirebaseService.removeFirestoreOutfit(
+                    FirebaseFirestore.instance, widget.outfit!);
 
                 // Remove outfit from local storage/cache
                 FirebaseService.removeLocalOutfit(widget.outfit!);
@@ -496,33 +508,35 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         },
                       ),
 
-                  Row(
-  children: [
-    if (widget.showRegenerate)
-      IconButton(
-        iconSize: screenWidth * 0.1,
-        icon: const Icon(Icons.autorenew),
-        onPressed: widget.onRegenerate ??
-            () {
-              print("Regenerate pressed");
-            },
-      ),
-    if (widget.showWearIcon)
-      Padding(
-        padding: EdgeInsets.only(left: screenWidth * 0.05), 
-        child: IconButton(
-          iconSize: screenWidth * 0.1,
-          icon: const Icon(Icons.checkroom, color: Colors.black,),
-          onPressed: () {
-            if (widget.outfit != null) {
-              _handleWearOutfit(widget.outfit!);
-            }
-          },
-        ),
-      ),
-  ],
-),
-
+                    Row(
+                      children: [
+                        if (widget.showRegenerate)
+                          IconButton(
+                            iconSize: screenWidth * 0.1,
+                            icon: const Icon(Icons.autorenew),
+                            onPressed: widget.onRegenerate ??
+                                () {
+                                  print("Regenerate pressed");
+                                },
+                          ),
+                        if (widget.showWearIcon)
+                          Padding(
+                            padding: EdgeInsets.only(left: screenWidth * 0.05),
+                            child: IconButton(
+                              iconSize: screenWidth * 0.1,
+                              icon: const Icon(
+                                Icons.checkroom,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                if (widget.outfit != null) {
+                                  _handleWearOutfit(widget.outfit!);
+                                }
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
 
                     // Thumbs up (like) icon
                     if (widget.showFavorite)

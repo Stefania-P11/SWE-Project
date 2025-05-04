@@ -144,6 +144,11 @@ class FirebaseService{
     if(shoeData['category'] != 'Shoes'){
       throw ArgumentError();
     }
+    print("🔥 DEBUG: kUsername = '$kUsername'");
+if (kUsername.isEmpty) {
+  throw ArgumentError("❌ kUsername is still empty when trying to write to Firestore");
+}
+
     if(await doesOutfitExist(firestore, id) == true){
       throw ArgumentError();
     }
@@ -156,6 +161,25 @@ class FirebaseService{
 
     return 0;
   }
+  static Future<void> updateFirestoreOutfit(FirebaseFirestore firestore, Outfit outfit) async {
+  final updatedOutfit = {
+    'label': outfit.label,
+    'id': outfit.id,
+    'topID': outfit.topItem.id,
+    'bottomID': outfit.bottomItem.id,
+    'shoesID': outfit.shoeItem.id,
+    'timesWorn': outfit.timesWorn,
+    'weather': outfit.weather,
+  };
+
+  await firestore
+      .collection('users')
+      .doc(kUsername)
+      .collection('Outfits')
+      .doc(outfit.id.toString())
+      .set(updatedOutfit, SetOptions(merge: true)); // allows update
+}
+
 
   //add outfit locally
   static addLocalOutfit(String label, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather){
@@ -264,7 +288,7 @@ class FirebaseService{
     if(await doesItemExist(firestore, shoeID) == false){
       throw ArgumentError();
     }
-    final favorites = await userDoc.collection('FavoriteOutfits')
+    final favorites = await userDoc.collection('Outfits')
         .where('topID', isEqualTo: topID)
         .where('bottomID', isEqualTo: bottomID)
         .where('shoeID', isEqualTo: shoeID)

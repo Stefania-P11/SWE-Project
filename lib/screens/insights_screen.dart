@@ -18,20 +18,20 @@ class InsightsScreen extends StatefulWidget {
 class _InsightsScreenState extends State<InsightsScreen> {
   // List to store top outfits based on wear count
   List<Outfit> topOutfits = [];
-  
+
   // Map to store top items by category (Top, Bottom, Shoes)
   Map<String, List<Item>> topItemsByCategory = {
     'Top': [],
     'Bottom': [],
     'Shoes': [],
   };
-  
+
   // List to store items that have never been worn
   List<Item> neverWornItems = [];
-  
+
   // Loading state flag
   bool isLoading = true;
-  
+
   // Map to track how many times each item has been worn
   final Map<String, int> itemWearCounts = {};
 
@@ -48,14 +48,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
   /// - Never worn items
   Future<void> _loadInsightsData() async {
     setState(() => isLoading = true);
-    
+
     // Fetch outfits and items if they haven't been loaded yet
     if (Outfit.outfitList.isEmpty) await Outfit.fetchOutfits(kUsername);
     if (Item.itemList.isEmpty) await Item.fetchItems(kUsername);
 
     // Clear previous wear counts
     itemWearCounts.clear();
-    
+
     // Count how many times each item appears in outfits
     for (final outfit in Outfit.outfitList) {
       _countItemAppearances(outfit.topItem);
@@ -80,9 +80,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
 
     // Find items that have never been worn (wear count = 0)
-    neverWornItems = Item.itemList.where((i) =>
-      (itemWearCounts[i.id.toString()] ?? 0) == 0
-    ).toList();
+    neverWornItems = Item.itemList
+        .where((i) => (itemWearCounts[i.id.toString()] ?? 0) == 0)
+        .toList();
 
     setState(() => isLoading = false);
   }
@@ -208,7 +208,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: 24),
           // Display top items for each category
           for (var entry in topItemsByCategory.entries) ...[
-            _sectionTitle('Most Worn ${entry.key}s'),
+            _sectionTitle(
+                'Most Worn ${entry.key == 'Shoes' ? entry.key : '${entry.key}s'}'),
             _itemList(entry.value),
             const SizedBox(height: 24),
           ],
@@ -231,11 +232,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 url,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(Icons.broken_image, size: 40, color: Color.fromARGB(255, 235, 233, 233)),
+                  child: Icon(Icons.broken_image,
+                      size: 40, color: Color.fromARGB(255, 235, 233, 233)),
                 ),
               )
             : const Center(
-                child: Icon(Icons.checkroom, size: 40, color: Color.fromARGB(255, 235, 233, 233)),
+                child: Icon(Icons.checkroom,
+                    size: 40, color: Color.fromARGB(255, 235, 233, 233)),
               ),
       ),
     );
@@ -255,7 +258,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     if (items.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Text('No items to display', style: TextStyle(color: Colors.grey)),
+        child:
+            Text('No items to display', style: TextStyle(color: Colors.grey)),
       );
     }
 
@@ -288,7 +292,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 Container(
                   height: 120,
                   decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(8)),
                   ),
                   child: item.url.isNotEmpty
                       ? ClipRRect(
