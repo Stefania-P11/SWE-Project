@@ -180,7 +180,7 @@ void _handleSaveOrUpdate() async {
     if (confirmed == true) {
       try {
         // Step 1: Delete from Firestore (using existing method)
-        await FirebaseService.removeFirestoreItem(FirebaseFirestore.instance, widget.item!);
+        await FirebaseService.removeFirestoreItem(widget.item!, firestore: FirebaseFirestore.instance);
         
         // Step 2: Delete locally (using existing method)
         FirebaseService.removeLocalItem(widget.item!);

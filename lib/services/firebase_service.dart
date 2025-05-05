@@ -10,14 +10,24 @@ class FirebaseService{
   static final FirebaseFirestore db = FirebaseFirestore.instance;
   //static final storage = FirebaseStorage.instance;
   //removes item from firestore
-  static Future<void> removeFirestoreItem(FirebaseFirestore firestore, Item item) async{
+  static void _throwEmptyUsernameError() {
+    throw ArgumentError(" kUsername is still empty when trying to write to Firestore");
+  }
+  static Future<void> removeFirestoreItem(Item item,{FirebaseFirestore? firestore}) async{
+    if (kUsername.isEmpty) {
+      // Force coverage to see this line!
+      print(" kUsername is empty — throwing ArgumentError"); 
+      _throwEmptyUsernameError();
+    }
+    final dbToUse = firestore ?? db;
     if(item.id < 0){
       throw ArgumentError();
     }
-    if(await doesItemExist(firestore, item.id) == false){
+    if(await doesItemExist(dbToUse, item.id) == false){
       throw ArgumentError();
     }
-    firestore.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).delete();
+    //firestore.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).delete();
+    await dbToUse.collection('users').doc(kUsername).collection('Clothes').doc(item.id.toString()).delete();
   }
   //removes item locally
   static removeLocalItem(Item item){
@@ -98,6 +108,11 @@ class FirebaseService{
 
   //add outfit to Firestore
   static addFirestoreOutfit(FirebaseFirestore firestore, String label, int id, Item top, Item bottom, Item shoes, int timesWorn, List<String> weather) async{
+    print("🔥 DEBUG: kUsername = '$kUsername'");
+    if (kUsername.isEmpty) {
+      throw ArgumentError("❌ kUsername is still empty when trying to write to Firestore");
+    }
+    
     final outfitStorage = {
       'label' : label,
       'id' : id,
@@ -144,10 +159,6 @@ class FirebaseService{
     if(shoeData['category'] != 'Shoes'){
       throw ArgumentError();
     }
-    print("🔥 DEBUG: kUsername = '$kUsername'");
-if (kUsername.isEmpty) {
-  throw ArgumentError("❌ kUsername is still empty when trying to write to Firestore");
-}
 
     if(await doesOutfitExist(firestore, id) == true){
       throw ArgumentError();

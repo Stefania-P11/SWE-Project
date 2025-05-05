@@ -1,9 +1,11 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:mockito/mockito.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:dressify_app/constants.dart' as constants; // Import constants separately
+import 'package:dressify_app/constants.dart'
+    as constants; // Import constants separately
 
 class MockDocumentSnapshot extends Mock implements DocumentSnapshot {}
 
@@ -12,13 +14,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
     setUp(() {
-      // Reset static variables before each test
-      Item.itemList.clear();
-      Item.isLoaded = false;
-      Item.topCount = 0;
-      Item.bottomCount = 0;
-      Item.shoeCount = 0;
-    });
+    // Reset static variables before each test
+    Item.itemList.clear();
+    Item.isLoaded = false;
+    Item.topCount = 0;
+    Item.bottomCount = 0;
+    Item.shoeCount = 0;
+  });
 
   // INCREMENT TIMES WORN TESTS
   group('Item.incrementTimesWorn', () {
@@ -49,7 +51,7 @@ void main() {
           weather: ['Warm'],
         );
 
-        await item.incrementTimesWorn(firestore: fakeFirestore);
+        await item.incrementTimesWorn('dummy',firestore: fakeFirestore);
 
         // Local check
         expect(item.timesWorn, 1);
@@ -86,7 +88,7 @@ void main() {
         // No document created here → update will fail
 
         expect(
-          () => item.incrementTimesWorn(firestore: fakeFirestore),
+          () => item.incrementTimesWorn('dummy',firestore: fakeFirestore),
           throwsA(isA<FirebaseException>()),
         );
 
@@ -112,7 +114,38 @@ void main() {
         constants.kUsername = originalUsername;
       }
     });
+    test('incrementTimesWorn uses default dbInstance if firestore not passed', () async {
+      final originalUsername = constants.kUsername;
+      constants.kUsername = 'dummy';
+
+      final item = Item(
+        category: 'Top',
+        id: 10,
+        label: 'Test Fallback Top',
+        timesWorn: 0,
+        url: 'https://example.com/fallback',
+        weather: ['Warm'],
+      );
+
+      // The document must exist to avoid FirebaseException
+      final fakeFirestore = FakeFirebaseFirestore();
+      await fakeFirestore
+          .collection('users')
+          .doc('dummy')
+          .collection('Clothes')
+          .doc('10')
+          .set({'timesWorn': 0});
+
+      // Set the static dbInstance to fakeFirestore so the fallback will still work for testing
+      Item.dbInstance = fakeFirestore;
+
+      await item.incrementTimesWorn('dummy');
+
+      expect(item.timesWorn, 1);
+    });
+
   });
+
  
   // FETCH ITEMS TESTS
   group('Item.fetchItems', () {
@@ -225,10 +258,41 @@ void main() {
         constants.kUsername = originalUsername;
       }
     });
+
+    test('fetchItems uses default dbInstance if firestore not passed', () async {
+      final originalUsername = constants.kUsername;
+      constants.kUsername = 'dummy';
+
+      final fakeFirestore = FakeFirebaseFirestore();
+      await fakeFirestore
+          .collection('users')
+          .doc('dummy')
+          .collection('Clothes')
+          .doc('20')
+          .set({
+        'category': 'Top',
+        'id': 20,
+        'label': 'Test Fallback Fetch',
+        'timesWorn': 2,
+        'url': 'https://example.com/fallback2',
+        'weather': ['Warm'],
+      });
+
+      // Use the fallback dbInstance
+      Item.dbInstance = fakeFirestore;
+
+      await Item.fetchItems('dummy');
+
+      expect(Item.itemList.length, greaterThan(0));
+      expect(Item.itemList.first.label, contains('Test Fallback'));
+    });
   
-  });//-- TO HERE -- Stefania
-  
-   // COUNT ITEMS PER CATEGORY TESTS
+  });
+
+  //-- TO HERE -- Stefania
+
+ 
+  // COUNT ITEMS PER CATEGORY TESTS
   group('Item.countItemsPerCategory()', () {
     setUp(() {
       Item.itemList.clear();  // Ensure fresh start for each test
@@ -337,5 +401,5 @@ void main() {
     });
   });
 
-}//-- TO HERE -- Yabbi
- 
+}
+ //-- TO HERE -- Yabbi

@@ -62,6 +62,7 @@ class AuthenticationService {
       // Return the reloaded user
       return _firebaseAuth.currentUser;
     } on FirebaseAuthException catch (e) {
+      print('🔥Caught FirebaseAuthException: ${e.code}');
       if (e.code == 'email-already-in-use') {
         rethrow;
       }

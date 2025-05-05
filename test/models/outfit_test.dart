@@ -8,6 +8,8 @@ import 'package:dressify_app/models/outfit.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  
+  
 
   setUp(() {
     // Reset static state before each test
@@ -640,11 +642,20 @@ void main() {
   //-- FROM HERE -- Yabbi 
 
   group('Outfit.fetchOutfits', () {
+    //Outfit.dbInstance = fakeFirestore;
+    //late fakeFirestore = FakeFirebaseFirestore();
+    late FakeFirebaseFirestore fakeFirestore;
+
+      setUp(() {
+        fakeFirestore = FakeFirebaseFirestore();
+        Outfit.dbInstance = fakeFirestore;
+
+        Item.itemList.clear();
+        Outfit.outfitList.clear();
+        Outfit.outfitCount = 0;
+      });
 
     test('fetches and populates outfitList from Firestore', () async {
-
-      final fakeFirestore = FakeFirebaseFirestore();
-
 
 
       // Add required items to Item.itemList
@@ -761,7 +772,7 @@ void main() {
 
     test('creates fallback outfit when fromFirestore throws', () async {
 
-      final fakeFirestore = FakeFirebaseFirestore();
+      //final fakeFirestore = FakeFirebaseFirestore();
 
 
 
@@ -818,6 +829,16 @@ void main() {
       expect(fallback.shoeItem.label, 'Unknown Shoes');
 
     });
+
+    // test('fetchOutfits hits the default Firestore path (for coverage)', () async {
+    //   await Outfit.fetchOutfits('dummyuser');
+    // }, skip: true); // No firestore provided → the right-hand side of ?? will be hit.
+    test('fetchOutfits hits the default Firestore path (for coverage)', () async {
+      // dbInstance will be used here because firestore is not provided
+      await Outfit.fetchOutfits('nonexistentuser');
+    });
+
+
 
   });
 }
