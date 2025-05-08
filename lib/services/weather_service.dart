@@ -3,16 +3,26 @@ import 'package:weather/weather.dart';
 import 'package:dressify_app/services/location_service.dart';
 
 class WeatherService {
-  final WeatherFactory wf = WeatherFactory(
-    'bd5e378503939ddaee76f12ad7a97608',
-    language: Language.ENGLISH,
-  );
+
+  final WeatherFactory wf;
+
+  WeatherService({WeatherFactory? weatherFactory})
+      : wf = weatherFactory ??
+            WeatherFactory(
+              'bd5e378503939ddaee76f12ad7a97608',
+              language: Language.ENGLISH,
+            );
+
+  // final WeatherFactory wf = WeatherFactory(
+  //   'bd5e378503939ddaee76f12ad7a97608',
+  //   language: Language.ENGLISH,
+  // );
 
   // Singleton instance
-  static final WeatherService _instance = WeatherService._internal();
-  factory WeatherService() => _instance;
-  WeatherService._internal();
-  WeatherService.forTests(); // For testing only
+  // static final WeatherService _instance = WeatherService._internal();
+  // factory WeatherService() => _instance;
+  // WeatherService._internal();
+  // WeatherService.forTests(); // For testing only
 
   // Static cache shared across the app
   static Weather? _cachedWeather;
@@ -34,7 +44,24 @@ class WeatherService {
       while (_isFetching) {
         await Future.delayed(const Duration(milliseconds: 300));
       }
-      return _cachedWeather!;
+      //return _cachedWeather!;
+      // Re-check if cache was properly populated
+      if (_cachedWeather != null) {
+        return _cachedWeather!;
+      } else {
+        print('[WeatherService] Cache still null after waiting, using fallback.');
+        return Weather({
+          'main': {
+            'temp': 293.15,
+            'temp_min': 289.82,
+            'temp_max': 295.37,
+          },
+          'name': 'Fallback City',
+          'weather': [
+            {'main': 'Clear', 'description': 'Sunny'}
+          ]
+        });
+      }
     }
 
     try {
@@ -87,6 +114,27 @@ static void setMockWeather(double tempFahrenheit) {
   });
   _lastFetched = DateTime.now();
 }
+
+  //helper for testing
+  void setLastFetchedForTest(DateTime time) {
+  _lastFetched = time;
+  }
+  // TESTING ONLY HELPERS
+  static void clearCacheForTest() { 
+    _cachedWeather = null;
+    _lastFetched = null;
+    _isFetching = false;
+  }
+
+  
+  // SETTERS for testing
+  static set isFetchingForTestSetter(bool value) => _isFetching = value;
+  static set lastFetchedForTestSetter(DateTime? value) => _lastFetched = value;
+  static set cachedWeatherForTestSetter(Weather? value) => _cachedWeather = value;
+
+  // GETTER for testing
+  static bool get isFetchingForTest => _isFetching;
+  static DateTime? get lastFetchedForTest => _lastFetched;
 
 }
 

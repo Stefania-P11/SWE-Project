@@ -23,6 +23,8 @@ class Outfit {
     required this.weather,
   });
 
+  static FirebaseFirestore dbInstance = FirebaseFirestore.instance;
+
   /// Factory method to create an Outfit from Firestore document
   factory Outfit.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -91,7 +93,8 @@ class Outfit {
 
   /// Fetch outfits from Firestore for a given user
   static Future<void> fetchOutfits(String username, {FirebaseFirestore? firestore}) async {
-    final db = firestore ?? FirebaseFirestore.instance;
+    //final db = firestore ?? FirebaseFirestore.instance;
+    final db = firestore ?? dbInstance;
     QuerySnapshot querySnapshot =
         await db.collection('users').doc(username).collection("Outfits").get();
 

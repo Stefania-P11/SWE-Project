@@ -5,19 +5,21 @@ import 'package:geolocator_apple/geolocator_apple.dart';
 
 ///Determines the users position by checking there location service and permissions
 ///Then, it returns the correct coordinates of the user
-Future<Position> determinePosition() async {
-  bool serviceEnabled;
-  LocationPermission permission;
+// Future<Position> determinePosition() async {
+//   bool serviceEnabled;
+//   LocationPermission permission;
+Future<Position> Function() determinePosition = _realDeterminePosition;
+Future<Position> _realDeterminePosition() async {
 
   //checks if the location services are working or not
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     //the location services are not working and are disabled
     return Future.error('Location services are disabled.');
   }
 
   //checks if the permissions are working 
-  permission = await Geolocator.checkPermission();
+  var permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
     //permission here are denied, which means you have to request again for it

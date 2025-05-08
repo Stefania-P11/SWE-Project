@@ -79,6 +79,7 @@ void main() async{
       expect(FirebaseService.isValidItem(Item(category : 'Top', label : 'Mine', weather : ['Hot', 'Cold', 'Cool', 'Warm'], url : 'fake', id : 1, timesWorn : 0)), 
       isTrue);
     });
+    
   });
   group('doesOutfitExist', () {
     String originalUsername = constants.kUsername;
@@ -129,17 +130,49 @@ void main() async{
       fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('32').delete();
     });
     test('ArgumentError should be thrown due to invalid ID', (){
-      expect(() => FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : -1, timesWorn : 1)), throwsA(isA<ArgumentError>()));
+      expect(() => FirebaseService.removeFirestoreItem(Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : -1, timesWorn : 1),firestore: fakeFirestore), throwsA(isA<ArgumentError>()));
     });
     test('ArgumentError should be thrown due to item not existing', (){
-      expect(() => FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 1, timesWorn : 1)), throwsA(isA<ArgumentError>()));
+      expect(() => FirebaseService.removeFirestoreItem(Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 1, timesWorn : 1),firestore: fakeFirestore), throwsA(isA<ArgumentError>()));
     });
 
     test('Successful remove', () async {
-      await FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
+      //await FirebaseService.removeFirestoreItem(fakeFirestore, Item(category : 'Top', label : 'Mine', weather : ['Hot'], url : 'fake', id : 32, timesWorn : 1));
+      await FirebaseService.removeFirestoreItem(Item(category: 'Top', label: 'Mine', weather: ['Hot'], url: 'fake', id: 32, timesWorn: 1),firestore: fakeFirestore);
       var doc = fakeFirestore.collection('users').doc(constants.kUsername).collection('Clothes').doc('32');
       var docRef = await doc.get();
       expect(docRef.exists, false);
+    });
+    
+    test('Uses default db instance when firestore is not provided', () async {
+      // This item doesn't exist in real Firestore, so expect an error
+      final item = Item(category: 'Top', label: 'Mine', weather: ['Hot'], url: 'fake', id: 99999, timesWorn: 0);
+      expect(() => FirebaseService.removeFirestoreItem(item),throwsA(predicate((e) => e is FirebaseException &&  e.code == 'no-app' ) ));
+    });
+    // test('Uses default db instance when firestore is not provided and username is empty', () async {
+    //   constants.kUsername = '';// Force kUsername to empty so line 151 triggers!
+    //   await expectLater(
+    //       FirebaseService.removeFirestoreItem(
+    //           Item(
+    //               category: 'Top',
+    //               label: 'Mine',
+    //               weather: ['Hot'],
+    //               url: 'fake',
+    //               id: 5,
+    //               timesWorn: 1
+    //           )
+    //       ),
+    //       throwsA(isA<ArgumentError>())
+    //   );
+    // });
+    test('Uses default db instance when firestore is not provided and username is empty', () async {
+      constants.kUsername = '';  // Force username to empty
+      final item = Item(category: 'Top', label: 'Mine', weather: ['Hot'], url: 'fake', id: 123, timesWorn: 1);
+
+      await expectLater(
+        FirebaseService.removeFirestoreItem(item), 
+        throwsA(predicate((e) => e is ArgumentError && e.message.contains('kUsername is still empty')))
+      );
     });
   });
   group('removeLocalItems', (){
@@ -377,6 +410,33 @@ void main() async{
       var doc = fakeFirestore.collection('users').doc(constants.kUsername).collection('Outfits').doc('15');
       var docRef = await doc.get();
       expect(docRef.exists, true);
+    });
+    test('Throws ArgumentError when kUsername is empty', () async {
+      constants.kUsername = '';  // Force it to empty
+      expect(() => FirebaseService.addFirestoreOutfit(fakeFirestore,'label',99,top,bottom,shoe,1,['Hot']),
+        throwsA(isA<ArgumentError>())
+      );
+      // Reset username after test so other tests don't break!
+      constants.kUsername = originalUsername;
+    });
+    test('Throws ArgumentError when kUsername is empty (for addFirestoreOutfit)', () async {
+      constants.kUsername = '';  // force empty
+
+      await expectLater(
+        FirebaseService.addFirestoreOutfit(
+          fakeFirestore,
+          'Test Outfit',
+          555,
+          top,
+          bottom,
+          shoe,
+          0,
+          ['Hot']
+        ),
+        throwsA(isA<ArgumentError>())
+      );
+      // Reset username after test
+      constants.kUsername = originalUsername;
     });
   });
   group('addLocalOutfits', (){

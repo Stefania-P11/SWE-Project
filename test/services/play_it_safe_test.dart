@@ -177,7 +177,8 @@ void main() {
 }
 
 class _FailingWeatherService extends WeatherService {
-  _FailingWeatherService() : super.forTests(); 
+  //_FailingWeatherService() : super.forTests(); 
+  _FailingWeatherService() : super(weatherFactory: null);
 
   @override
   Future<Weather> getTheWeather() async {

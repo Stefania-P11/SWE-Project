@@ -10,10 +10,14 @@ import 'package:image/image.dart' as img;
 import 'package:dressify_app/services/surprise_me_service.dart';
 import 'package:dressify_app/models/item.dart';
 import 'package:dressify_app/models/outfit.dart';
-import 'package:dressify_app/mocks/mock_color_detector.dart';
+//import 'package:dressify_app/mocks/mock_color_detector.dart';
+//import 'mocks/mock_color_detector.dart';
+import '../mocks/mock_color_detector.dart';  
+
+
 
 @GenerateMocks([http.Client])
-import 'surprise_me_service_test.mocks.dart';
+import 'surprise_me_test.mocks.dart';
 
 // ----------------------------
 // Helpers & Mocks
@@ -236,6 +240,7 @@ void main() {
         expect(result, 'unknown'); // some dominant color detectors return 'unknown' for pure white noise
     });
 
+    
   });
 
   group('Real getColorFromImage (no injected client)', () {
@@ -554,6 +559,17 @@ void main() {
     
     expect(colorName, isNot('unknown'));
     });
+
+    test('getColorFromImage returns unknown for HTTP 200 with empty body', () async {
+      final client = FakeHttpClient((request) async {
+        return http.Response.bytes([], 200); // Empty response body
+      });
+
+      final color = await getColorFromImageWithClient('https://fakeurl.com/empty.png', client);
+      expect(color, 'unknown');
+    });
+
+
 
   });
 

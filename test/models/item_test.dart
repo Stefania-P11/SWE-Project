@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dressify_app/models/item.dart';
@@ -50,7 +51,7 @@ void main() {
           weather: ['Warm'],
         );
 
-        await item.incrementTimesWorn(firestore: fakeFirestore);
+        await item.incrementTimesWorn('dummy',firestore: fakeFirestore);
 
         // Local check
         expect(item.timesWorn, 1);
@@ -87,7 +88,7 @@ void main() {
         // No document created here → update will fail
 
         expect(
-          () => item.incrementTimesWorn(firestore: fakeFirestore),
+          () => item.incrementTimesWorn('dummy',firestore: fakeFirestore),
           throwsA(isA<FirebaseException>()),
         );
 
@@ -113,6 +114,36 @@ void main() {
         constants.kUsername = originalUsername;
       }
     });
+    test('incrementTimesWorn uses default dbInstance if firestore not passed', () async {
+      final originalUsername = constants.kUsername;
+      constants.kUsername = 'dummy';
+
+      final item = Item(
+        category: 'Top',
+        id: 10,
+        label: 'Test Fallback Top',
+        timesWorn: 0,
+        url: 'https://example.com/fallback',
+        weather: ['Warm'],
+      );
+
+      // The document must exist to avoid FirebaseException
+      final fakeFirestore = FakeFirebaseFirestore();
+      await fakeFirestore
+          .collection('users')
+          .doc('dummy')
+          .collection('Clothes')
+          .doc('10')
+          .set({'timesWorn': 0});
+
+      // Set the static dbInstance to fakeFirestore so the fallback will still work for testing
+      Item.dbInstance = fakeFirestore;
+
+      await item.incrementTimesWorn('dummy');
+
+      expect(item.timesWorn, 1);
+    });
+
   });
 
  
@@ -227,13 +258,41 @@ void main() {
         constants.kUsername = originalUsername;
       }
     });
+
+    test('fetchItems uses default dbInstance if firestore not passed', () async {
+      final originalUsername = constants.kUsername;
+      constants.kUsername = 'dummy';
+
+      final fakeFirestore = FakeFirebaseFirestore();
+      await fakeFirestore
+          .collection('users')
+          .doc('dummy')
+          .collection('Clothes')
+          .doc('20')
+          .set({
+        'category': 'Top',
+        'id': 20,
+        'label': 'Test Fallback Fetch',
+        'timesWorn': 2,
+        'url': 'https://example.com/fallback2',
+        'weather': ['Warm'],
+      });
+
+      // Use the fallback dbInstance
+      Item.dbInstance = fakeFirestore;
+
+      await Item.fetchItems('dummy');
+
+      expect(Item.itemList.length, greaterThan(0));
+      expect(Item.itemList.first.label, contains('Test Fallback'));
+    });
   
   });
 
- //-- TO HERE -- Stefania
+  //-- TO HERE -- Stefania
 
  
-   // COUNT ITEMS PER CATEGORY TESTS
+  // COUNT ITEMS PER CATEGORY TESTS
   group('Item.countItemsPerCategory()', () {
     setUp(() {
       Item.itemList.clear();  // Ensure fresh start for each test
@@ -296,51 +355,51 @@ void main() {
   });
 
   // ITEM.FROMFIRESTORE TESTS
-group('Item.fromFirestore()', () {
-  late MockDocumentSnapshot mockDoc;
+  group('Item.fromFirestore()', () {
+    late MockDocumentSnapshot mockDoc;
 
-  const Map<String, dynamic> completeTestData = {
-    'category': 'Top',
-    'id': 123,
-    'label': 'Test Shirt',
-    'timesWorn': 5,
-    'url': 'https://example.com/shirt.jpg',
-    'weather': ['Warm', 'Sunny'],
-  };
+    const Map<String, dynamic> completeTestData = {
+      'category': 'Top',
+      'id': 123,
+      'label': 'Test Shirt',
+      'timesWorn': 5,
+      'url': 'https://example.com/shirt.jpg',
+      'weather': ['Warm', 'Sunny'],
+    };
 
-  setUp(() {
-    mockDoc = MockDocumentSnapshot();
-  });
-
-  test('should correctly convert complete Firestore document', () {
-    when(mockDoc.data()).thenReturn(completeTestData);
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.category, equals('Top'));
-    expect(item.id, equals(123));
-    expect(item.label, equals('Test Shirt'));
-    expect(item.timesWorn, equals(5));
-    expect(item.url, equals('https://example.com/shirt.jpg'));
-    expect(item.weather, equals(['Warm', 'Sunny']));
-  });
-
-  test('should handle weather list with string elements', () {
-    when(mockDoc.data()).thenReturn({
-      ...completeTestData,
-      'weather': ['Rainy', 'Cloudy'],
+    setUp(() {
+      mockDoc = MockDocumentSnapshot();
     });
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.weather, equals(['Rainy', 'Cloudy']));
-  });
 
-  test('should handle empty weather list', () {
-    when(mockDoc.data()).thenReturn({
-      ...completeTestData,
-      'weather': [],
+    test('should correctly convert complete Firestore document', () {
+      when(mockDoc.data()).thenReturn(completeTestData);
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.category, equals('Top'));
+      expect(item.id, equals(123));
+      expect(item.label, equals('Test Shirt'));
+      expect(item.timesWorn, equals(5));
+      expect(item.url, equals('https://example.com/shirt.jpg'));
+      expect(item.weather, equals(['Warm', 'Sunny']));
     });
-    final item = Item.fromFirestore(mockDoc);
-    expect(item.weather, isEmpty);
+
+    test('should handle weather list with string elements', () {
+      when(mockDoc.data()).thenReturn({
+        ...completeTestData,
+        'weather': ['Rainy', 'Cloudy'],
+      });
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.weather, equals(['Rainy', 'Cloudy']));
+    });
+
+    test('should handle empty weather list', () {
+      when(mockDoc.data()).thenReturn({
+        ...completeTestData,
+        'weather': [],
+      });
+      final item = Item.fromFirestore(mockDoc);
+      expect(item.weather, isEmpty);
+    });
   });
-});
 
 }
  //-- TO HERE -- Yabbi

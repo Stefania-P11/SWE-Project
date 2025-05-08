@@ -341,7 +341,7 @@ Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = con
 
   if (bottom == null) return null;
 
-  print("🎲 Selected Bottom: ${bottom.label} (${bottom.url})");
+  print("🎲 Selected Bottom: ${bottom.label} (${bottom.url}),Weather: $tempCategory");
 
   // Match top and shoe and return the final outfit
   final matchedItems = await matchTopAndShoe(
@@ -349,6 +349,10 @@ Future<Outfit?> surpriseMe(List<Item> wardrobe, {Set<int> excludeBottomIds = con
     tempCategory: tempCategory,
     wardrobe: wardrobe,
   );
+
+  //Print selected top and shoe with temperature
+  print("👕 Selected Top: ${matchedItems[0].label} (${matchedItems[0].url}), Weather: $tempCategory");
+  print("👟 Selected Shoe: ${matchedItems[1].label} (${matchedItems[1].url}), Weather: $tempCategory");
 
   //return Outfit.fromItemList([matchedItems[0], bottom, matchedItems[1]]);
   return Outfit.fromSurpriseMe(
@@ -374,5 +378,3 @@ Future<String> getColorFromImageWithClient(String imageUrl, http.Client client) 
     return 'unknown';
   }
 }
-
-
